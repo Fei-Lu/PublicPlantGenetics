@@ -8,7 +8,7 @@ package graphcis.r;
 
 /**
  *
- * @author Fei Lu <fl262@cornell.edu>
+ * @author Fei Lu 
  */
 public class QQPlot {
     

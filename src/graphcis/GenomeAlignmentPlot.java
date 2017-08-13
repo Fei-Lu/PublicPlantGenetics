@@ -18,7 +18,7 @@ import java.util.ArrayList;
 
 /**
  *
- * @author Fei Lu <fl262@cornell.edu>
+ * @author Fei Lu
  */
 public class GenomeAlignmentPlot {
     public int queryLength = 0;

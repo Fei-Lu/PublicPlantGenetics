@@ -4,39 +4,41 @@
  * and open the template in the editor.
  */
 
-package format;
+package format.dna;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
-import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.util.ArrayList;
 import java.util.zip.GZIPOutputStream;
 import utils.IOFileFormat;
 import utils.IOUtils;
 
 
 /**
- * Hold Fastq single end Fastq file
+ * Hold Fastq single end Fastq file. 
+ * <p>
+ * Due to the large size of Fastq file, it is recommended to load a small chunk of the file.
+ * <p>
+ * The beginning of a Fastq file generally has lower quality, it is recommended to skip the first 100,000 reads
  * @author Fei Lu
  */
-public class FastqChunk {
+public class Fastq {
     private int minStartIndex = 100000;
     private int maxReadNum = 1000000;
     Read[] reads = null;
     int phredScale = Integer.MIN_VALUE;
     
     /**
-     * Constructor, sample Fastq file, ignore those bad sequence at the beginning
+     * Constructor to sample Fastq file, ignore those low-quality sequence at the beginning of a fastq file
      * @param fastqFileS
-     * @param format
-     * @param startIndex
-     * @param readNum 
+     * @param startIndex 100,000 by default
+     * @param readNum The maximum is 1,000,000 by default
      */
-    public FastqChunk (String fastqFileS, IOFileFormat format, int startIndex, int readNum) {
+    public Fastq (String fastqFileS, int startIndex, int readNum) {
         if (startIndex < minStartIndex) {
             startIndex = minStartIndex;
             System.out.println("Start index of read was set to " + String.valueOf(startIndex));
@@ -45,46 +47,36 @@ public class FastqChunk {
             readNum = maxReadNum;
             System.out.println("Number of read was set to " + String.valueOf(readNum));
         }
-        this.readFastq(fastqFileS, format, startIndex, readNum);
-        this.setPhredScale();
+        if (fastqFileS.endsWith(".gz")) {
+            this.readFastq(fastqFileS, IOFileFormat.TextGzip, startIndex, readNum);
+        }
+        else {
+            this.readFastq(fastqFileS, IOFileFormat.Text, startIndex, readNum);
+        }
+        
     }
     
     /**
      * Constructor to read in whole Fastq, fastq file should be small for test
      * @param fastqFileS 
      */
-    public FastqChunk (String fastqFileS) {
+    public Fastq (String fastqFileS) {
         if (fastqFileS.endsWith("gz")) {
             this.readFastq(fastqFileS, IOFileFormat.TextGzip);
         }
         else {
             this.readFastq(fastqFileS, IOFileFormat.Text);
         }
-        this.setPhredScale();
     }
     
-    public FastqChunk (Read[] reads) {
+    public Fastq (Read[] reads, int phredScore) {
         this.reads = reads;
-        this.setPhredScale();
+        this.phredScale = phredScore;
     }
     
-    private void setPhredScale () {
-        int size = 10;
-        if (this.getReadNum() < 10) size = this.getReadNum();
-        for (int i = 0; i < size; i++) {
-            byte[] qualB = this.getRead(i).getQual().getBytes();
-            for (int j = this.getRead(i).getReadLength()-1; j > -1; j--) {
-                if (qualB[j] < 65) {
-                    this.phredScale = 33;
-                    return;
-                }
-            }
-        }
-        this.phredScale = 64;
-    }
     
     /**
-     * Return phred score scale of the fastq, 33 or 64
+     * Return phred score scale of the Fastq file, 33 or 64
      * @return 
      */
     public int getPhredScale () {
@@ -98,13 +90,13 @@ public class FastqChunk {
         String temp;
         try {
             if (format == IOFileFormat.Text) {
-                br = new BufferedReader(new FileReader(fastqFileS), 65536);
-                while ((temp = br.readLine()) != null) cnt++;
-                br = new BufferedReader(new FileReader(fastqFileS), 65536);
+                br = IOUtils.getTextReader(fastqFileS);
+                this.setPhredScale(br, 10);
+                br = IOUtils.getTextReader(fastqFileS);
             }
             else if (format == IOFileFormat.TextGzip) {
                 br = IOUtils.getTextGzipReader(fastqFileS);
-                while ((temp = br.readLine()) != null) cnt++;
+                this.setPhredScale(br, 10);
                 br = IOUtils.getTextGzipReader(fastqFileS);
             }
             else {}
@@ -112,7 +104,7 @@ public class FastqChunk {
         catch (Exception e) {
             e.printStackTrace();
         }
-        this.readFastq(br, 0, cnt/4);
+        this.readFastq(br);
     }
     
     private void readFastq (String fastqFileS, IOFileFormat format, int startIndex, int readNum) {
@@ -120,9 +112,13 @@ public class FastqChunk {
         BufferedReader br = null;
         try {
             if (format == IOFileFormat.Text) {
-                br = new BufferedReader(new FileReader(fastqFileS), 65536);
+                br = IOUtils.getTextReader(fastqFileS);
+                this.setPhredScale(br, readNum);
+                br = IOUtils.getTextReader(fastqFileS);
             }
             else if (format == IOFileFormat.TextGzip) {
+                br = IOUtils.getTextGzipReader(fastqFileS);
+                this.setPhredScale(br, readNum);
                 br = IOUtils.getTextGzipReader(fastqFileS);
             }
             else {}
@@ -134,6 +130,48 @@ public class FastqChunk {
         this.readFastq(br, startIndex, readNum);
     }
     
+    private void setPhredScale (BufferedReader br, int readNum) {
+        try {
+            int size = 10;
+            if (readNum < 10) size = readNum;
+            for (int i = 0; i < size; i++) {
+                br.readLine();br.readLine();br.readLine();
+                byte[] qualB = br.readLine().getBytes();
+                for (int j = qualB.length; j > -1; j--) {
+                    if (qualB[j] < 65) {
+                        this.phredScale = 33;
+                        return;
+                    }
+                }
+            }
+            this.phredScale = 64;
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+    
+    private void readFastq (BufferedReader br) {
+        int readCount = 0;
+        try {
+            Read r = null;
+            String temp;
+            ArrayList<Read> rList = new ArrayList();
+            while ((temp = br.readLine()) != null) {
+                r = new Read (temp, br.readLine(), br.readLine(), br.readLine(), this.getPhredScale());
+                rList.add(r);
+                readCount++;
+            }
+            this.reads = rList.toArray(new Read[rList.size()]);
+            br.close();
+            
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
+        System.out.println(String.valueOf(readCount) + " reads imported");
+    }
+    
     private void readFastq (BufferedReader br, int startIndex, int readNum) {
         this.reads = new Read[readNum];
         try {
@@ -143,10 +181,11 @@ public class FastqChunk {
             int readCount = 0;
             while ((temp = br.readLine()) != null) {
                 if (index >= startIndex) {
-                    r = new Read (temp, br.readLine(), br.readLine(), br.readLine());
+                    r = new Read (temp, br.readLine(), br.readLine(), br.readLine(), this.getPhredScale());
                     reads[readCount] = r;
                     readCount++;
                     if (readCount == readNum) break;
+                    
                 }
                 index++;
             }
@@ -175,11 +214,11 @@ public class FastqChunk {
             for (int i = 0; i < this.getReadNum(); i++) {
                 bw.write(reads[i].getID());
                 bw.newLine();
-                bw.write(reads[i].getSeq());
+                bw.write(reads[i].getSequence());
                 bw.newLine();
                 bw.write(reads[i].getDescription());
                 bw.newLine();
-                bw.write(reads[i].getQual());
+                bw.write(reads[i].getQualS(this.getPhredScale()));
                 bw.newLine();
             }
             bw.flush();
@@ -197,7 +236,7 @@ public class FastqChunk {
             for (int i = 0; i < this.getReadNum(); i++) {
                 bw.write(">"+this.reads[i].ID);
                 bw.newLine();
-                bw.write(this.reads[i].seq);
+                bw.write(this.reads[i].getSequence());
                 bw.newLine();
             }
             bw.flush();
@@ -215,7 +254,7 @@ public class FastqChunk {
                 if(!ifOut[i]) continue;
                 bw.write(">"+this.reads[i].ID);
                 bw.newLine();
-                bw.write(this.reads[i].seq);
+                bw.write(this.reads[i].getSequence());
                 bw.newLine();
             }
             bw.flush();

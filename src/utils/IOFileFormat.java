@@ -8,7 +8,7 @@ package utils;
 
 /**
  * Basic IO format used in this package
- * @author fl262
+ * @author Fei Lu
  */
 public enum IOFileFormat {
     Binary, Text, TextGzip, HDF5

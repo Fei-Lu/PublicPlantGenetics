@@ -14,7 +14,7 @@ import rcaller.RCode;
 
 /**
  *
- * @author Fei Lu <fl262@cornell.edu>
+ * @author Fei Lu
  */
 public class LineChart extends Rgraphics {
     double[] x;

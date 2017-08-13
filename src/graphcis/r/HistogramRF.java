@@ -12,7 +12,7 @@ import rcaller.RCode;
 
 /**
  * Plot histogram with relative frequency on y axis, using lattice package
- * @author Fei Lu <fl262@cornell.edu>
+ * @author Fei Lu
  */
 public class HistogramRF extends Rgraphics {
     
