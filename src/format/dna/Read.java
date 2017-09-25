@@ -6,7 +6,6 @@
 
 package format.dna;
 
-import static format.ReadUtils.baseCompleMap;
 import java.util.Arrays;
 import org.apache.commons.lang.ArrayUtils;
 
@@ -120,6 +119,7 @@ public class Read extends SequenceByte {
      * Return quality string from startIndex to endIndex
      * @param startIndex
      * @param endIndex
+     * @param phredScore
      * @return 
      */
     public String getQualS (int startIndex, int endIndex, int phredScore) {
