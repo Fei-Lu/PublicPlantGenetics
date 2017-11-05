@@ -82,6 +82,27 @@ public class BaseEncoder {
     }
     
     /**
+     * Return a long from a subset byte array. It is padded with polyA at the end if the length of this subset array is less than 32
+     * If the length of this subset array is greater than 32, return -1 (polyT)
+     * @param b
+     * @param startIndex inclusive
+     * @param endIndex exclusive
+     * @return 
+     */
+    public static long getLongSeqFromSubByteArray(byte[] b, int startIndex, int endIndex) {
+        int length = endIndex - startIndex;
+        long v = 0;
+        if (length > longChunkSize) {
+            return -1;
+        }
+        for (int i = startIndex; i < endIndex; i++) {
+            v = (v << 2) + b[i];
+        }
+        v = (v << (2*(longChunkSize-length)));
+        return v;
+    }
+    
+    /**
      * Return an int from a byte array. It is padded with polyA at the end if the length of this array is less than 16
      * If the length of this array is greater than 16, return -1 (polyT)
      * @param b The byte array must be in 0-3 coding for A, C, G, T
@@ -100,6 +121,27 @@ public class BaseEncoder {
     }
     
     /**
+     * Return an int from a subset byte array. It is padded with polyA at the end if the length of this subset array is less than 16
+     * If the length of this subset array is greater than 16, return -1 (polyT)
+     * @param b
+     * @param startIndex
+     * @param endIndex
+     * @return 
+     */
+    public static int getIntSeqFromSubByteArray(byte[] b, int startIndex, int endIndex) {
+        int length = endIndex - startIndex;
+        int v = 0;
+        if (length > intChunkSize) {
+            return -1;
+        }
+        for (int i = startIndex; i < endIndex; i++) {
+            v = (v << 2) + b[i];
+        }
+        v = (v << (2*(intChunkSize-length)));
+        return v;
+    }
+    
+    /**
      * Return an int from a byte array. It is padded with polyA at the end if the length of this array is less than 8
      * If the length of this array is greater than 8, return -1 (polyT)
      * @param b The byte array must be in 0-3 coding for A, C, G, T
@@ -114,6 +156,27 @@ public class BaseEncoder {
             v = (v << 2) + b[i];
         }
         v = (v << (2*(shortChunkSize-b.length)));
+        return (short)v;
+    }
+    
+    /**
+     * Return a short from a subset byte array. It is padded with polyA at the end if the length of this subset array is less than 8
+     * If the length of this subset array is greater than 8, return -1 (polyT)
+     * @param b
+     * @param startIndex
+     * @param endIndex
+     * @return 
+     */
+    public static short getShortSeqFromSubByteArray(byte[] b, int startIndex, int endIndex) {
+        int length = endIndex - startIndex;
+        int v = 0;
+        if (length > shortChunkSize) {
+            return -1;
+        }
+        for (int i = startIndex; i < endIndex; i++) {
+            v = (v << 2) + b[i];
+        }
+        v = (v << (2*(shortChunkSize-length)));
         return (short)v;
     }
     
