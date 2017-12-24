@@ -12,6 +12,7 @@ public interface CLIInterface {
 
     /**
      * Retrieve parameters from command line
+     * @param args
      */
     void retrieveParameters (String[] args);
 
@@ -22,6 +23,7 @@ public interface CLIInterface {
 
     /**
      * Create introduction of the software
+     * @return 
      */
     String createIntroduction ();
 }

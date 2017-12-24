@@ -5,6 +5,9 @@
  */
 package format.dna;
 
+import com.koloboke.collect.map.hash.HashByteByteMap;
+import java.util.Arrays;
+
 /**
  * The {@code SequenceByte} use one byte to store a DNA base. 
  * <p>
@@ -78,7 +81,16 @@ public class SequenceByte implements SequenceInterface {
     public char getBase(int positionIndex) {
         return (char)this.seqByte[positionIndex];
     }
-
+    
+    /**
+     * Return the byte value of a base
+     * @param positionIndex
+     * @return 
+     */
+    public byte getBaseByte (int positionIndex) {
+        return this.seqByte[positionIndex];
+    }
+    
     @Override
     public String getSequence() {
         return new String(this.seqByte);
@@ -96,9 +108,10 @@ public class SequenceByte implements SequenceInterface {
 
     @Override
     public String getReverseComplementarySeq(int startIndex, int endIndex) {
+        HashByteByteMap baseCompleByteMap = DNAUtils.getBaseCompleByteMap();
         byte[] reverseByte = new byte[endIndex - startIndex];
         for (int i = 0; i < reverseByte.length; i++) {
-            reverseByte[i] = DNAUtils.baseCompleByteMap.get(seqByte[endIndex-i-1]);
+            reverseByte[i] = baseCompleByteMap.get(seqByte[endIndex-i-1]);
         }
         return new String(reverseByte);
     }
@@ -121,6 +134,22 @@ public class SequenceByte implements SequenceInterface {
     public boolean isThereN () {
         for (int i = 0; i < this.getSequenceLength(); i++) {
             if (this.seqByte[i] == 78) return true;
+        }
+        return false;
+    }
+    
+    /**
+     * Return if the sequence has non A, C, G, T, N base
+     * @return 
+     */
+    public boolean isThereNonACGTNBase () {
+        byte[] baseByteWithN = DNAUtils.getBaseWithNByteArray();
+        for (int i = 0; i < this.getSequenceLength(); i++) {
+            int index = Arrays.binarySearch(baseByteWithN, this.getBaseByte(i));
+            if (index < 0) {
+                System.out.println(this.getBase(i));
+                return true;
+            }
         }
         return false;
     }

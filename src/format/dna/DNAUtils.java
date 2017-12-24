@@ -14,14 +14,43 @@ import com.koloboke.collect.map.hash.HashByteByteMaps;
  */
 public class DNAUtils {
     /**The byte value of 4 DNA bases, A, C, G, T*/
-    public static final byte[] baseByte = {65, 67, 71, 84};
+    private static final byte[] baseByte = {65, 67, 71, 84};
+    /**The byte value of 4 DNA bases and any base, A, C, G, N, T*/
+    private static final byte[] baseByteWithN = {65, 67, 71, 78, 84};
     
     private static final byte[] compleBaseByte = {84, 71, 67, 65};
     
-    /**
-     * The byte value hash map pointing to complementary bases
-     */
-    public static final HashByteByteMap baseCompleByteMap = 
-            HashByteByteMaps.getDefaultFactory().newImmutableMap(baseByte, compleBaseByte);
+    private static final byte[] lowerBaseByte = {97, 99, 103, 116};
     
+    /**
+     * Return byte value hash map pointing to complementary bases
+     * @return 
+     */
+    public static HashByteByteMap getBaseCompleByteMap () {
+        return HashByteByteMaps.getDefaultFactory().newImmutableMap(baseByte, compleBaseByte);
+    }
+    
+    /**
+     * Return byte value hash map converting lower case base to upper case base
+     * @return 
+     */
+    public static HashByteByteMap getBaseLowerToUpperMap () {
+        return HashByteByteMaps.getDefaultFactory().newImmutableMap(lowerBaseByte, baseByte);
+    }
+    
+    /**
+     * Return a byte value base array of A, C, G, T
+     * @return 
+     */
+    public static byte[] getBaseByteArray () {
+        return baseByte;
+    }
+    
+    /**
+     * Return a byte value base array of A, C, G, N, T
+     * @return 
+     */
+    public static byte[] getBaseWithNByteArray () {
+        return baseByte;
+    }
 }

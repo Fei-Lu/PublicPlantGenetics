@@ -6,7 +6,7 @@
 package format.dna;
 
 /**
- * The {@code SeuenceInterface} holds basic methods for DNA sequence
+ * The {@code SequenceInterface} holds basic methods for DNA sequence
  * @author Fei Lu
  */
 public interface SequenceInterface {
@@ -82,5 +82,5 @@ public interface SequenceInterface {
      * @return 
      */
     public String getReverseComplementarySeq (int startIndex, int endIndex);
-      
+    
 }
