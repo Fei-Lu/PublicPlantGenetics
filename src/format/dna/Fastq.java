@@ -19,7 +19,7 @@ import utils.IOUtils;
 
 
 /**
- * Hold Fastq single end Fastq file. 
+ * Hold Fastq single end file. 
  * <p>
  * Due to the large size of Fastq file, it is recommended to load a small chunk of the file.
  * <p>

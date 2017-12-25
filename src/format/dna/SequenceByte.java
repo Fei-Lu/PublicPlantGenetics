@@ -9,7 +9,7 @@ import com.koloboke.collect.map.hash.HashByteByteMap;
 import java.util.Arrays;
 
 /**
- * The {@code SequenceByte} use one byte to store a DNA base. 
+ * The class uses one byte to store a DNA base. 
  * <p>
  * It supports standard IUPAC DNA coding (https://www.bioinformatics.org/sms/iupac.html). Non-"ATGCN-." are ignored for now.
  * @author Fei Lu

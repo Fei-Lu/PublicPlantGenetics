@@ -25,7 +25,7 @@ public class Fasta {
     private enum sortType {byName, byID, byLengthAscending, byLengthDescending}
     sortType sType = null;
     /**
-     * Constructs a {code Fasta} from input file. The file should be either txt format or gz format.
+     * Constructs a {@link format.dna.Fasta} from input file. The file should be either txt format or gz format.
      * @param infileS 
      */
     public Fasta (String infileS) {

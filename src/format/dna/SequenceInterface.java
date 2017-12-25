@@ -6,7 +6,7 @@
 package format.dna;
 
 /**
- * The {@code SequenceInterface} holds basic methods for DNA sequence
+ * The interface holds basic methods for DNA sequence
  * @author Fei Lu
  */
 public interface SequenceInterface {
