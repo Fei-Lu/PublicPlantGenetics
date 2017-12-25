@@ -51,6 +51,6 @@ public class DNAUtils {
      * @return 
      */
     public static byte[] getBaseWithNByteArray () {
-        return baseByte;
+        return baseByteWithN;
     }
 }
