@@ -28,18 +28,34 @@ public class BaseEncoder {
      * @return 
      */
     public static HashByteByteMap getAscIIByteMap () {
-        HashByteByteMap ascIIByteMap = HashByteByteMaps.newMutableMap();
-        for (int i = 0; i < 128; i++) {
-            ascIIByteMap.put((byte)i, (byte)4);
+        int size = 128;
+        byte[] key = new byte[size];
+        byte[] value = new byte[size];
+        for (int i = 0; i < key.length; i++) {
+            key[i] = (byte)i;
+            value[i] = (byte)4;
         }
-        ascIIByteMap.put((byte)65, (byte)0);
-        ascIIByteMap.put((byte)97, (byte)0);
-        ascIIByteMap.put((byte)67, (byte)1);
-        ascIIByteMap.put((byte)99, (byte)1);
-        ascIIByteMap.put((byte)71, (byte)2);
-        ascIIByteMap.put((byte)103, (byte)2);
-        ascIIByteMap.put((byte)84, (byte)3);
-        ascIIByteMap.put((byte)116, (byte)3);
+        value[65] = 0;
+        value[97] = 0;
+        value[67] = 1;
+        value[99] = 1;
+        value[71] = 2;
+        value[103] = 2;
+        value[84] = 3;
+        value[116] = 3;
+        HashByteByteMap ascIIByteMap = HashByteByteMaps.newImmutableMap(key, value);
+//        HashByteByteMap ascIIByteMap = HashByteByteMaps.newMutableMap();
+//        for (int i = 0; i < 128; i++) {
+//            ascIIByteMap.put((byte)i, (byte)4);
+//        }
+//        ascIIByteMap.put((byte)65, (byte)0);
+//        ascIIByteMap.put((byte)97, (byte)0);
+//        ascIIByteMap.put((byte)67, (byte)1);
+//        ascIIByteMap.put((byte)99, (byte)1);
+//        ascIIByteMap.put((byte)71, (byte)2);
+//        ascIIByteMap.put((byte)103, (byte)2);
+//        ascIIByteMap.put((byte)84, (byte)3);
+//        ascIIByteMap.put((byte)116, (byte)3);
         return ascIIByteMap;
     }
     

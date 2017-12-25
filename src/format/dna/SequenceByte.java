@@ -11,7 +11,8 @@ import java.util.Arrays;
 /**
  * The class uses one byte to store a DNA base. 
  * <p>
- * It supports standard IUPAC DNA coding (https://www.bioinformatics.org/sms/iupac.html). Non-"ATGCN-." are ignored for now.
+ * Bases are converted to upper case. Non-"ATGC" bases are allowed here.
+ * It supports standard IUPAC DNA coding (https://www.bioinformatics.org/sms/iupac.html).
  * @author Fei Lu
  */
 public class SequenceByte implements SequenceInterface {
@@ -153,4 +154,21 @@ public class SequenceByte implements SequenceInterface {
         }
         return false;
     }
+    
+    /**
+     * Return if the sequence has non A, C, G, T base
+     * @return 
+     */
+    public boolean isThereNonACGTBase () {
+        byte[] baseByte = DNAUtils.getBaseByteArray();
+        for (int i = 0; i < this.getSequenceLength(); i++) {
+            int index = Arrays.binarySearch(baseByte, this.getBaseByte(i));
+            if (index < 0) {
+                System.out.println(this.getBase(i));
+                return true;
+            }
+        }
+        return false;
+    }
+    
 }
