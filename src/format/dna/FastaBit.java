@@ -17,7 +17,8 @@ import utils.IOFileFormat;
 import utils.IOUtils;
 
 /**
- * Holding FastA format sequence, providing functions of sorting, searching and collecting statistics
+ * Holding FastA format sequence, providing functions of sorting, searching and collecting statistics.
+ * Bases are compressed to 3 bits, representing 'A', 'C', 'G', 'T', 'N'. Specially designed for large Fasta sequence.
  * @author feilu
  */
 public class FastaBit {
@@ -309,33 +310,21 @@ public class FastaBit {
         return false;
     }
     
-    /**
-     * Return if the fasta has gaps, i.e. "." or "-", in it
-     * @return 
-     */
-    public boolean isThereGap () {
-        boolean value;
-        for (int i = 0; i < records.length; i++) {
-             value = records[i].isThereGap();
-             if (value) return true;
-        }
-        return false;
-    }
     
     /**
      * Return if the fasta has non A, C, G, T, N base
      * @return 
      */
-    public boolean isThereNonACGTNBase () {
+    public boolean isThereNonACGTBase () {
         boolean value;
         for (int i = 0; i < records.length; i++) {
-             value = records[i].isThereNonACGTNBase();
+             value = records[i].isThereNonACGTBase();
              if (value) return true;
         }
         return false;
     }
     
-    private class FastaRecord extends SequenceByte {
+    private class FastaRecord extends Sequence3Bit {
         String name;
         int id;
 

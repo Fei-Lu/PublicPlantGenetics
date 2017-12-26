@@ -13,6 +13,7 @@ import java.util.Arrays;
 /**
  * Class holding DNA sequence, with 2 bits for each base. Non-"ACGT" bases are not allowed.
  * This is designed to pack large sequence data set, e.g. wheat genome.
+ * Well packed into memory, but lower speed performance than {@link format.dna.SequenceByte}
  * @author feilu
  */
 public class Sequence2Bit extends Sequence3Bit {

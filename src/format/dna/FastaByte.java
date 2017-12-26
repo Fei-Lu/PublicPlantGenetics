@@ -18,9 +18,11 @@ import utils.IOUtils;
 
 /**
  * Holding FastA format sequence, providing functions of sorting, searching and collecting statistics
+ * Representing full IUPAC codes. (https://www.bioinformatics.org/sms/iupac.html).
+ * Higher speed, more memory cost than {@link format.dna.FastaBit}.
  * @author feilu
  */
-public class Fasta {
+public class FastaByte {
     FastaRecord[] records = null;
     private enum sortType {byName, byID, byLengthAscending, byLengthDescending}
     sortType sType = null;
@@ -28,7 +30,7 @@ public class Fasta {
      * Constructs a {@link format.dna.Fasta} from input file. The file should be either txt format or gz format.
      * @param infileS 
      */
-    public Fasta (String infileS) {
+    public FastaByte (String infileS) {
         if (infileS.endsWith(".gz")) {
             this.readFasta(infileS, IOFileFormat.TextGzip);
         }
@@ -42,7 +44,7 @@ public class Fasta {
      * @param infileS
      * @param format 
      */
-    public Fasta (String infileS, IOFileFormat format) {
+    public FastaByte (String infileS, IOFileFormat format) {
         this.readFasta(infileS, format);
     }
     

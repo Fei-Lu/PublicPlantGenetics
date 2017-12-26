@@ -12,6 +12,8 @@ import java.util.BitSet;
 
 /**
  * Class holding DNA sequence, with 3 bits for each base. Non-"ACGT" bases are automatically converted to "N".
+ * <P>
+ * Well packed into memory, but lower speed performance than {@link format.dna.SequenceByte}
  * This is designed to pack large sequence data set, e.g. wheat genome.
  * @author feilu
  */
@@ -22,15 +24,32 @@ public class Sequence3Bit implements SequenceInterface {
     int sequenceLength;
     protected int wordSize = 3;
     
+    /**
+     * Constructs the object from DNA sequence {@link java.lang.String}
+     * @param seq 
+     */
     public Sequence3Bit (String seq) {
         this.initialize(seq); 
     }
     
+    /**
+     * Constructs the object from DNA sequence {@link java.lang.String}
+     * @param seq
+     * @param wordSize 3 or 2
+     */
     protected Sequence3Bit (String seq, int wordSize) {
+        if (wordSize > 3 || wordSize < 2) {
+            System.out.println("Word size should be either 3 or 2, program stops");
+            System.exit(1);
+        }
         this.wordSize = wordSize;
         this.initialize(seq);
     }
     
+    /**
+     * Initialize the object by setting bit set
+     * @param seq 
+     */
     private void initialize (String seq) {
         this.sequenceLength = seq.length();
         byte[] seqByte = seq.toUpperCase().getBytes();
@@ -41,8 +60,8 @@ public class Sequence3Bit implements SequenceInterface {
     }
     
     /**
-     * Set the base at a position index
-     * @param positionIndex
+     * Set the base in bit set from a position index of DNA sequence
+     * @param positionIndex index of DNA sequence
      * @param value AscII value of a base
      */
     protected void setCodedBase (int positionIndex, byte value) {
@@ -60,7 +79,7 @@ public class Sequence3Bit implements SequenceInterface {
      * A(00000000), C(00000001), G(00000010), T(0000000011), N(00000100)
      * @return 
      */
-    protected static HashByteByteMap buildAscIIByteMap () {
+    private static HashByteByteMap buildAscIIByteMap () {
         if (ascIIByteMap != null) return ascIIByteMap;
         int size = 128;
         byte[] key = new byte[size];
@@ -102,27 +121,47 @@ public class Sequence3Bit implements SequenceInterface {
 
     @Override
     public double getProportionA() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        int cnt = 0;
+        for (int i = 0; i < this.sequenceLength; i++) {
+            if (this.getBase(i) == 'A') cnt++;
+        }
+        return (double)cnt/this.getSequenceLength();
     }
 
     @Override
     public double getProportionT() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        int cnt = 0;
+        for (int i = 0; i < this.sequenceLength; i++) {
+            if (this.getBase(i) == 'T') cnt++;
+        }
+        return (double)cnt/this.getSequenceLength();
     }
 
     @Override
     public double getProportionG() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        int cnt = 0;
+        for (int i = 0; i < this.sequenceLength; i++) {
+            if (this.getBase(i) == 'G') cnt++;
+        }
+        return (double)cnt/this.getSequenceLength();
     }
 
     @Override
     public double getProportionC() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        int cnt = 0;
+        for (int i = 0; i < this.sequenceLength; i++) {
+            if (this.getBase(i) == 'C') cnt++;
+        }
+        return (double)cnt/this.getSequenceLength();
     }
 
     @Override
     public double getGCContent() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        int cnt = 0;
+        for (int i = 0; i < this.sequenceLength; i++) {
+            if (this.getBase(i) == 'C' || this.getBase(i) == 'G') cnt++;
+        }
+        return (double)cnt/this.getSequenceLength();
     }
 
     @Override
@@ -134,6 +173,11 @@ public class Sequence3Bit implements SequenceInterface {
         return byteAscIIMap.get(getCodedBase(positionIndex));
     }
     
+    /**
+     * Return base coding in byte from a position
+     * @param positionIndex
+     * @return 
+     */
     protected byte getCodedBase (int positionIndex) {
         byte value = 0;
         int startIndex = (positionIndex+1) * wordSize - 1;
@@ -148,6 +192,10 @@ public class Sequence3Bit implements SequenceInterface {
         return value;
     }
     
+    /**
+     * Print base coding in bits of the DNA sequence.
+     * Used in tests
+     */
     protected void printBits () {
         StringBuilder s = new StringBuilder();
         for( int i = 0; i < seqS.length();  i++ ) {
@@ -167,6 +215,12 @@ public class Sequence3Bit implements SequenceInterface {
         return new String(getSequenceAscII(startIndex, endIndex));
     }
     
+    /**
+     * Return byte array of ascII code from a stretch of DNA sequence
+     * @param startIndex
+     * @param endIndex
+     * @return 
+     */
     protected byte[] getSequenceAscII (int startIndex, int endIndex) {
         int size = endIndex - startIndex;
         byte[] values = new byte[size];
@@ -199,6 +253,17 @@ public class Sequence3Bit implements SequenceInterface {
             if (index < 0) {
                 return true;
             }
+        }
+        return false;
+    }
+    
+    /**
+     * Return if the sequence has base 'N'
+     * @return 
+     */
+    public boolean isThereN () {
+        for (int i = 0; i < this.getSequenceLength(); i++) {
+            if (this.getBaseAscII(i) == 78) return true;
         }
         return false;
     }

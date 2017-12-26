@@ -13,6 +13,7 @@ import java.util.Arrays;
  * <p>
  * Bases are converted to upper case, with full representation of Non-"ATGC" bases.
  * It supports standard IUPAC DNA coding (https://www.bioinformatics.org/sms/iupac.html).
+ * Higher memory cost, but higher speed than {@link format.dna.Sequence3Bit}
  * @author Fei Lu
  */
 public class SequenceByte implements SequenceInterface {
