@@ -83,4 +83,10 @@ public interface SequenceInterface {
      */
     public String getReverseComplementarySeq (int startIndex, int endIndex);
     
+    /**
+     * Return if the sequence has non A, C, G, T base
+     * @return 
+     */
+    public boolean isThereNonACGTBase ();
+    
 }

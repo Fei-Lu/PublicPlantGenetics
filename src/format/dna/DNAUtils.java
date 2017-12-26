@@ -18,7 +18,7 @@ public class DNAUtils {
     /**The byte value of 4 DNA bases and any base, A, C, G, N, T*/
     private static final byte[] baseByteWithN = {65, 67, 71, 78, 84};
     
-    private static final byte[] compleBaseByte = {84, 71, 67, 65};
+    private static final byte[] compleBaseByteWithN = {84, 71, 67, 78, 65};
     
     private static final byte[] lowerBaseByte = {97, 99, 103, 116};
     
@@ -27,15 +27,7 @@ public class DNAUtils {
      * @return 
      */
     public static HashByteByteMap getBaseCompleByteMap () {
-        return HashByteByteMaps.getDefaultFactory().newImmutableMap(baseByte, compleBaseByte);
-    }
-    
-    /**
-     * Return byte value hash map converting lower case base to upper case base
-     * @return 
-     */
-    public static HashByteByteMap getBaseLowerToUpperMap () {
-        return HashByteByteMaps.getDefaultFactory().newImmutableMap(lowerBaseByte, baseByte);
+        return HashByteByteMaps.getDefaultFactory().newImmutableMap(baseByteWithN, compleBaseByteWithN);
     }
     
     /**

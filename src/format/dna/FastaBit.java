@@ -20,7 +20,7 @@ import utils.IOUtils;
  * Holding FastA format sequence, providing functions of sorting, searching and collecting statistics
  * @author feilu
  */
-public class Fasta {
+public class FastaBit {
     FastaRecord[] records = null;
     private enum sortType {byName, byID, byLengthAscending, byLengthDescending}
     sortType sType = null;
@@ -28,7 +28,7 @@ public class Fasta {
      * Constructs a {@link format.dna.Fasta} from input file. The file should be either txt format or gz format.
      * @param infileS 
      */
-    public Fasta (String infileS) {
+    public FastaBit (String infileS) {
         if (infileS.endsWith(".gz")) {
             this.readFasta(infileS, IOFileFormat.TextGzip);
         }
@@ -42,7 +42,7 @@ public class Fasta {
      * @param infileS
      * @param format 
      */
-    public Fasta (String infileS, IOFileFormat format) {
+    public FastaBit (String infileS, IOFileFormat format) {
         this.readFasta(infileS, format);
     }
     
