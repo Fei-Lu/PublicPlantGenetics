@@ -129,10 +129,7 @@ public class SequenceByte implements SequenceInterface {
         return false;
     }
     
-    /**
-     * Return if the sequence has N
-     * @return 
-     */
+    @Override
     public boolean isThereN () {
         for (int i = 0; i < this.getSequenceLength(); i++) {
             if (this.seqByte[i] == 78) return true;

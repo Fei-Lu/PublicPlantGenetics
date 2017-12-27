@@ -89,4 +89,10 @@ public interface SequenceInterface {
      */
     public boolean isThereNonACGTBase ();
     
+    /**
+     * Return if the sequence has 'N' base
+     * @return 
+     */
+    public boolean isThereN ();
+    
 }

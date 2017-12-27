@@ -257,10 +257,7 @@ public class Sequence3Bit implements SequenceInterface {
         return false;
     }
     
-    /**
-     * Return if the sequence has base 'N'
-     * @return 
-     */
+    @Override
     public boolean isThereN () {
         for (int i = 0; i < this.getSequenceLength(); i++) {
             if (this.getBaseAscII(i) == 78) return true;

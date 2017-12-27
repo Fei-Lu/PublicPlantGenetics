@@ -22,7 +22,7 @@ import utils.IOUtils;
  * Higher speed, more memory cost than {@link format.dna.FastaBit}.
  * @author feilu
  */
-public class FastaByte {
+public class FastaByte implements FastaInterface {
     FastaRecord[] records = null;
     private enum sortType {byName, byID, byLengthAscending, byLengthDescending}
     sortType sType = null;
@@ -48,7 +48,8 @@ public class FastaByte {
         this.readFasta(infileS, format);
     }
     
-    private void readFasta (String infileS, IOFileFormat format) {
+    @Override
+    public void readFasta (String infileS, IOFileFormat format) {
         System.out.println("Reading Fasta file...");
         List<FastaRecord> fl = new ArrayList<>();
         try {
@@ -101,11 +102,7 @@ public class FastaByte {
         }
     }
     
-    /**
-     * Write fasta file from selected sequences 
-     * @param outfileS
-     * @param ifOut 
-     */
+    @Override
     public void writeFasta (String outfileS, boolean[] ifOut) {
         int cnt = 0;
         try {
@@ -127,10 +124,7 @@ public class FastaByte {
         }
     }
     
-    /**
-     * Write fasta file
-     * @param outfileS 
-     */
+    @Override
     public void writeFasta (String outfileS) {
         try {
             BufferedWriter bw = IOUtils.getTextWriter(outfileS);
@@ -149,10 +143,7 @@ public class FastaByte {
         }
     }
     
-    /**
-     * Return N50 statistic
-     * @return 
-     */
+    @Override
     public int getN50 () {
         if (sType != sortType.byLengthDescending) this.sortByLengthDescending();
         long sum = this.getTotalSeqLength();
@@ -165,10 +156,7 @@ public class FastaByte {
         return -1;
     }
     
-    /**
-     * Return L50 statistic
-     * @return 
-     */
+    @Override
     public int getL50 () {
         if (sType != sortType.byLengthDescending) this.sortByLengthDescending();
         long sum = this.getTotalSeqLength();
@@ -181,10 +169,7 @@ public class FastaByte {
         return -1;
     }
     
-    /**
-     * Return total sequence length in bp
-     * @return 
-     */
+    @Override
     public long getTotalSeqLength () {
         long sum = 0;
         for (int i = 0; i < this.getSeqNumber(); i++) {
@@ -193,20 +178,12 @@ public class FastaByte {
         return sum;
     }
     
-    /**
-     * Return number of sequences
-     * @return 
-     */
+    @Override
     public int getSeqNumber () {
         return records.length;
     }
     
-    /**
-     * Return index from sequence name
-     * The Fasta will be sorted by name first if it is not
-     * @param name
-     * @return 
-     */
+    @Override
     public int getIndexByName (String name) {
         if (this.sType != sortType.byName) {
             this.sortByName();
@@ -214,94 +191,60 @@ public class FastaByte {
         return Arrays.binarySearch(records, new FastaRecord(name,null,-1));
     }
     
-    /**
-     * Return sequence length in bp
-     * @param index
-     * @return 
-     */
+    @Override
     public int getSeqLength (int index) {
         return records[index].getSequenceLength();
     }
     
-    /**
-     * Return all of the sequence names
-     * @return 
-     */
+    @Override
     public String[] getNames () {
         String[] names = new String[this.getSeqNumber()];
         for (int i = 0; i < names.length; i++) names[i] = this.getName(i);
         return names;
     }
     
-    /**
-     * Return sequence name
-     * @param index
-     * @return 
-     */
+    @Override
     public String getName (int index) {
         return records[index].name;
     }
     
-    /**
-     * Return sequence
-     * @param index
-     * @return 
-     */
+    @Override
     public String getSeq (int index) {
         return records[index].getSequence();
     }
     
-    /**
-     * Return a stretch of sequence
-     * @param index
-     * @param startIndex inclusive
-     * @param endIndex exclusive
-     * @return 
-     */
+    @Override
     public String getSeq (int index, int startIndex, int endIndex) {
         return records[index].getSequence(startIndex, endIndex);
     }
     
-    /**
-     * Set sequence name
-     * @param newName
-     * @param index 
-     */
+    @Override
     public void setName (String newName, int index) {
         records[index].name = newName;
     }
-    /**
-     * Sort the sequences of Fasta by name
-     */
+
+    @Override
     public void sortByName () {
         Arrays.parallelSort(records, new sortByName());
     }
     
-    /**
-     * Sort the sequences of Fasta by ID
-     */
+
+    @Override
     public void sortByID () {
         Arrays.parallelSort (records, new sortByID());
     }
     
-    /**
-     * Sort the sequences of Fasta by length in ascending order
-     */
+    @Override
     public void sortByLengthAscending () {
         Arrays.parallelSort (records, new sortByLengthAscending());
     }
     
-    /**
-     * Sort the sequences of Fasta by length in descending order
-     */
+    @Override
     public void sortByLengthDescending () {
         Arrays.parallelSort (records, new sortByLengthDescending());
     }
     
-    /**
-     * Return if the fasta has N in it
-     * @return 
-     */
+    @Override
     public boolean isThereN () {
         boolean value;
         for (int i = 0; i < records.length; i++) {
@@ -324,10 +267,7 @@ public class FastaByte {
         return false;
     }
     
-    /**
-     * Return if the fasta has non A, C, G, T, N base
-     * @return 
-     */
+    @Override
     public boolean isThereNonACGTNBase () {
         boolean value;
         for (int i = 0; i < records.length; i++) {
