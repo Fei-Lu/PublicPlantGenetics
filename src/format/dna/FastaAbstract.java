@@ -7,6 +7,7 @@ package format.dna;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.File;
 import java.io.FileWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -27,10 +28,19 @@ public abstract class FastaAbstract implements FastaInterface {
     sortType sType = null;
     
     @Override
-    public void writeFasta (String outfileS, boolean[] ifOut) {
+    public void writeFasta (String outfileS, boolean[] ifOut, IOFileFormat format) {
         int cnt = 0;
         try {
-            BufferedWriter bw = new BufferedWriter(new FileWriter(outfileS), 65536);
+            BufferedWriter bw = null;
+            if (format == IOFileFormat.Text) {
+                bw = IOUtils.getTextWriter(outfileS);
+            }
+            else if (format == IOFileFormat.TextGzip) {
+                bw = IOUtils.getTextGzipWriter(outfileS);
+            }
+            else {
+                throw new UnsupportedOperationException("Invalid operation for output");
+            }
             for (int i = 0; i < records.length; i++) {
                 if (!ifOut[i]) continue;
                 bw.write(">"+records[i].getName());
@@ -51,16 +61,25 @@ public abstract class FastaAbstract implements FastaInterface {
     }
     
     @Override
-    public void writeFasta (String outfileS, int index) {
+    public void writeFasta (String outfileS, int index, IOFileFormat format) {
         try {
-            BufferedWriter bw = new BufferedWriter(new FileWriter(outfileS), 65536);
+            BufferedWriter bw = null;
+            if (format == IOFileFormat.Text) {
+                bw = IOUtils.getTextWriter(outfileS);
+            }
+            else if (format == IOFileFormat.TextGzip) {
+                bw = IOUtils.getTextGzipWriter(outfileS);
+            }
+            else {
+                throw new UnsupportedOperationException("Invalid operation for output");
+            }
             bw.write(">"+records[index].getName());
             bw.newLine();
             bw.write(FStringUtils.getMultiplelineString(60, records[index].getSequence()));
             bw.newLine();
             bw.flush();
             bw.close();
-            System.out.println("No." + "index "+" sequence is written in " + outfileS);
+            System.out.println("No." + index +" sequence is written in " + outfileS);
         }
         catch (Exception e) {
             System.out.println("Error while writing "+ outfileS);
@@ -70,9 +89,18 @@ public abstract class FastaAbstract implements FastaInterface {
     }
     
     @Override
-    public void writeFasta (String outfileS) {
+    public void writeFasta (String outfileS, IOFileFormat format) {
         try {
-            BufferedWriter bw = IOUtils.getTextWriter(outfileS);
+            BufferedWriter bw = null;
+            if (format == IOFileFormat.Text) {
+                bw = IOUtils.getTextWriter(outfileS);
+            }
+            else if (format == IOFileFormat.TextGzip) {
+                bw = IOUtils.getTextGzipWriter(outfileS);
+            }
+            else {
+                throw new UnsupportedOperationException("Invalid operation for output");
+            }
             for (int i = 0; i < records.length; i++) {
                 bw.write(">"+records[i].getName());
                 bw.newLine();
@@ -88,6 +116,45 @@ public abstract class FastaAbstract implements FastaInterface {
             e.printStackTrace();
             System.exit(1);
         }
+    }
+    
+    /**
+     * Write fast file by chromosome, designed for large genome files
+     * @param outfileDirS
+     * @param format
+     * @param prefix
+     * @param postfix 
+     */
+    public void writeFastaByChr (String outfileDirS, IOFileFormat format, String prefix, String postfix) {
+        List<FastaRecordInterface> rList = Arrays.asList(records);
+        rList.parallelStream().forEach(r -> {
+            try {
+                String outfileS = new File (outfileDirS, (prefix+r.getName()+postfix)).getAbsolutePath();
+                BufferedWriter bw = null;
+                if (format == IOFileFormat.Text) {
+                    bw = IOUtils.getTextWriter(outfileS);
+                }
+                else if (format == IOFileFormat.TextGzip) {
+                    bw = IOUtils.getTextGzipWriter(outfileS);
+                }
+                else {
+                    throw new UnsupportedOperationException("Invalid operation for output");
+                }
+                bw.write(">"+r.getName());
+                bw.newLine();
+                bw.write(FStringUtils.getMultiplelineString(60, r.getSequence()));
+                bw.newLine();
+                bw.flush();
+                bw.close();
+                System.out.println(r.getName() +" sequence is written in " + outfileS);
+            }
+            catch (Exception e) {
+                System.out.println("Error while writing "+ outfileDirS);
+                e.printStackTrace();
+                System.exit(1);
+            }
+        });
+        
     }
     
     @Override

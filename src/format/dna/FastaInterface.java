@@ -34,20 +34,20 @@ public interface FastaInterface {
      * @param outfileS
      * @param ifOut 
      */
-    public void writeFasta (String outfileS, boolean[] ifOut); 
+    public void writeFasta (String outfileS, boolean[] ifOut, IOFileFormat format); 
     
     /**
      * Write fasta file from a specified sequence
      * @param outfileS
      * @param index 
      */
-    public void writeFasta (String outfileS, int index);
+    public void writeFasta (String outfileS, int index, IOFileFormat format);
     
     /**
      * Write fasta file
      * @param outfileS 
      */
-    public void writeFasta (String outfileS);
+    public void writeFasta (String outfileS, IOFileFormat format);
     
     /**
      * Return N50 statistic
