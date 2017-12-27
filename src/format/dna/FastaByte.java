@@ -45,6 +45,43 @@ public class FastaByte extends FastaAbstract {
         this.readFasta(infileS, format);
     }
     
+    /**
+     * Constructs a {@link format.dna.FastaByte}
+     * @param names
+     * @param seqs
+     * @param ids 
+     */
+    public FastaByte (String[] names, String[] seqs, int[] ids) {
+        records = new FastaRecord[names.length];
+        for (int i = 0; i < records.length; i++) {
+            records[i] = new FastaRecord(names[i], seqs[i], ids[i]);
+        }
+    }
+    
+    /**
+     * Constructs a new {@link format.dna.FastaByte} from a list of them
+     * By rebuilding the references
+     * @param fArray 
+     */
+    public FastaByte (FastaByte[] fArray) {
+        int size = 0;
+        for (int i = 0; i < fArray.length; i++) {
+            size += fArray[i].getSeqNumber();
+        }
+        records = new FastaRecord[size];
+        int cnt = 0;
+        for (int i = 0; i < fArray.length; i++) {
+            for (int j = 0; j < fArray[i].getSeqNumber(); j++) {
+                records[cnt] = fArray[i].records[j];
+                cnt++;
+            }
+        }
+        for (int i = 0; i < records.length; i++) {
+            records[i].setID(i+1);
+        }
+        sType = sortType.byID;
+    }
+    
     @Override
     public void readFasta (String infileS, IOFileFormat format) {
         System.out.println("Reading Fasta file...");
@@ -141,6 +178,11 @@ public class FastaByte extends FastaAbstract {
         @Override
         public void setName(String newName) {
             name = newName;
+        }
+
+        @Override
+        public void setID(int id) {
+            this.id = id;
         }
     }
 }

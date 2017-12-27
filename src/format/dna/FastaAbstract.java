@@ -45,6 +45,27 @@ public abstract class FastaAbstract implements FastaInterface {
         }
         catch (Exception e) {
             System.out.println("Error while writing "+ outfileS);
+            e.printStackTrace();
+            System.exit(1);
+        }
+    }
+    
+    @Override
+    public void writeFasta (String outfileS, int index) {
+        try {
+            BufferedWriter bw = new BufferedWriter(new FileWriter(outfileS), 65536);
+            bw.write(">"+records[index].getName());
+            bw.newLine();
+            bw.write(FStringUtils.getMultiplelineString(60, records[index].getSequence()));
+            bw.newLine();
+            bw.flush();
+            bw.close();
+            System.out.println("No." + "index "+" sequence is written in " + outfileS);
+        }
+        catch (Exception e) {
+            System.out.println("Error while writing "+ outfileS);
+            e.printStackTrace();
+            System.exit(1);
         }
     }
     
@@ -64,6 +85,8 @@ public abstract class FastaAbstract implements FastaInterface {
         }
         catch (Exception e) {
             System.out.println("Error while writing "+ outfileS);
+            e.printStackTrace();
+            System.exit(1);
         }
     }
     
@@ -177,6 +200,7 @@ public abstract class FastaAbstract implements FastaInterface {
         public String getSequence ();
         public String getSequence (int startIndex, int endIndex);
         public void setName (String newName);
+        public void setID (int id);
         public boolean isThereN();
         public boolean isThereNonACGTNBase();
     }

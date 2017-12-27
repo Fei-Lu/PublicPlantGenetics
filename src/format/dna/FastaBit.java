@@ -23,7 +23,7 @@ import utils.IOUtils;
  */
 public class FastaBit extends FastaAbstract {
     /**
-     * Constructs a {@link format.dna.Fasta} from input file. The file should be either txt format or gz format.
+     * Constructs a {@link format.dna.FastaBit} from input file. The file should be either txt format or gz format.
      * @param infileS 
      */
     public FastaBit (String infileS) {
@@ -36,12 +36,49 @@ public class FastaBit extends FastaAbstract {
     }
     
     /**
-     * Constructs a {code Fasta} from input file.
+     * Constructs a {@link format.dna.FastaBit} from input file.
      * @param infileS
      * @param format 
      */
     public FastaBit (String infileS, IOFileFormat format) {
         this.readFasta(infileS, format);
+    }
+    
+    /**
+     * Constructs a {@link format.dna.FastaBit}
+     * @param names
+     * @param seqs
+     * @param ids 
+     */
+    public FastaBit (String[] names, String[] seqs, int[] ids) {
+        records = new FastaRecord[names.length];
+        for (int i = 0; i < records.length; i++) {
+            records[i] = new FastaRecord(names[i], seqs[i], ids[i]);
+        }
+    }
+    
+    /**
+     * Constructs a new {@link format.dna.FastaBit} from a list of them
+     * By rebuilding the references
+     * @param fArray 
+     */
+    public FastaBit (FastaBit[] fArray) {
+        int size = 0;
+        for (int i = 0; i < fArray.length; i++) {
+            size += fArray[i].getSeqNumber();
+        }
+        records = new FastaRecord[size];
+        int cnt = 0;
+        for (int i = 0; i < fArray.length; i++) {
+            for (int j = 0; j < fArray[i].getSeqNumber(); j++) {
+                records[cnt] = fArray[i].records[j];
+                cnt++;
+            }
+        }
+        for (int i = 0; i < records.length; i++) {
+            records[i].setID(i+1);
+        }
+        sType = sortType.byID;
     }
     
     @Override
@@ -134,6 +171,11 @@ public class FastaBit extends FastaAbstract {
         @Override
         public void setName(String newName) {
             name = newName;
+        }
+
+        @Override
+        public void setID(int id) {
+            this.id = id;
         }
     }
 }

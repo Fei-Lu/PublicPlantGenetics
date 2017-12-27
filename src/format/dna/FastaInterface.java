@@ -37,6 +37,13 @@ public interface FastaInterface {
     public void writeFasta (String outfileS, boolean[] ifOut); 
     
     /**
+     * Write fasta file from a specified sequence
+     * @param outfileS
+     * @param index 
+     */
+    public void writeFasta (String outfileS, int index);
+    
+    /**
      * Write fasta file
      * @param outfileS 
      */
