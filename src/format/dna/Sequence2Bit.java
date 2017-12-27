@@ -38,4 +38,9 @@ public class Sequence2Bit extends Sequence3Bit {
             seqS.set(startIndex+i, b);
         }
     }
+    
+    @Override
+    public boolean isThereN () {
+        return false;
+    }
 }

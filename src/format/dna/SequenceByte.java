@@ -118,17 +118,6 @@ public class SequenceByte implements SequenceInterface {
         return new String(reverseByte);
     }
     
-    /**
-     * Return if the sequence has gaps, "-" or "."
-     * @return 
-     */
-    public boolean isThereGap () {
-        for (int i = 0; i < this.getSequenceLength(); i++) {
-            if (this.seqByte[i] == 45 || this.seqByte[i] == 46) return true;
-        }
-        return false;
-    }
-    
     @Override
     public boolean isThereN () {
         for (int i = 0; i < this.getSequenceLength(); i++) {
@@ -137,10 +126,7 @@ public class SequenceByte implements SequenceInterface {
         return false;
     }
     
-    /**
-     * Return if the sequence has non A, C, G, T, N base
-     * @return 
-     */
+    @Override
     public boolean isThereNonACGTNBase () {
         byte[] baseByteWithN = DNAUtils.getBaseWithNByteArray();
         for (int i = 0; i < this.getSequenceLength(); i++) {
@@ -152,17 +138,4 @@ public class SequenceByte implements SequenceInterface {
         }
         return false;
     }
-    
-    @Override
-    public boolean isThereNonACGTBase () {
-        byte[] baseByte = DNAUtils.getBaseByteArray();
-        for (int i = 0; i < this.getSequenceLength(); i++) {
-            int index = Arrays.binarySearch(baseByte, this.getBaseByte(i));
-            if (index < 0) {
-                return true;
-            }
-        }
-        return false;
-    }
-    
 }

@@ -246,10 +246,10 @@ public class Sequence3Bit implements SequenceInterface {
     }
 
     @Override
-    public boolean isThereNonACGTBase() {
-        byte[] baseByte = DNAUtils.getBaseByteArray();
+    public boolean isThereNonACGTNBase() {
+        byte[] baseByteWithN = DNAUtils.getBaseWithNByteArray();
         for (int i = 0; i < this.getSequenceLength(); i++) {
-            int index = Arrays.binarySearch(baseByte, this.getBaseAscII(i));
+            int index = Arrays.binarySearch(baseByteWithN, this.getBaseAscII(i));
             if (index < 0) {
                 return true;
             }
@@ -264,5 +264,4 @@ public class Sequence3Bit implements SequenceInterface {
         }
         return false;
     }
-    
 }
