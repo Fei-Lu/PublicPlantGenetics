@@ -17,9 +17,8 @@ import utils.IOFileFormat;
 import utils.IOUtils;
 
 /**
- * Holding FastA format sequence, providing functions of sorting, searching and collecting statistics
+ * Providing functions of sorting, searching and collecting statistics
  * Representing full IUPAC codes. (https://www.bioinformatics.org/sms/iupac.html).
- * Higher speed, more memory cost than {@link format.dna.FastaBit}.
  * @author feilu
  */
 public abstract class FastaAbstract implements FastaInterface {
