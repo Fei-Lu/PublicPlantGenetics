@@ -13,7 +13,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
-import utils.FStringUtils;
+import utils.PStringUtils;
 import utils.IOFileFormat;
 import utils.IOUtils;
 
@@ -45,7 +45,7 @@ public abstract class FastaAbstract implements FastaInterface {
                 if (!ifOut[i]) continue;
                 bw.write(">"+records[i].getName());
                 bw.newLine();
-                bw.write(FStringUtils.getMultiplelineString(60, records[i].getSequence()));
+                bw.write(PStringUtils.getMultiplelineString(60, records[i].getSequence()));
                 bw.newLine();
                 cnt++;
             }
@@ -75,7 +75,7 @@ public abstract class FastaAbstract implements FastaInterface {
             }
             bw.write(">"+records[index].getName());
             bw.newLine();
-            bw.write(FStringUtils.getMultiplelineString(60, records[index].getSequence()));
+            bw.write(PStringUtils.getMultiplelineString(60, records[index].getSequence()));
             bw.newLine();
             bw.flush();
             bw.close();
@@ -104,7 +104,7 @@ public abstract class FastaAbstract implements FastaInterface {
             for (int i = 0; i < records.length; i++) {
                 bw.write(">"+records[i].getName());
                 bw.newLine();
-                bw.write(FStringUtils.getMultiplelineString(60, records[i].getSequence()));
+                bw.write(PStringUtils.getMultiplelineString(60, records[i].getSequence()));
                 bw.newLine();
             }
             bw.flush();
@@ -142,7 +142,7 @@ public abstract class FastaAbstract implements FastaInterface {
                 }
                 bw.write(">"+r.getName());
                 bw.newLine();
-                bw.write(FStringUtils.getMultiplelineString(60, r.getSequence()));
+                bw.write(PStringUtils.getMultiplelineString(60, r.getSequence()));
                 bw.newLine();
                 bw.flush();
                 bw.close();

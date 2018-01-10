@@ -16,7 +16,7 @@ import java.util.List;
  *
  * @author Fei Lu 
  */
-public class FStringUtils {
+public class PStringUtils {
     
     /**
      * Return a joined String from selected elements of input string array

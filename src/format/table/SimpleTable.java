@@ -3,7 +3,7 @@
 * and open the template in the editor.
 */
 
-package format;
+package format.table;
 
 import cern.colt.GenericSorting;
 import cern.colt.Swapper;
@@ -13,35 +13,60 @@ import java.io.BufferedWriter;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.util.ArrayList;
-import utils.FStringUtils;
+import utils.PStringUtils;
 
 /**
- *
+ * A two-dimension string array implementation of table format.
  * @author Fei Lu
  */
-public class Table {
-    public String[] header;
-    public String[][] content;
+public class SimpleTable {
+    private String[] header;
+    private String[][] content;
     private int sortColumnIndex;
     
-    public Table (String infileS) {
+    /**
+     * Constructs a {@link format.table.SimpleTable} from a file, with default delimiter of "\t"
+     * @param infileS 
+     */
+    public SimpleTable (String infileS) {
         this.readTable(infileS);
     }
     
-    public Table (String infileS, int rowNum) {
+    /**
+     * Constructs a {@link format.table.SimpleTable} from the first n row of a file, with default delimiter of "\t"
+     * @param infileS
+     * @param rowNum 
+     */
+    public SimpleTable (String infileS, int rowNum) {
         this.readTable(infileS, rowNum);
     }
     
-    public Table (String[] header, String[][] content) {
+    /**
+     * Constructs a {@link format.table.SimpleTable}
+     * @param header
+     * @param content 
+     */
+    public SimpleTable (String[] header, String[][] content) {
         this.header = header;
         this.content = content;
     }
     
-    public Table (String infileS, String delimiter) {
+    /**
+     * Constructs a {@link format.table.SimpleTable} from the first n row of a file, with a custom delimiter
+     * @param infileS
+     * @param delimiter 
+     */
+    public SimpleTable (String infileS, String delimiter) {
         this.readTable(infileS, delimiter);
     }
     
-    public Table getSubTableByColumn (Table at, int[] index) {
+    /**
+     * Return a subset of table by selecting columns
+     * @param at
+     * @param index
+     * @return 
+     */
+    public SimpleTable getSubTableByColumn (SimpleTable at, int[] index) {
         String[] newHeader  = new String[index.length];
         String[][] newContent = new String[this.getRowNumber()][index.length];
         for (int i = 0; i <  newHeader.length; i++) {
@@ -52,10 +77,15 @@ public class Table {
                 newContent[i][j] = this.content[i][index[j]];
             }
         }
-        return new Table(newHeader,newContent);
+        return new SimpleTable(newHeader,newContent);
     }
     
-    public Table getMergeTableByColumn (Table at) {
+    /**
+     * Return a merged table by adding more columns. The other table should be have the same row number as the current one.
+     * @param at
+     * @return 
+     */
+    public SimpleTable getMergeTableByColumn (SimpleTable at) {
         if (this.getRowNumber()!=at.getRowNumber()) {
             System.out.println("RowNumbers are not equal. Can't merge tables. Program quit.");
             System.exit(1);
@@ -68,10 +98,10 @@ public class Table {
             System.arraycopy(this.content[i], 0, newContent[i], 0, this.getColumnNumber());
             System.arraycopy(at.content[i], 0, newContent[i], this.getColumnNumber(), at.getColumnNumber());
         }
-        return new Table(newHeader,newContent);
+        return new SimpleTable(newHeader,newContent);
     }
     
-    public Table getMergeTableByRow (Table at) {
+    public SimpleTable getMergeTableByRow (SimpleTable at) {
         if (this.getColumnNumber()!=at.getColumnNumber()) {
             System.out.println("Column numbers are not equal. Can't merge tables. Program quit.");
             System.exit(1);
@@ -83,7 +113,7 @@ public class Table {
         for (int i = 0; i < at.getRowNumber(); i++) {
             newContent[i+this.getRowNumber()] = at.content[i];
         }
-        return new Table(this.header,newContent);
+        return new SimpleTable(this.header,newContent);
     }
     
     public double getDoubleValue (int i, int j) {
@@ -299,7 +329,7 @@ public class Table {
                 }
             }
             else {
-                bw.write(FStringUtils.join(header, indexList, "\t"));
+                bw.write(PStringUtils.join(header, indexList, "\t"));
                 bw.newLine();
                 for (int i = 0; i < this.getRowNumber(); i++) {
                     for (int j = 0; j < indexList.length-1; j++) {

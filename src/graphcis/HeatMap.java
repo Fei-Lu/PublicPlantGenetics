@@ -12,7 +12,8 @@ import com.itextpdf.text.Document;
 import com.itextpdf.text.Rectangle;
 import com.itextpdf.text.pdf.PdfContentByte;
 import com.itextpdf.text.pdf.PdfWriter;
-import format.Table;
+import format.table.SimpleTable;
+import format.table.TableInterface;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.geom.Ellipse2D;
@@ -43,18 +44,19 @@ public class HeatMap {
         this.columnName = columnName;
     }
     
-    public HeatMap (Table t) {
+    public HeatMap (TableInterface t) {
         matrix = new double[t.getRowNumber()][t.getColumnNumber()-1];
         rowName = new String[t.getRowNumber()];
         columnName = new String[t.getColumnNumber()-1];
         for (int i = 0; i < t.getRowNumber(); i++) {
-            rowName[i] = t.content[i][0];
+            rowName[i] = t.getCellAsString(i, 0);
             for (int j = 0; j < matrix[0].length; j++) {
-                matrix[i][j] = Double.valueOf(t.content[i][j+1]);
+                t.getCellAsDouble(i, j+1);
+                matrix[i][j] = t.getCellAsDouble(i, j+1);
             }
         }
         for (int i = 0; i < columnName.length; i++) {
-            columnName[i] = t.header[i+1];
+            columnName[i] = t.getHeaderName(i+1);
         }
     }
     

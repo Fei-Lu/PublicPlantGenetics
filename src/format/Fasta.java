@@ -15,7 +15,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
-import utils.FStringUtils;
+import utils.PStringUtils;
 import utils.IOUtils;
 
 /**
@@ -233,7 +233,7 @@ public class Fasta {
                 if (!out[i]) continue;
                 bw.write(">"+records[i].name);
                 bw.newLine();
-                bw.write(FStringUtils.getMultiplelineString(60, records[i].seq));
+                bw.write(PStringUtils.getMultiplelineString(60, records[i].seq));
                 bw.newLine();
                 cnt++;
             }
@@ -256,7 +256,7 @@ public class Fasta {
             for (int i = 0; i < records.length; i++) {
                 bw.write(">"+records[i].name);
                 bw.newLine();
-                bw.write(FStringUtils.getMultiplelineString(60, records[i].seq));
+                bw.write(PStringUtils.getMultiplelineString(60, records[i].seq));
                 bw.newLine();
             }
             bw.flush();
