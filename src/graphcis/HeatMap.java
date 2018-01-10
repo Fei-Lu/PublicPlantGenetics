@@ -12,7 +12,6 @@ import com.itextpdf.text.Document;
 import com.itextpdf.text.Rectangle;
 import com.itextpdf.text.pdf.PdfContentByte;
 import com.itextpdf.text.pdf.PdfWriter;
-import format.table.SimpleTable;
 import format.table.TableInterface;
 import java.awt.Color;
 import java.awt.Font;
@@ -56,7 +55,7 @@ public class HeatMap {
             }
         }
         for (int i = 0; i < columnName.length; i++) {
-            columnName[i] = t.getHeaderName(i+1);
+            columnName[i] = t.getColumnName(i+1);
         }
     }
     

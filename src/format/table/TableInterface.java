@@ -6,6 +6,7 @@
 package format.table;
 
 import java.util.List;
+import utils.IOFileFormat;
 
 /**
  * Class holding a Table
@@ -31,7 +32,7 @@ public interface TableInterface <T> {
     public String getCellAsString (int rowIndex, int columnIndex);
     
     /**
-     * Return a Double value of a cell, if the cell is convertible to double. Return null if is not.
+     * Return a Double value of a cell, if the cell is convertible to double. Return null or error if is not.
      * @param rowIndex
      * @param columnIndex
      * @return 
@@ -39,7 +40,7 @@ public interface TableInterface <T> {
     public Double getCellAsDouble (int rowIndex, int columnIndex);
     
     /**
-     * Return an Integer value of a cell, if the cell is convertible to int. Return null if is not.
+     * Return an Integer value of a cell, if the cell is convertible to int. Return null or error if is not. The Integer value may loose its precision during conversion.
      * @param rowIndex
      * @param columnIndex
      * @return 
@@ -61,11 +62,11 @@ public interface TableInterface <T> {
     public List<String> getHeader();
     
     /**
-     * Return a header name
+     * Return a column name
      * @param columnIndex
      * @return 
      */
-    public String getHeaderName (int columnIndex);
+    public String getColumnName (int columnIndex);
     
     /**
      * Return values as a list from a certain column
@@ -73,6 +74,13 @@ public interface TableInterface <T> {
      * @return 
      */
     public List<T> getColumn (int columnIndex);
+    
+    /**
+     * Return a double array from a column
+     * @param columnIndex
+     * @return 
+     */
+    public double[] getColumnAsDoubleArray (int columnIndex);
     
     /**
      * Return a values as list from a certain row
@@ -185,5 +193,20 @@ public interface TableInterface <T> {
      * @return 
      */
     public boolean sortAsNumber (String columnName);
+    
+    /**
+     * Write a text table
+     * @param outfileS
+     * @param format 
+     */
+    public void writeTextTable (String outfileS, IOFileFormat format);
+    
+    /**
+     * Write a text table with selected rows
+     * @param outfileS
+     * @param format
+     * @param ifOut 
+     */
+    public void writeTextTable (String outfileS, IOFileFormat format, boolean[] ifOut);
     
 }

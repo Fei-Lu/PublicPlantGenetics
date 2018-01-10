@@ -66,7 +66,7 @@ public class SimpleRowTable<T> extends TableAbstract<T> {
 
     @Override
     public T getCell(int rowIndex, int columnIndex) {
-        return (T)this.getRow(rowIndex).get(columnIndex);
+        return this.getRow(rowIndex).get(columnIndex);
     }
     
     @Override
@@ -114,8 +114,8 @@ public class SimpleRowTable<T> extends TableAbstract<T> {
     protected IntComparator compNumberByColumn = new IntComparator() {
         @Override
         public int compare(int a, int b) {
-            double va = Double.parseDouble((String)cells.get(a).get(sortColumnIndex));
-            double vb = Double.parseDouble((String)cells.get(b).get(sortColumnIndex));
+            double va = getCellAsDouble(a, sortColumnIndex);
+            double vb = getCellAsDouble(b, sortColumnIndex);
             if (va < vb) return -1;
             else if (va == vb) return 0;
             return 1;
