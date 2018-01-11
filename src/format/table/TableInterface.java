@@ -9,7 +9,7 @@ import java.util.List;
 import utils.IOFileFormat;
 
 /**
- * Class holding a Table
+ * Interface holding basic methods of a table
  * @author feilu
  * @param <T> The type of data in a cell
  */
@@ -32,7 +32,7 @@ public interface TableInterface <T> {
     public String getCellAsString (int rowIndex, int columnIndex);
     
     /**
-     * Return a Double value of a cell, if the cell is convertible to double. Return null or error if is not.
+     * Return a Double value of a cell, if the cell is convertible to double. Return null if is not.
      * @param rowIndex
      * @param columnIndex
      * @return 
@@ -40,7 +40,7 @@ public interface TableInterface <T> {
     public Double getCellAsDouble (int rowIndex, int columnIndex);
     
     /**
-     * Return an Integer value of a cell, if the cell is convertible to int. Return null or error if is not. The Integer value may loose its precision during conversion.
+     * Return an Integer value of a cell, if the cell is convertible to int. Return null if is not. The Integer value may loose its precision during conversion.
      * @param rowIndex
      * @param columnIndex
      * @return 

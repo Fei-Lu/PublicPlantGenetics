@@ -15,10 +15,18 @@ import utils.IOFileFormat;
 import utils.IOUtils;
 import utils.PStringUtils;
 
-
-public class SimpleRowTable<T> extends TableAbstract<T> {
-    
-    public SimpleRowTable (String infileS) {
+/**
+ * A row based implementation of {@link format.table.TableInterface}.
+ * It is faster on column based operation (e.g. deleting, inserting, adding columns)
+ * @author feilu
+ * @param <T> 
+ */
+public class ColumnTable<T> extends TableAbstract<T> {
+    /**
+     * Constructs a {@link format.table.ColumnTable} from a file, with default delimiter of "\t"
+     * @param infileS should be text file or ".gz" of a text file
+     */
+    public ColumnTable (String infileS) {
         if (infileS.endsWith(".gz")) {
             this.readTableFile(infileS, IOFileFormat.TextGzip, "\t");
         }
@@ -28,11 +36,21 @@ public class SimpleRowTable<T> extends TableAbstract<T> {
         }
     }
     
-    public SimpleRowTable (String infileS, IOFileFormat format) {
+    /**
+     * Constructs a {@link format.table.ColumnTable} from a file with specified format, with default delimiter of "\t"
+     * @param infileS
+     * @param format 
+     */
+    public ColumnTable (String infileS, IOFileFormat format) {
         this.readTableFile(infileS, format, "\t");
     }
     
-    public SimpleRowTable (List<String> header, List<List<T>> cells) {
+    /**
+     * Constructs a {@link format.table.ColumnTable} using two dimension list of custom objects
+     * @param header
+     * @param cells 
+     */
+    public ColumnTable (List<String> header, List<List<T>> cells) {
         this.header = header;
         this.cells = cells;
     }
@@ -53,10 +71,16 @@ public class SimpleRowTable<T> extends TableAbstract<T> {
             this.header = PStringUtils.fastSplit(temp, delimiter);
             this.buildHIMap();
             cells = new ArrayList<>();
+            for (int i = 0; i < header.size(); i++) {
+                cells.add(new ArrayList<T>());
+            }
             while ((temp = br.readLine()) != null) {
                 List<T> current = (List<T>)PStringUtils.fastSplit(temp, delimiter);
-                cells.add(current);
+                for (int i = 0; i < current.size(); i++) {
+                    cells.get(i).add(current.get(i));
+                }
             }
+            br.close();
         }
         catch (Exception e) {
             e.printStackTrace();
@@ -66,72 +90,32 @@ public class SimpleRowTable<T> extends TableAbstract<T> {
 
     @Override
     public T getCell(int rowIndex, int columnIndex) {
-        return this.getRow(rowIndex).get(columnIndex);
+        return this.getColumn(columnIndex).get(rowIndex);
     }
     
     @Override
     public int getRowNumber() {
-        return cells.size();
+        return cells.get(0).size();
     }
 
     @Override
     public void sortAsText(int columnIndex) {
-        this.sortColumnIndex = columnIndex;
-        GenericSorting.quickSort(0, this.getRowNumber(), compTextByColumn, swapper);
-        System.out.println("Table is sorted based on the text of column " + header.get(columnIndex));
+        throw new UnsupportedOperationException("Not supported for a column based table");
     }
 
     @Override
     public boolean sortAsNumber(int columnIndex) {
-        for (int i = 0; i < this.getRowNumber(); i++) {
-            T ob = this.getCell(i, columnIndex);
-            if (!(ob instanceof String)) {
-                System.out.println("Column of " + header.get(columnIndex) + " can not all be converted to number");
-                return false;
-            }
-        }
-        GenericSorting.quickSort(0, this.getRowNumber(), compNumberByColumn, swapper);
-        System.out.println("Table is sorted based on the number of column " + header.get(columnIndex));
-        return true;
+        throw new UnsupportedOperationException("Not supported for a column based table");
     }
 
-    protected Swapper swapper = new Swapper() {
-        @Override
-        public void swap(int a, int b) {
-            List<T> temp = cells.get(a);
-            cells.set(a, cells.get(b));
-            cells.set(b, temp);
-        }
-    };
-    
-    protected IntComparator compTextByColumn = new IntComparator() {
-        @Override
-        public int compare(int a, int b) {
-            return cells.get(a).get(sortColumnIndex).toString().compareTo(cells.get(a).get(sortColumnIndex).toString());
-        }
-    };
-    
-    protected IntComparator compNumberByColumn = new IntComparator() {
-        @Override
-        public int compare(int a, int b) {
-            double va = getCellAsDouble(a, sortColumnIndex);
-            double vb = getCellAsDouble(b, sortColumnIndex);
-            if (va < vb) return -1;
-            else if (va == vb) return 0;
-            return 1;
-        }
-    };
-
     @Override
-    public void insertColumn(String columnName, int columnIndex, List cList) {
+    public void insertColumn(String columnName, int columnIndex, List<T> cList) {
         if (cList.size() != this.getRowNumber()) {
             System.out.println("The column to be inserted has different number of rows. Program quits");
             System.exit(1);
         }
         this.header.add(columnIndex, columnName);
-        for (int i = 0; i < this.getRowNumber(); i++) {
-            cells.get(i).add(columnIndex, (T)cList.get(i));
-        }
+        cells.add(columnIndex, cList);
         this.buildHIMap();
     }
 
@@ -141,38 +125,44 @@ public class SimpleRowTable<T> extends TableAbstract<T> {
         for (int i = 0; i < this.getRowNumber(); i++) {
             cells.get(i).remove(columnIndex);
         }
+        cells.remove(columnIndex);
         this.buildHIMap();
     }
     
     @Override
-    public void insertRow(int rowIndex, List rList) {
+    public void insertRow(int rowIndex, List<T> rList) {
         if (rList.size() != this.getColumnNumber()) {
             System.out.println("The row to be inserted has different number of columns. Program quits");
             System.exit(1);
         }
-        cells.add(rowIndex, (List<T>)rList);
+        for (int i = 0; i < this.getColumnNumber(); i++) {
+            cells.get(i).add(rowIndex, rList.get(i));
+        }
+        cells.add(rowIndex, rList);
     }
 
     @Override
     public void removeRow(int rowIndex) {
-        cells.remove(rowIndex);
+        for (int i = 0; i < this.getColumnNumber(); i++) {
+            cells.get(i).remove(rowIndex);
+        }
     }
 
     @Override
     public void setCell(int rowIndex, int columnIndex, T c) {
-        cells.get(rowIndex).set(columnIndex, c);
+        cells.get(columnIndex).set(rowIndex, c);
     }
 
     @Override
-    public void setRow(int rowIndex, List rList) {
-        cells.set(rowIndex, (List<T>)rList);
+    public void setRow(int rowIndex, List<T> rList) {
+        for (int i = 0; i < this.getColumnNumber(); i++) {
+            cells.get(i).set(rowIndex, rList.get(i));
+        }
     }
 
     @Override
     public void setColumn(int columnIndex, List<T> cList) {
-        for (int i = 0; i < this.getRowNumber(); i++) {
-            cells.get(i).set(columnIndex, cList.get(i));
-        }
+        cells.set(columnIndex, cList);
     }
 
     @Override
@@ -182,32 +172,32 @@ public class SimpleRowTable<T> extends TableAbstract<T> {
             System.exit(1);
         }
         this.header.add(columnName);
-        for (int i = 0; i < this.getRowNumber(); i++) {
-            cells.get(i).add((T)cList.get(i));
-        }
+        this.cells.add(cList);
         this.hiMap.put(columnName, this.getColumnNumber()-1);
     }
 
     @Override
-    public void addRow(List rList) {
+    public void addRow(List<T> rList) {
         if (rList.size() != this.getColumnNumber()) {
             System.out.println("The row to be added has different number of columns. Program quits");
             System.exit(1);
         }
-        this.cells.add(rList);
+        for (int i = 0; i < this.getColumnNumber(); i++) {
+            cells.get(i).add(rList.get(i));
+        }
     }
 
     @Override
     public List<T> getColumn(int columnIndex) {
-        List<T> cList = new ArrayList();
-        for (int i = 0; i < this.getRowNumber(); i++) {
-            cList.add(cells.get(i).get(columnIndex));
-        }
-        return cList;
+        return cells.get(columnIndex);
     }
 
     @Override
     public List<T> getRow(int rowIndex) {
-        return cells.get(rowIndex);
+        List<T> rList = new ArrayList();
+        for (int i = 0; i < this.getColumnNumber(); i++) {
+            rList.add(cells.get(i).get(rowIndex));
+        }
+        return rList;
     }
 }

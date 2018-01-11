@@ -13,7 +13,7 @@ import utils.IOFileFormat;
 import utils.IOUtils;
 
 /**
- *
+ * Defining fields of table and implementing part of the methods
  * @author feilu
  * @param <T>
  */
@@ -40,7 +40,7 @@ public abstract class TableAbstract<T> implements TableInterface<T> {
     }
     
     @Override
-    public double[] getColumnAsDoubleArray (int columnIndex) throws NumberFormatException {
+    public double[] getColumnAsDoubleArray (int columnIndex) {
         TDoubleArrayList l = new TDoubleArrayList();
         Double d = null;
         for (int i = 0; i < this.getRowNumber(); i++) {
@@ -57,7 +57,7 @@ public abstract class TableAbstract<T> implements TableInterface<T> {
     }
     
     @Override
-    public Double getCellAsDouble (int rowIndex, int columnIndex) throws NumberFormatException {
+    public Double getCellAsDouble (int rowIndex, int columnIndex) {
         T ob = this.getCell(rowIndex, columnIndex);
         if (ob instanceof Number) {
             return ((Number) ob).doubleValue();
