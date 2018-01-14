@@ -21,5 +21,5 @@ public class Range extends RangeAbstract {
         if (this.start < ri.getRangeStart()) return new Range(this.chr, ri.getRangeStart(), this.end < ri.getRangeEnd()? this.end : ri.getRangeEnd());
         return new Range(this.chr, this.start, this.end < ri.getRangeEnd()? this.end : ri.getRangeEnd());
     }
-
+    
 }

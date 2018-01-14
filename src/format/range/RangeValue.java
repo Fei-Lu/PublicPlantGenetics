@@ -12,8 +12,16 @@ package format.range;
 public class RangeValue extends Range {
     double value = Double.NaN;
     
-    public RangeValue(int chr, int start, int end) {
-        super(chr, start, end);
+    public RangeValue (int chr, int start, int end, double value) {
+        super (chr, start, end);
+        this.value = value;
     }
     
+    public double getValue () {
+        return value;
+    }
+    
+    public void setValue (double value) {
+        this.value = value;
+    }
 }

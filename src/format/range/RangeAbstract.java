@@ -6,7 +6,7 @@
 package format.range;
 
 /**
- * 
+ * Defining major field in this class, which are chr, start, and end. Note the maximum number of chromosomes are 65536.
  * @author feilu
  */
 public abstract class RangeAbstract implements RangeInterface, Comparable <RangeAbstract> {
@@ -82,13 +82,6 @@ public abstract class RangeAbstract implements RangeInterface, Comparable <Range
     public boolean isContain (RangeInterface ri) {
         if (this.getRangeChromosome() != ri.getRangeChromosome()) return false;
         if (this.getRangeStart() <= ri.getRangeStart() && this.getRangeEnd() >= ri.getRangeEnd()) return true;
-        return false;
-    }
-    
-    @Override
-    public boolean isIncluded(RangeInterface ri) {
-        if (this.getRangeChromosome() != ri.getRangeChromosome()) return false;
-        if (this.getRangeStart() >= ri.getRangeStart() && this.getRangeEnd() <= ri.getRangeEnd()) return true;
         return false;
     }
     
