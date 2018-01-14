@@ -109,6 +109,7 @@ public class RowTable<T> extends TableAbstract<T> {
                 return false;
             }
         }
+        this.sortColumnIndex = columnIndex;
         GenericSorting.quickSort(0, this.getRowNumber(), compNumberByColumn, swapper);
         System.out.println("Table is sorted based on the number of column " + header.get(columnIndex));
         return true;
