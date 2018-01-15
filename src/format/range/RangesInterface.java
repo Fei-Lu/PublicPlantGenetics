@@ -26,7 +26,7 @@ public interface RangesInterface {
     /**
      * Sort by starting position of a range
      */
-    public void sortByPosition ();
+    public void sortByStartPosition ();
     
     /**
      * Insert a {@link format.range.Range} into the list
@@ -53,4 +53,88 @@ public interface RangesInterface {
      * @return 
      */
     public int getRangeNumber ();
+    
+    /**
+     * Return the starting index of range on a chromosome. 
+     * @param chr
+     * @return negative value if the chromosome does not have a range
+     */
+    public int getStartIndexOfChromosome (int chr);
+    
+    /**
+     * Return the ending index of range on a chromosome. 
+     * @param chr
+     * @return negative value if the chromosome does not have a range
+     */
+    public int getEndIndexOfChromosome (int chr);
+    
+    /**
+     * Return all the chromosomes in an array
+     * @return 
+     */
+    public int[] getChromosomes ();
+    
+    /**
+     * Return the total number of chromosomes
+     * @return 
+     */
+    public int getChromosomeNumber ();
+    
+    /**
+     * Return the starting position of a range
+     * @param rangeIndex
+     * @return 
+     */
+    public int getRangeStart (int rangeIndex);
+    
+    /**
+     * Return the ending position of a range
+     * @param rangeIndex
+     * @return 
+     */
+    public int getRangeEnd (int rangeIndex);
+    
+    /**
+     * Return the chromosome of a range
+     * @param rangeIndex
+     * @return 
+     */
+    public int getRangeChromosome (int rangeIndex);
+    
+    /**
+     * Return a {@link format.range.Ranges} from a chromosome
+     * @param chr
+     * @return null if the chromosome does not have a range
+     */
+    public Ranges getRangesByChromosome (int chr);
+    
+    /**
+     * Return a {@link format.range.Ranges}, in which a position is contained
+     * @param chr
+     * @param pos
+     * @return 
+     */
+    public Ranges getRangesContainsPosition (int chr, int pos);
+    
+    /**
+     * Return the indices of Range, where a position is contained
+     * @param chr
+     * @param pos
+     * @return 
+     */
+    public int[] getRangesIndicesContainsPosition (int chr, int pos);
+    
+    /**
+     * Return the first index of range, in which a position is contained
+     * @param chr
+     * @param pos
+     * @return negative value if the {@link format.range.Ranges} does not contain the position
+     */
+    public int getFirstRangeIndex (int chr, int pos);
+    
+    /**
+     * Return a {@link format.range.Ranges} with no overlap between individual range
+     * @return 
+     */
+    public Ranges getNonOverlapRanges ();
 }

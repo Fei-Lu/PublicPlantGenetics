@@ -5,8 +5,12 @@
  */
 package format.range;
 
+import cern.colt.GenericSorting;
 import cern.colt.Swapper;
 import cern.colt.function.IntComparator;
+import com.koloboke.collect.set.hash.HashIntSet;
+import com.koloboke.collect.set.hash.HashIntSets;
+import gnu.trove.list.array.TIntArrayList;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.util.ArrayList;
@@ -22,8 +26,13 @@ import utils.PStringUtils;
  * @author feilu
  */
 public class Ranges implements RangesInterface {
-    List<Range> ranges = null;
-    String[] header = {"Chr", "Start", "End"};
+    protected List<Range> ranges = null;
+    protected String[] header = {"Chr", "Start", "End"};
+    
+    //statistics of current range list, need to rebuild after write operations on ranges
+    //0, unsorted; 1, by position; 2, by size
+    protected int sortType = 0;
+    protected int[] chrs = null;
     
     /**
      * Constructs a {@link format.range.Ranges} object from a list of {@link format.range.Range}
@@ -53,7 +62,6 @@ public class Ranges implements RangesInterface {
         }
         else {
             this.readRangeFile(infileS, IOFileFormat.Text, true);
-            String a;
         }
     }
     
@@ -90,6 +98,11 @@ public class Ranges implements RangesInterface {
         }
     }
     
+    /**
+     * Write to a {@link format.range.Ranges} file of specified format
+     * @param outfileS
+     * @param format 
+     */
     public void writeTextFile (String outfileS, IOFileFormat format) {
         try {
             BufferedWriter bw = null;
@@ -122,6 +135,12 @@ public class Ranges implements RangesInterface {
         }
     }
     
+    /**
+     * Select ranges and write to a {@link format.range.Ranges} file with specified format
+     * @param outfileS
+     * @param format
+     * @param ifOut 
+     */
     public void writeTextFile (String outfileS, IOFileFormat format, boolean[] ifOut) {
         try {
             BufferedWriter bw = null;
@@ -155,29 +174,39 @@ public class Ranges implements RangesInterface {
         }
     }
     
+    protected void resetStatistics () {
+        this.chrs = null;
+        this.sortType = 0;
+    }
+    
     @Override
     public void sortBySize() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        GenericSorting.quickSort(0, this.getRangeNumber(), compBySize, swapper);
+        this.sortType = 2;
     }
 
     @Override
-    public void sortByPosition() {
-        Collections.sort(ranges);
+    public void sortByStartPosition() {
+        GenericSorting.quickSort(0, this.getRangeNumber(), compByStartPosition, swapper);
+        this.sortType = 1;
     }
 
     @Override
     public void removeRange(int rangeIndex) {
         ranges.remove(rangeIndex);
+        this.chrs = null;
     }
 
     @Override
     public void insertRange(int rangeIndex, Range r) {
         ranges.add(rangeIndex, r);
+        this.chrs = null;
     }
 
     @Override
     public void setRange(int rangeIndex, Range r) {
         ranges.set(rangeIndex, r);
+        this.resetStatistics();
     }
 
     protected Swapper swapper = new Swapper() {
@@ -197,6 +226,22 @@ public class Ranges implements RangesInterface {
             return sA-sB;
         }
     };
+    
+    protected IntComparator compByStartPosition = new IntComparator() {
+        @Override
+        public int compare(int a, int b) {
+            int chrA = getRangeChromosome(a);
+            int chrB = getRangeChromosome(b);
+            if (chrA == chrB) {
+                int sA = getRange(a).getRangeStart();
+                int sB = getRange(b).getRangeStart();
+                return sA-sB;
+            }
+            else {
+                return chrA-chrB;
+            }
+        }
+    };
 
     @Override
     public Range getRange(int rangeIndex) {
@@ -207,5 +252,157 @@ public class Ranges implements RangesInterface {
     public int getRangeNumber() {
         return ranges.size();
     }
+
+    @Override
+    public int getStartIndexOfChromosome(int chr) {
+        if (sortType != 1) this.sortByStartPosition();
+        Range query = new Range(chr, Integer.MIN_VALUE, Integer.MIN_VALUE);
+        int hit  = Collections.binarySearch(ranges, query);
+        if (hit < 0) {
+            int index = -hit-1;
+            if (this.getRangeChromosome(index) == chr) return index;
+            return hit;
+        }
+        return hit;
+    }
+
+    @Override
+    public int getEndIndexOfChromosome(int chr) {
+        if (sortType != 1) this.sortByStartPosition();
+        Range query = new Range(chr+1, Integer.MIN_VALUE, Integer.MIN_VALUE);
+        int hit  = Collections.binarySearch(ranges, query);
+        if (hit < 0) {
+            int index = -hit-1;
+            if (this.getRangeChromosome(index) == chr) return index;
+            return hit;
+        }
+        return hit;
+    }
+
+    @Override
+    public int[] getChromosomes() {
+        if (this.chrs != null) return chrs;
+        HashIntSet s = HashIntSets.getDefaultFactory().newMutableSet();
+        for (int i = 0; i < this.getRangeNumber(); i++) {
+            s.add(this.getRangeChromosome(i));
+        }
+        this.chrs = s.toArray(chrs);
+        Arrays.sort(chrs);
+        return chrs;
+    }
+
+    @Override
+    public int getChromosomeNumber() {
+        return this.getChromosomes().length;
+    }
+
+    @Override
+    public int getRangeStart(int rangeIndex) {
+        return this.getRange(rangeIndex).getRangeStart();
+    }
+
+    @Override
+    public int getRangeEnd(int rangeIndex) {
+        return this.getRange(rangeIndex).getRangeEnd();
+    }
+
+    @Override
+    public int getRangeChromosome(int rangeIndex) {
+        return this.getRange(rangeIndex).getRangeChromosome();
+    }
+
+    @Override
+    public Ranges getRangesByChromosome(int chr) {
+        int startIndex = this.getStartIndexOfChromosome(chr);
+        if (startIndex == -1) return null;
+        int endIndex = this.getEndIndexOfChromosome(chr);
+        if (endIndex == -1) return null;
+        List<Range> l = new ArrayList<>();
+        for (int i = startIndex; i < endIndex; i++) {
+            l.add(this.getRange(i));
+        }
+        return new Ranges(l);
+    }
+
+    @Override
+    public Ranges getRangesContainsPosition(int chr, int pos) {
+        int[] indices = this.getRangesIndicesContainsPosition(chr, pos);
+        List<Range> l = new ArrayList();
+        for (int i = 0; i < indices.length; i++) {
+            l.add(this.getRange(indices[i]));
+        }
+        return new Ranges(l);
+    }
     
+    @Override
+    public int[] getRangesIndicesContainsPosition (int chr, int pos) {
+        if (sortType != 1) this.sortByStartPosition();
+        TIntArrayList indexList = new TIntArrayList();
+        Range query = new Range(chr, pos, pos+1);
+        int hit = Collections.binarySearch(ranges, query);
+        if (hit < 0) hit = -hit-1;
+        while (this.getRange(hit).isContain(chr, pos)) {
+            indexList.add(hit);
+        }
+        return indexList.toArray();
+    }
+    
+    @Override
+    public Ranges getNonOverlapRanges() {
+        int[] chromosomes = this.getChromosomes();
+        int[] mins = new int[chromosomes.length];
+        int[] maxs = new int[chromosomes.length];
+        for (int i = 0; i < mins.length; i++) {
+            mins[i] = Integer.MAX_VALUE;
+            maxs[i] = Integer.MIN_VALUE;
+        }
+        for (int i = 0; i < this.getRangeNumber(); i++) {
+            int index = Arrays.binarySearch(chromosomes, this.getRangeChromosome(i));
+            int v = this.getRangeStart(i);
+            if (v < mins[index]) mins[index] = v;
+            v = this.getRangeEnd(i);
+            if (v > maxs[index]) maxs[index] = v;
+        }
+        List<Range> rList = new ArrayList<>();
+        for (int i = 0; i < chromosomes.length; i++) {
+            System.out.println("Start collasping chromosome " + String.valueOf(chromosomes[i]));
+            int base = mins[i];
+            int length = maxs[i] - mins[i];
+            byte[] status = new byte[length];
+            int startIndex = this.getStartIndexOfChromosome(chromosomes[i]);
+            int endIndex = this.getEndIndexOfChromosome(chromosomes[i]);
+            for (int j = startIndex; j < endIndex; j++) {
+                for (int k = this.getRangeStart(j); k < this.getRangeEnd(j); k++) {
+                    status[k-base] = 1;
+                }
+            }
+            int current = 0;
+            while (current < length) {
+                if (status[current] != 0) {
+                    int start = current+base;
+                    while (current < length && status[current] == 1) {
+                        current++;
+                    }
+                    int end = current+base;
+                    rList.add(new Range(chromosomes[i], start, end));
+                }
+                current++;
+            }
+        }
+        return new Ranges(rList);
+    }
+
+    @Override
+    public int getFirstRangeIndex(int chr, int pos) {
+        if (sortType != 1) this.sortByStartPosition();
+        Range query = new Range(chr, pos, pos+1);
+        int hit = Collections.binarySearch(ranges, query);
+        int index;
+        if (hit < 0) {
+            index = -hit-1;
+            if (this.getRange(index).isContain(chr, pos)) return index;
+            return hit;
+        }
+        return hit;
+    }
 }

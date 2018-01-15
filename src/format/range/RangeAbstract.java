@@ -85,6 +85,13 @@ public abstract class RangeAbstract implements RangeInterface, Comparable <Range
         return false;
     }
     
+    @Override
+    public boolean isContain (int chr, int pos) {
+        if (this.getRangeChromosome() != chr) return false;
+        if (this.getRangeStart() <= pos && this.getRangeEnd() > pos) return true;
+        return false;
+    }
+    
     public RangeInterface getIntersection (RangeAbstract other) {
         if (!this.isOverlap(other)) return null;
         if (this.start < other.start) return new Range(this.chr, other.start, this.end < other.end? this.end : other.end);

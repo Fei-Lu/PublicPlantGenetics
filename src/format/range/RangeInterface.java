@@ -81,6 +81,13 @@ public interface RangeInterface {
      */
     public boolean isContain (RangeInterface ri);
     
+    /**
+     * Test if the range contains a position
+     * @param chr
+     * @param pos
+     * @return 
+     */
+    public boolean isContain (int chr, int pos);
     
     /**
      * Return the intersection of two ranges.
