@@ -27,7 +27,7 @@ import utils.PStringUtils;
  */
 public class Ranges implements RangesInterface {
     protected List<Range> ranges = null;
-    protected String[] header = {"Chr", "Start", "End"};
+    protected List<String> header = null;
     
     //statistics of current range list, need to rebuild after write operations on ranges
     //0, unsorted; 1, by position; 2, by size
@@ -40,6 +40,7 @@ public class Ranges implements RangesInterface {
      */
     public Ranges (List<Range> ranges) {
         this.ranges = ranges;
+        this.initializeHeader();
     }
     
     /**
@@ -65,6 +66,11 @@ public class Ranges implements RangesInterface {
         }
     }
     
+    protected void initializeHeader () {
+        header = new ArrayList<>();
+        header.add("Chr");header.add("Start");header.add("End");
+    }
+    
     private void readRangeFile (String infileS, IOFileFormat format, boolean ifWithHeader) {
         try {
             BufferedReader br = null;
@@ -82,8 +88,9 @@ public class Ranges implements RangesInterface {
             if (!ifWithHeader) {
                 temp = br.readLine();
                 current = PStringUtils.fastSplit(temp);
-                header = current.toArray(new String[current.size()]);
+                header = current;
             }
+            else this.initializeHeader();
             ranges = new ArrayList<>();
             while ((temp = br.readLine()) != null) {
                 current = PStringUtils.fastSplit(temp);
@@ -115,9 +122,9 @@ public class Ranges implements RangesInterface {
             else {
                 throw new UnsupportedOperationException("Unsupported format for input");
             }
-            StringBuilder sb = new StringBuilder(header[0]);
-            for (int i = 1; i < header.length; i++) {
-                sb.append("\t").append(header[i]);
+            StringBuilder sb = new StringBuilder(header.get(0));
+            for (int i = 1; i < header.size(); i++) {
+                sb.append("\t").append(header.get(i));
             }
             bw.write(sb.toString());
             bw.newLine();
@@ -153,9 +160,9 @@ public class Ranges implements RangesInterface {
             else {
                 throw new UnsupportedOperationException("Unsupported format for input");
             }
-            StringBuilder sb = new StringBuilder(header[0]);
-            for (int i = 1; i < header.length; i++) {
-                sb.append("\t").append(header[i]);
+            StringBuilder sb = new StringBuilder(header.get(0));
+            for (int i = 1; i < header.size(); i++) {
+                sb.append("\t").append(header.get(i));
             }
             bw.write(sb.toString());
             bw.newLine();
