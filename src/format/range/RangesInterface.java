@@ -6,7 +6,7 @@
 package format.range;
 
 /**
- *
+ * Holding basic method of a range
  * @author feilu
  */
 public interface RangesInterface {
@@ -27,7 +27,7 @@ public interface RangesInterface {
      * Sort by starting position of a range
      */
     public void sortByStartPosition ();
-    
+     
     /**
      * Insert a {@link format.range.Range} into the list
      * @param rangeIndex
@@ -137,4 +137,24 @@ public interface RangesInterface {
      * @return 
      */
     public Ranges getNonOverlapRanges ();
+    
+    /**
+     * Return a {@link format.range.Ranges} by adding another Ranges object 
+     * @param rs
+     * @return 
+     */
+    public Ranges getMergedRanges(Ranges rs);
+    
+    /**
+     * Add another {@link format.range.Range} to the current list
+     * @param r 
+     */
+    public void addRange(Range r);
+
+    /**
+     * Add {@link format.range.Ranges} to the current list
+     * @param rs 
+     */
+    public void addRanges(Ranges rs);
+    
 }

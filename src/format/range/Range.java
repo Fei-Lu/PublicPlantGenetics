@@ -6,7 +6,7 @@
 package format.range;
 
 /**
- *
+ * The implementation of a range
  * @author feilu
  */
 public class Range extends RangeAbstract {

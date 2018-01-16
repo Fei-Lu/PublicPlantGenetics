@@ -10,6 +10,7 @@ import cern.colt.Swapper;
 import cern.colt.function.IntComparator;
 import com.koloboke.collect.set.hash.HashIntSet;
 import com.koloboke.collect.set.hash.HashIntSets;
+import gnu.trove.list.array.TDoubleArrayList;
 import gnu.trove.list.array.TIntArrayList;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -25,21 +26,17 @@ import utils.PStringUtils;
  * Data structure for a list of {@link format.range.Range}, providing functions of sorting, searching, and merging, etc.
  * @author feilu
  */
-public class Ranges implements RangesInterface {
-    protected List<Range> ranges = null;
-    protected List<String> header = null;
-
-    //statistics of current range list, need to rebuild after write operations on ranges
-    //0, unsorted; 1, by position; 2, by size; 3 by value
-    protected int sortType = 0;
-    protected int[] chrs = null;
+public class RangeValues extends Ranges implements RangeValuesInterface {
+    protected TDoubleArrayList vList = null;
     
     /**
      * Constructs a {@link format.range.Ranges} object from a list of {@link format.range.Range}
      * @param ranges 
+     * @param values 
      */
-    public Ranges (List<Range> ranges) {
-        this.ranges = ranges;
+    public RangeValues (List<Range> ranges, double[] values) {
+        super(ranges);
+        vList = new TDoubleArrayList(values);
         this.initializeHeader();
     }
     
@@ -49,7 +46,8 @@ public class Ranges implements RangesInterface {
      * @param format
      * @param ifWithHeader if the Ranges file has a header in it. True, the header will be used; False, will automatically add a header "Chr\tStart\tEnd".
      */
-    public Ranges (String infileS, IOFileFormat format, boolean ifWithHeader) {
+    public RangeValues (String infileS, IOFileFormat format, boolean ifWithHeader) {
+        super(infileS, format, ifWithHeader);
         this.readRangeFile(infileS, format, ifWithHeader);
     }
     
@@ -57,20 +55,17 @@ public class Ranges implements RangesInterface {
      * Constructs a {@link format.range.Ranges} object with default, txt file or file ending with ".gz", with a header
      * @param infileS 
      */
-    public Ranges (String infileS) {
-        if (infileS.endsWith(".gz")) {
-            this.readRangeFile(infileS, IOFileFormat.TextGzip, true);
-        }
-        else {
-            this.readRangeFile(infileS, IOFileFormat.Text, true);
-        }
+    public RangeValues (String infileS) {
+        super(infileS);
     }
     
+    @Override
     protected void initializeHeader () {
         header = new ArrayList<>();
         header.add("Chr");header.add("Start");header.add("End");
     }
     
+    @Override
     protected void readRangeFile (String infileS, IOFileFormat format, boolean ifWithHeader) {
         try {
             BufferedReader br = null;
@@ -92,10 +87,12 @@ public class Ranges implements RangesInterface {
             }
             else this.initializeHeader();
             ranges = new ArrayList<>();
+            vList = new TDoubleArrayList();
             while ((temp = br.readLine()) != null) {
                 current = PStringUtils.fastSplit(temp);
                 Range r = new Range(Short.parseShort(current.get(0)), Integer.parseInt(current.get(1)), Integer.parseInt(current.get(2)));
                 ranges.add(r);
+                vList.add(Double.parseDouble(current.get(3)));
             }
             br.close();
         }
@@ -110,6 +107,7 @@ public class Ranges implements RangesInterface {
      * @param outfileS
      * @param format 
      */
+    @Override
     public void writeTextFile (String outfileS, IOFileFormat format) {
         try {
             BufferedWriter bw = null;
@@ -129,7 +127,9 @@ public class Ranges implements RangesInterface {
             bw.write(sb.toString());
             bw.newLine();
             for (int i = 0; i < this.getRangeNumber(); i++) {
-                bw.write(this.getRange(i).getInfoString());
+                sb = new StringBuilder(this.getRange(i).getInfoString());
+                sb.append("\t").append(vList.get(i));
+                bw.write(sb.toString());
                 bw.newLine();
             }
             bw.flush();
@@ -148,6 +148,7 @@ public class Ranges implements RangesInterface {
      * @param format
      * @param ifOut 
      */
+    @Override
     public void writeTextFile (String outfileS, IOFileFormat format, boolean[] ifOut) {
         try {
             BufferedWriter bw = null;
@@ -168,7 +169,9 @@ public class Ranges implements RangesInterface {
             bw.newLine();
             for (int i = 0; i < this.getRangeNumber(); i++) {
                 if (!ifOut[i]) continue;
-                bw.write(this.getRange(i).getInfoString());
+                sb = new StringBuilder(this.getRange(i).getInfoString());
+                sb.append("\t").append(vList.get(i));
+                bw.write(sb.toString());
                 bw.newLine();
             }
             bw.flush();
@@ -181,52 +184,28 @@ public class Ranges implements RangesInterface {
         }
     }
     
-    protected void resetStatistics () {
-        this.chrs = null;
-        this.sortType = 0;
+    @Override
+    public void sortByValue () {
+        GenericSorting.quickSort(0, this.getRangeNumber(), compBySize, swapper);
+        this.sortType = 3;
     }
     
     @Override
-    public void sortBySize() {
-        GenericSorting.quickSort(0, this.getRangeNumber(), compBySize, swapper);
-        this.sortType = 2;
-    }
-
-    @Override
-    public void sortByStartPosition() {
-        GenericSorting.quickSort(0, this.getRangeNumber(), compByStartPosition, swapper);
-        this.sortType = 1;
-    }
-
-    /**
-     * Remove a {@link format.range.Range} from the list
-     * @param rangeIndex 
-     */
-    @Override
     public void removeRange(int rangeIndex) {
-        ranges.remove(rangeIndex);
-        this.chrs = null;
+        this.removeRangeValue(rangeIndex);
     }
 
-    /**
-     * Insert a {@link format.range.Range} into the list
-     * @param rangeIndex
-     * @param r 
-     */
     @Override
     public void insertRange(int rangeIndex, Range r) {
         ranges.add(rangeIndex, r);
+        vList.insert(rangeIndex, Double.NaN);
         this.resetStatistics();
     }
 
-    /**
-     * Set a {@link format.range.Range} in the list
-     * @param rangeIndex
-     * @param r 
-     */
     @Override
     public void setRange(int rangeIndex, Range r) {
         ranges.set(rangeIndex, r);
+        this.setRangeValue(rangeIndex, Double.NaN);
         this.resetStatistics();
     }
 
@@ -236,34 +215,32 @@ public class Ranges implements RangesInterface {
             Range temp = getRange(a);
             setRange(a, getRange(b));
             setRange(b, temp);
+            double t = getValue(a);
+            vList.set(a, getValue(b));
+            vList.set(b, t);
         }
     };
     
-    protected IntComparator compBySize = new IntComparator() {
+    protected IntComparator compByValue = new IntComparator() {
         @Override
         public int compare(int a, int b) {
-            int sA = getRange(a).getRangeSize();
-            int sB = getRange(b).getRangeSize();
-            return sA-sB;
+            double vA = getValue(a);
+            double vB = getValue(b);
+            if (vA < vB) {
+                return -1;
+            }
+            else if (vA > vB) {
+                return 1;
+            }
+            return 0;
         }
     };
     
-    protected IntComparator compByStartPosition = new IntComparator() {
-        @Override
-        public int compare(int a, int b) {
-            int chrA = getRangeChromosome(a);
-            int chrB = getRangeChromosome(b);
-            if (chrA == chrB) {
-                int sA = getRange(a).getRangeStart();
-                int sB = getRange(b).getRangeStart();
-                return sA-sB;
-            }
-            else {
-                return chrA-chrB;
-            }
-        }
-    };
-
+    @Override
+    public double getValue (int rangeIndex) {
+        return this.vList.getQuick(rangeIndex);
+    }
+    
     @Override
     public Range getRange(int rangeIndex) {
         return ranges.get(rangeIndex);
@@ -333,112 +310,49 @@ public class Ranges implements RangesInterface {
     }
 
     @Override
-    public Ranges getRangesByChromosome(int chr) {
+    public RangeValues getRangeValuesByChromosome(int chr) {
         int startIndex = this.getStartIndexOfChromosome(chr);
         if (startIndex == -1) return null;
         int endIndex = this.getEndIndexOfChromosome(chr);
         if (endIndex == -1) return null;
         List<Range> l = new ArrayList<>();
+        TDoubleArrayList dList = new TDoubleArrayList();
         for (int i = startIndex; i < endIndex; i++) {
             l.add(this.getRange(i));
+            dList.add(this.getValue(i));
         }
-        return new Ranges(l);
+        return new RangeValues(l, dList.toArray());
     }
 
+
     @Override
-    public Ranges getRangesContainsPosition(int chr, int pos) {
+    public RangeValues getRangeValuesContainsPosition(int chr, int pos) {
         int[] indices = this.getRangesIndicesContainsPosition(chr, pos);
         List<Range> l = new ArrayList();
+        TDoubleArrayList dList = new TDoubleArrayList();
         for (int i = 0; i < indices.length; i++) {
             l.add(this.getRange(indices[i]));
+            dList.add(this.getValue(indices[i]));
         }
-        return new Ranges(l);
+        return new RangeValues(l, dList.toArray());
     }
     
-    @Override
-    public int[] getRangesIndicesContainsPosition (int chr, int pos) {
-        if (sortType != 1) this.sortByStartPosition();
-        TIntArrayList indexList = new TIntArrayList();
-        Range query = new Range(chr, pos, pos+1);
-        int hit = Collections.binarySearch(ranges, query);
-        if (hit < 0) hit = -hit-1;
-        while (this.getRange(hit).isContain(chr, pos)) {
-            indexList.add(hit);
-        }
-        return indexList.toArray();
-    }
-    
-    @Override
-    public Ranges getNonOverlapRanges() {
-        int[] chromosomes = this.getChromosomes();
-        int[] mins = new int[chromosomes.length];
-        int[] maxs = new int[chromosomes.length];
-        for (int i = 0; i < mins.length; i++) {
-            mins[i] = Integer.MAX_VALUE;
-            maxs[i] = Integer.MIN_VALUE;
-        }
-        for (int i = 0; i < this.getRangeNumber(); i++) {
-            int index = Arrays.binarySearch(chromosomes, this.getRangeChromosome(i));
-            int v = this.getRangeStart(i);
-            if (v < mins[index]) mins[index] = v;
-            v = this.getRangeEnd(i);
-            if (v > maxs[index]) maxs[index] = v;
-        }
-        List<Range> rList = new ArrayList<>();
-        for (int i = 0; i < chromosomes.length; i++) {
-            System.out.println("Start collasping chromosome " + String.valueOf(chromosomes[i]));
-            int base = mins[i];
-            int length = maxs[i] - mins[i];
-            byte[] status = new byte[length];
-            int startIndex = this.getStartIndexOfChromosome(chromosomes[i]);
-            int endIndex = this.getEndIndexOfChromosome(chromosomes[i]);
-            for (int j = startIndex; j < endIndex; j++) {
-                for (int k = this.getRangeStart(j); k < this.getRangeEnd(j); k++) {
-                    status[k-base] = 1;
-                }
-            }
-            int current = 0;
-            while (current < length) {
-                if (status[current] != 0) {
-                    int start = current+base;
-                    while (current < length && status[current] == 1) {
-                        current++;
-                    }
-                    int end = current+base;
-                    rList.add(new Range(chromosomes[i], start, end));
-                }
-                current++;
-            }
-        }
-        return new Ranges(rList);
-    }
 
     @Override
-    public int getFirstRangeIndex(int chr, int pos) {
-        if (sortType != 1) this.sortByStartPosition();
-        Range query = new Range(chr, pos, pos+1);
-        int hit = Collections.binarySearch(ranges, query);
-        int index;
-        if (hit < 0) {
-            index = -hit-1;
-            if (this.getRange(index).isContain(chr, pos)) return index;
-            return hit;
-        }
-        return hit;
-    }
-
-    @Override
-    public Ranges getMergedRanges(Ranges rs) {
+    public RangeValues getMergedRangeValues(RangeValues rs) {
         List<Range> newList = new ArrayList<>(ranges);
+        TDoubleArrayList newDList = new TDoubleArrayList(vList);
         for (int i = 0; i < rs.getRangeNumber(); i++) {
             newList.add(rs.getRange(i));
+            newDList.add(rs.getValue(i));
         }
-        return new Ranges(newList);
+        return new RangeValues(newList, newDList.toArray());
     }
 
     @Override
     public void addRange(Range r) {
         ranges.add(r);
+        vList.add(Double.NaN);
         this.resetStatistics();
     }
 
@@ -446,7 +360,29 @@ public class Ranges implements RangesInterface {
     public void addRanges(Ranges rs) {
         for (int i = 0; i < rs.getRangeNumber(); i++) {
             ranges.add(rs.getRange(i));
+            vList.add(Double.NaN);
         }
         this.resetStatistics();
     }
+
+    @Override
+    public void insertRangeValue(int rangeIndex, Range r, double value) {
+        ranges.add(rangeIndex, r);
+        vList.insert(rangeIndex, value);
+        this.resetStatistics();
+    }
+
+    @Override
+    public void removeRangeValue(int rangeIndex) {
+        ranges.remove(rangeIndex);
+        vList.removeAt(rangeIndex);
+        this.chrs = null;
+    }
+
+    @Override
+    public void setRangeValue(int rangeIndex, double value) {
+        vList.setQuick(rangeIndex, value);
+        if (this.sortType == 3) this.resetStatistics();
+    }
+    
 }
