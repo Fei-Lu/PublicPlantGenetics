@@ -5,6 +5,8 @@
  */
 package format.range;
 
+import java.util.List;
+
 /**
  * Holding basic method of a range
  * @author feilu
@@ -18,6 +20,11 @@ public interface RangesInterface {
      */
     public Range getRange (int rangeIndex);
     
+    /**
+     * Return the whole range list
+     * @return 
+     */
+    public List<Range> getRangeList();
     /**
      * Sort by range size
      */

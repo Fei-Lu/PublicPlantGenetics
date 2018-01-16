@@ -23,7 +23,7 @@ import utils.IOUtils;
 import utils.PStringUtils;
 
 /**
- * Data structure for a list of {@link format.range.Range}, providing functions of sorting, searching, and merging, etc.
+ * Data structure for a list of {@link format.range.Range} with values, providing functions of sorting, searching, and merging, etc.
  * @author feilu
  */
 public class RangeValues extends Ranges implements RangeValuesInterface {
@@ -194,14 +194,24 @@ public class RangeValues extends Ranges implements RangeValuesInterface {
     public void removeRange(int rangeIndex) {
         this.removeRangeValue(rangeIndex);
     }
-
+    
+    /**
+     * Insert Double.NaN as the value when the range list is implemented in {@link format.range.RangeValues}
+     * @param rangeIndex
+     * @param r 
+     */
     @Override
     public void insertRange(int rangeIndex, Range r) {
         ranges.add(rangeIndex, r);
         vList.insert(rangeIndex, Double.NaN);
         this.resetStatistics();
     }
-
+    
+    /**
+     * Set Double.NaN as the value when the range list is implemented in {@link format.range.RangeValues}
+     * @param rangeIndex
+     * @param r 
+     */
     @Override
     public void setRange(int rangeIndex, Range r) {
         ranges.set(rangeIndex, r);
@@ -348,14 +358,22 @@ public class RangeValues extends Ranges implements RangeValuesInterface {
         }
         return new RangeValues(newList, newDList.toArray());
     }
-
+    
+    /**
+     * Add Double.NaN as the value when the range list is implemented in {@link format.range.RangeValues}
+     * @param r 
+     */
     @Override
     public void addRange(Range r) {
         ranges.add(r);
         vList.add(Double.NaN);
         this.resetStatistics();
     }
-
+    
+    /**
+     * Add Double.NaN as the value when the range list is implemented in {@link format.range.RangeValues}
+     * @param rs 
+     */
     @Override
     public void addRanges(Ranges rs) {
         for (int i = 0; i < rs.getRangeNumber(); i++) {
@@ -385,4 +403,11 @@ public class RangeValues extends Ranges implements RangeValuesInterface {
         if (this.sortType == 3) this.resetStatistics();
     }
     
+    /**
+     * Return a {@link format.range.Ranges} object
+     * @return 
+     */
+    public Ranges toRanges () {
+        return new Ranges(this.ranges);
+    }
 }

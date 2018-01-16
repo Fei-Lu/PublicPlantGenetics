@@ -449,4 +449,9 @@ public class Ranges implements RangesInterface {
         }
         this.resetStatistics();
     }
+
+    @Override
+    public List<Range> getRangeList() {
+        return new ArrayList<Range>(this.ranges);
+    }
 }
