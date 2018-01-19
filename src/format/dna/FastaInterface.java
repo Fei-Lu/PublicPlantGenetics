@@ -33,6 +33,7 @@ public interface FastaInterface {
      * Write fasta file from selected sequences 
      * @param outfileS
      * @param ifOut 
+     * @param format 
      */
     public void writeFasta (String outfileS, boolean[] ifOut, IOFileFormat format); 
     
@@ -40,12 +41,14 @@ public interface FastaInterface {
      * Write fasta file from a specified sequence
      * @param outfileS
      * @param index 
+     * @param format 
      */
     public void writeFasta (String outfileS, int index, IOFileFormat format);
     
     /**
      * Write fasta file
      * @param outfileS 
+     * @param format 
      */
     public void writeFasta (String outfileS, IOFileFormat format);
     

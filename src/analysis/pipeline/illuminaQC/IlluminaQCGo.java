@@ -1,8 +1,7 @@
 package analysis.pipeline.illuminaQC;
 
-import pipeline.illuminaQC.*;
-import format.Fasta;
 import format.alignment.ShortreadPEAlignment;
+import format.dna.FastaByte;
 import gnu.trove.list.array.TDoubleArrayList;
 import gnu.trove.list.array.TIntArrayList;
 import graphcis.r.DensityPlot;
@@ -35,10 +34,10 @@ public class IlluminaQCGo {
 
     public IlluminaQCGo (String parameterFileS) {
         this.initializeParameter(parameterFileS);
-//        this.mkSubDirectories();
-//        this.sampleFastq();
-//        this.fastQC();
-        //this.alignBWA();
+        this.mkSubDirectories();
+        this.sampleFastq();
+        this.fastQC();
+        this.alignBWA();
         this.mkSummary();
     }
 
@@ -104,7 +103,7 @@ public class IlluminaQCGo {
         }
 
         if (ifCoverage) {
-            Fasta genome = new Fasta(referencePath);
+            FastaByte genome = new FastaByte(referencePath);
             genomeSize = genome.getTotalSeqLength();
             System.out.println("Genome size is " +String.valueOf(genomeSize)+" bp");
         }

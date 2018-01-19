@@ -88,14 +88,14 @@ public class Read extends SequenceByte {
     
     /**
      * Return reverse quality string
-     * @param phredScore
+     * @param phredScale
      * @return 
      */
-    public String getReverseQual (int phredScore) {
+    public String getReverseQual (int phredScale) {
         byte[] qual = new byte[qualValue.length];
         System.arraycopy(qualValue, 0, qual, 0, qual.length);
         for (int i = 0; i < this.getSequenceLength(); i++) {
-            qual[i]+=phredScore;
+            qual[i]+=phredScale;
         }
         ArrayUtils.reverse(qual);
         return new String(qual);
@@ -103,14 +103,14 @@ public class Read extends SequenceByte {
     
     /**
      * Return quality string
-     * @param phredScore
+     * @param phredScale
      * @return 
      */
-    public String getQualS (int phredScore) {
+    public String getQualS (int phredScale) {
         byte[] qual = new byte[qualValue.length];
         System.arraycopy(qualValue, 0, qual, 0, qual.length);
         for (int i = 0; i < this.getSequenceLength(); i++) {
-            qual[i]+=phredScore;
+            qual[i]+=phredScale;
         }
         return new String(qual);
     }
@@ -119,14 +119,14 @@ public class Read extends SequenceByte {
      * Return quality string from startIndex to endIndex
      * @param startIndex
      * @param endIndex
-     * @param phredScore
+     * @param phredScale
      * @return 
      */
-    public String getQualS (int startIndex, int endIndex, int phredScore) {
+    public String getQualS (int startIndex, int endIndex, int phredScale) {
         byte[] qual = new byte[endIndex - startIndex];
         System.arraycopy(qualValue, startIndex, qual, 0, endIndex - startIndex);
         for (int i = 0; i < this.getSequenceLength(); i++) {
-            qual[i]+=phredScore;
+            qual[i]+=phredScale;
         }
         return new String(qual);
     }
