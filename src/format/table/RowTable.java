@@ -37,6 +37,21 @@ public class RowTable<T> extends TableAbstract<T> {
     }
     
     /**
+     * Constructs a {@link format.table.RowTable} from a file, with a custom delimiter
+     * @param infileS
+     * @param delimiter 
+     */
+    public RowTable (String infileS, String delimiter) {
+        if (infileS.endsWith(".gz")) {
+            this.readTableFile(infileS, IOFileFormat.TextGzip, delimiter);
+        }
+        else {
+            this.readTableFile(infileS, IOFileFormat.Text, delimiter);
+            String a;
+        }
+    }
+    
+    /**
      * Constructs a {@link format.table.RowTable} from a file with specified format, with default delimiter of "\t"
      * @param infileS
      * @param format 
