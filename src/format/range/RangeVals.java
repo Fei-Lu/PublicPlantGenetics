@@ -104,7 +104,7 @@ public class RangeVals extends RangesAbstract {
             else {
                 throw new UnsupportedOperationException("Unsupported format for input");
             }
-            bw.write("Chr\tStart\tEnd");
+            bw.write("Chr\tStart\tEnd\tValue");
             bw.newLine();
             for (int i = 0; i < this.getRangeNumber(); i++) {
                 bw.write(this.getRange(i).getInfoString());
@@ -138,7 +138,7 @@ public class RangeVals extends RangesAbstract {
             else {
                 throw new UnsupportedOperationException("Unsupported format for input");
             }
-            bw.write("Chr\tStart\tEnd");
+            bw.write("Chr\tStart\tEnd\tValue");
             bw.newLine();
             for (int i = 0; i < this.getRangeNumber(); i++) {
                 if (!ifOut[i]) continue;
@@ -238,9 +238,9 @@ public class RangeVals extends RangesAbstract {
 
      @Override
     public <T extends RangesInterface> T getMergedRanges(T rs) {
-        List<RangeVal> newList = new ArrayList<>((List<RangeVal>)getRangeList());
+        List<RangeVal> newList = new ArrayList<>(getRangeList());
         for (int i = 0; i < rs.getRangeNumber(); i++) {
-            newList.add((RangeVal) rs.getRange(i));
+            newList.add(rs.getRange(i));
         }
         RangeVals s = new RangeVals(newList);
         return (T) s;
