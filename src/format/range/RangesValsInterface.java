@@ -8,24 +8,23 @@ package format.range;
 import java.util.List;
 
 /**
- * Holding basic method of a range
+ * Holding basic method of a list of ranges
  * @author feilu
  */
-public interface RangesInterface {
+public interface RangesValsInterface {
     
     /**
-     * Return a {@link format.range.Range} object
-     * @param <T>
+     * Return a {@link format.range.RangeVal} object
      * @param rangeIndex
      * @return 
      */
-    public <T extends Range> T getRange (int rangeIndex);
+    public RangeVal getRangeVal (int rangeIndex);
     
     /**
      * Return the whole range list
      * @return 
      */
-    public List<? extends Range> getRangeList();
+    public List<RangeVal> getRangeValList();
     /**
      * Sort by range size
      */
@@ -38,12 +37,10 @@ public interface RangesInterface {
      
     /**
      * Insert a {@link format.range.Range} into the list
-     * @param <T> {@link format.range.Range}
      * @param rangeIndex
      * @param r 
-     * @return true if it is successful, otherwise false
      */
-    public <T extends Range> boolean insertRange  (int rangeIndex, T r);
+    public void insertRange (int rangeIndex, Range r);
     
     /**
      * Remove a {@link format.range.Range} from the list
@@ -53,12 +50,10 @@ public interface RangesInterface {
     
     /**
      * Set a {@link format.range.Range} in the list
-     * @param <T> {@link format.range.Range}
      * @param rangeIndex
      * @param r 
-     * @return true if it is successful, otherwise false
      */
-    public <T extends Range> boolean setRange (int rangeIndex, T r);
+    public void setRange (int rangeIndex, Range r);
     
     /**
      * Return total number of {@link format.range.Range} in the list
@@ -115,20 +110,18 @@ public interface RangesInterface {
     
     /**
      * Return a {@link format.range.Ranges} from a chromosome
-     * @param <T>
      * @param chr
      * @return null if the chromosome does not have a range
      */
-    public <T extends RangesInterface> T  getRangesByChromosome (int chr);
+    public Ranges getRangesByChromosome (int chr);
     
     /**
      * Return a {@link format.range.Ranges}, in which a position is contained
-     * @param <T>
      * @param chr
      * @param pos
      * @return 
      */
-    public <T extends RangesInterface> T  getRangesContainsPosition (int chr, int pos);
+    public Ranges getRangesContainsPosition (int chr, int pos);
     
     /**
      * Return the indices of Range, where a position is contained
@@ -142,7 +135,7 @@ public interface RangesInterface {
      * Return the first index of range, in which a position is contained
      * @param chr
      * @param pos
-     * @return negative value if the {@link format.range.RangeInterface} does not contain the position
+     * @return negative value if the {@link format.range.Ranges} does not contain the position
      */
     public int getFirstRangeIndex (int chr, int pos);
     
@@ -154,26 +147,21 @@ public interface RangesInterface {
     
     /**
      * Return a {@link format.range.Ranges} by adding another Ranges object 
-     * @param <T>
      * @param rs
      * @return 
      */
-    public <T extends RangesInterface> T getMergedRanges(T rs);
+    public Ranges getMergedRanges(Ranges rs);
     
     /**
      * Add another {@link format.range.Range} to the current list
-     * @param <T> {@link format.range.Range}
      * @param r 
-     * @return  
      */
-    public <T extends Range> boolean addRange(T r);
+    public void addRange(Range r);
 
     /**
      * Add {@link format.range.Ranges} to the current list
-     * @param <T> {@link format.range.RangesInterface}
      * @param rs 
-     * @return  true if it is successful, otherwise false
      */
-    public <T extends RangesInterface> boolean addRanges(T rs);
+    public void addRanges(Ranges rs);
     
 }

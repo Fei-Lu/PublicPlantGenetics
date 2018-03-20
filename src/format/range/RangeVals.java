@@ -22,34 +22,34 @@ import utils.IOUtils;
 import utils.PStringUtils;
 
 /**
- * Data structure for a list of {@link format.range.Range}, providing functions of sorting, searching, and merging, etc.
+ * Data structure for a list of {@link format.range.RangeVal}
  * @author feilu
  */
-public class Ranges extends RangesAbstract {
-    protected List<Range> ranges = null;
+public class RangeVals extends RangesAbstract {
+    protected List<RangeVal> ranges = null;
     
     /**
-     * Constructs a {@link format.range.Ranges} object from a list of {@link format.range.Range}
+     * Constructs a {@link format.range.RangeVals} object from a list of {@link format.range.Range}
      * @param ranges 
      */
-    public Ranges (List<Range> ranges) {
+    public RangeVals (List<RangeVal> ranges) {
         this.ranges = ranges;
     }
     
     /**
-     * Constructs a {@link format.range.Ranges} object with custom parameters
+     * Constructs a {@link format.range.RangeVals} object with custom parameters
      * @param infileS
      * @param format
      */
-    public Ranges (String infileS, IOFileFormat format) {
+    public RangeVals (String infileS, IOFileFormat format) {
         this.readRangeFile(infileS, format);
     }
     
     /**
-     * Constructs a {@link format.range.Ranges} object with default, txt file or file ending with ".gz", with a header
+     * Constructs a {@link format.range.RangeVals} object with default, txt file or file ending with ".gz", with a header
      * @param infileS 
      */
-    public Ranges (String infileS) {
+    public RangeVals (String infileS) {
         if (infileS.endsWith(".gz")) {
             this.readRangeFile(infileS, IOFileFormat.TextGzip);
         }
@@ -76,7 +76,7 @@ public class Ranges extends RangesAbstract {
             ranges = new ArrayList<>();
             while ((temp = br.readLine()) != null) {
                 current = PStringUtils.fastSplit(temp);
-                Range r = new Range(Short.parseShort(current.get(0)), Integer.parseInt(current.get(1)), Integer.parseInt(current.get(2)));
+                RangeVal r = new RangeVal(Short.parseShort(current.get(0)), Integer.parseInt(current.get(1)), Integer.parseInt(current.get(2)), Double.parseDouble(current.get(3)));
                 ranges.add(r);
             }
             br.close();
@@ -88,7 +88,7 @@ public class Ranges extends RangesAbstract {
     }
     
     /**
-     * Write to a {@link format.range.Ranges} file of specified format
+     * Write to a {@link format.range.RangeVals} file of specified format
      * @param outfileS
      * @param format 
      */
@@ -163,8 +163,8 @@ public class Ranges extends RangesAbstract {
 
     @Override
     public <T extends Range> boolean insertRange(int rangeIndex, T r) {
-        if (r instanceof Range) {
-            ranges.add(rangeIndex, r);
+        if (r instanceof RangeVal) {
+            ranges.add(rangeIndex, (RangeVal) r);
             this.resetStatistics();
             return true;
         }
@@ -173,8 +173,8 @@ public class Ranges extends RangesAbstract {
 
     @Override
     public <T extends Range> boolean setRange(int rangeIndex, T r) {
-        if (r instanceof Range) {
-            ranges.set(rangeIndex, r);
+        if (r instanceof RangeVal) {
+            ranges.set(rangeIndex, (RangeVal) r);
             this.resetStatistics();
             return true;
         }
@@ -182,42 +182,42 @@ public class Ranges extends RangesAbstract {
     }
 
     @Override
-    public Range getRange(int rangeIndex) {
+    public RangeVal getRange(int rangeIndex) {
         return ranges.get(rangeIndex);
     }
-
+    
     @Override
     public int getRangeNumber() {
         return ranges.size();
     }
 
     @Override
-    public Ranges getRangesByChromosome(int chr) {
+    public RangeVals getRangesByChromosome(int chr) {
         int startIndex = this.getStartIndexOfChromosome(chr);
         if (startIndex == -1) return null;
         int endIndex = this.getEndIndexOfChromosome(chr);
         if (endIndex == -1) return null;
-        List<Range> l = new ArrayList<>();
+        List<RangeVal> l = new ArrayList<>();
         for (int i = startIndex; i < endIndex; i++) {
             l.add(this.getRange(i));
         }
-        return new Ranges(l);
+        return new RangeVals(l);
     }
 
     @Override
-    public Ranges getRangesContainsPosition(int chr, int pos) {
+    public RangeVals getRangesContainsPosition(int chr, int pos) {
         int[] indices = this.getRangesIndicesContainsPosition(chr, pos);
-        List<Range> l = new ArrayList();
+        List<RangeVal> l = new ArrayList();
         for (int i = 0; i < indices.length; i++) {
             l.add(this.getRange(indices[i]));
         }
-        return new Ranges(l);
+        return new RangeVals(l);
     }
 
     @Override
     public <T extends Range> boolean addRange (T r) {
-        if (r instanceof Range) {
-            ranges.add(r);
+        if (r instanceof RangeVal) {
+            ranges.add((RangeVal) r);
             this.resetStatistics();
             return true;
         }
@@ -226,7 +226,7 @@ public class Ranges extends RangesAbstract {
 
     @Override
     public <T extends RangesInterface> boolean addRanges (T rs) {
-        if (rs instanceof Ranges) {
+        if (rs instanceof RangeVals) {
             for (int i = 0; i < rs.getRangeNumber(); i++) {
                 ranges.add(rs.getRange(i));
             }
@@ -235,19 +235,20 @@ public class Ranges extends RangesAbstract {
         }
         return false;
     }
-    
-    @Override
-    public List<? extends Range> getRangeList() {
-        return this.ranges;
-    }
 
-    @Override
+     @Override
     public <T extends RangesInterface> T getMergedRanges(T rs) {
-        List<Range> newList = new ArrayList<>(getRangeList());
+        List<RangeVal> newList = new ArrayList<>((List<RangeVal>)getRangeList());
         for (int i = 0; i < rs.getRangeNumber(); i++) {
             newList.add((RangeVal) rs.getRange(i));
         }
-        Ranges s = new Ranges(newList);
+        RangeVals s = new RangeVals(newList);
         return (T) s;
     }
+    
+    @Override
+    public List<RangeVal> getRangeList() {
+        return this.ranges;
+    }
+
 }

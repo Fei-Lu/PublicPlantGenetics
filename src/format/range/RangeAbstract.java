@@ -9,7 +9,7 @@ package format.range;
  * Defining major field in this class, which are chr, start, and end. Note the maximum number of chromosomes are 65536.
  * @author feilu
  */
-public abstract class RangeAbstract implements RangeInterface, Comparable <RangeAbstract> {
+public abstract class RangeAbstract implements RangeInterface {
     public short chr;
     public int start;
     /**Exclusive*/
@@ -125,7 +125,7 @@ public abstract class RangeAbstract implements RangeInterface, Comparable <Range
     }
     
     @Override
-    public int compareTo(RangeAbstract ri) {
+    public int compareTo(RangeInterface ri) {
         if (chr == ri.getRangeChromosome()) {
             if (start == ri.getRangeStart()) {
                 if (end == ri.getRangeEnd()) return 0;

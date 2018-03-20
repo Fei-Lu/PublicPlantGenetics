@@ -10,7 +10,7 @@ package format.range;
  * The range is specially designed for the interval on chromosomes. Hence, it has an additional attribute of chromosome.
  * @author feilu
  */
-public interface RangeInterface {
+public interface RangeInterface extends Comparable<RangeInterface> {
     
     /**
      * Return the chromosome of a range, 1-based
