@@ -5,6 +5,9 @@
  */
 package format.genomeAnnotation;
 
+import format.dna.FastaByte;
+import format.dna.SequenceByte;
+import format.position.ChrPos;
 import format.range.Range;
 import format.range.RangeValStr;
 import format.range.RangeValStrs;
@@ -96,66 +99,72 @@ public class GeneFeature {
         this.sortGeneByStartPosition();
     }
     
-//    public void writeCDSSequence (FastaByte genomef, String outfileS) {
-//        genomef.sortRecordByName();
-//        try {
-//            BufferedWriter bw = IoUtils.getTextWriter(outfileS);
-//            for (int i = 0; i < this.getGeneNumber(); i++) {
-//                String title = String.valueOf(this.getGeneChromosome(i))+"_"+String.valueOf(this.getGeneStart(i)+"_"+String.valueOf(this.getGeneEnd(i))+"_"+String.valueOf(this.getGeneName(i)));
-//                int chrIndex = genomef.getIndex(String.valueOf(this.getGeneChromosome(i)));
-//                String chrseq = genomef.getSeq(chrIndex);
-//                StringBuilder sb = new StringBuilder();
-//                ArrayList<Range> cdsList = this.getCDSList(i, 0);
-//                for (int j = 0; j < cdsList.size(); j++) {
-//                    sb.append(chrseq.subSequence(cdsList.get(j).getRangeStart()-1, cdsList.get(j).getRangeEnd()-1));
-//                }
-//                String cdsSeq = sb.toString();
-//                if (this.getTranscriptStrand(i, 0) == 0) {
-//                    Sequence s = new Sequence(cdsSeq);
-//                    cdsSeq = s.getReverseComplementarySeq();
-//                }
-//                bw.write(">"+title);
-//                bw.newLine();
-//                bw.write(FStringUtils.getMultiplelineString(60, cdsSeq));
-//                bw.newLine();
-//            }
-//            bw.flush();
-//            bw.close();
-//        }
-//        catch (Exception e) {
-//            e.printStackTrace();
-//        }
-//    }
+    /**
+     * Write all CDS of the longest transcripts to a file
+     * @param genomef
+     * @param outfileS 
+     */
+    public void writeCDSSequence (FastaByte genomef, String outfileS) {
+        genomef.sortByName();
+        try {
+            BufferedWriter bw = IOUtils.getTextWriter(outfileS);
+            for (int i = 0; i < this.getGeneNumber(); i++) {
+                String title = String.valueOf(this.getGeneChromosome(i))+"_"+String.valueOf(this.getGeneStart(i)+"_"+String.valueOf(this.getGeneEnd(i))+"_"+String.valueOf(this.getGeneName(i)));
+                int chrIndex = genomef.getIndexByName(String.valueOf(this.getGeneChromosome(i)));
+                String chrseq = genomef.getSeq(chrIndex);
+                StringBuilder sb = new StringBuilder();
+                int longestTranscriptIndex = this.getLongestTranscriptIndex(i);
+                List<Range> cdsList = this.getCDSList(i, longestTranscriptIndex);
+                for (int j = 0; j < cdsList.size(); j++) {
+                    sb.append(chrseq.subSequence(cdsList.get(j).getRangeStart()-1, cdsList.get(j).getRangeEnd()-1));
+                }
+                String cdsSeq = sb.toString();
+                if (this.getTranscriptStrand(i, 0) == 0) {
+                    SequenceByte s = new SequenceByte(cdsSeq);
+                    cdsSeq = s.getReverseComplementarySeq();
+                }
+                bw.write(">"+title);
+                bw.newLine();
+                bw.write(FStringUtils.getMultiplelineString(60, cdsSeq));
+                bw.newLine();
+            }
+            bw.flush();
+            bw.close();
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
     
-//    /**
-//     * Write genomic sequence of gene, from start to the end, no flip if the gene is in the minus direction
-//     * @param genomef
-//     * @param outfileS 
-//     */
-//    public void writeGeneSequence (Fasta genomef, String outfileS) {
-//        genomef.sortRecordByName();
-//        try {
-//            BufferedWriter bw = IoUtils.getTextWriter(outfileS);
-//            for (int i = 0; i < this.getGeneNumber(); i++) {
-//                String title = String.valueOf(this.getGeneChromosome(i))+"_"+String.valueOf(this.getGeneStart(i)+"_"+String.valueOf(this.getGeneEnd(i))+"_"+String.valueOf(this.getGeneName(i)));
-//                int chrIndex = genomef.getIndex(String.valueOf(this.getGeneChromosome(i)));
-//                String chrseq = genomef.getSeq(chrIndex);
-//                String geneSeq = chrseq.substring(this.getGeneStart(i)-1, this.getGeneEnd(i)-1);
-//                String[] geneSeqs = FStringUtils.getMultilineString(60, geneSeq);
-//                bw.write(">"+title);
-//                bw.newLine();
-//                for (int j = 0; j < geneSeqs.length; j++) {
-//                    bw.write(geneSeqs[j]);
-//                    bw.newLine();
-//                }
-//            }
-//            bw.flush();
-//            bw.close();
-//        }
-//        catch (Exception e) {
-//            e.printStackTrace();
-//        }
-//    }
+    /**
+     * Write genomic sequence of gene, from start to the end, no flip if the gene is in the minus direction
+     * @param genomef
+     * @param outfileS 
+     */
+    public void writeGeneSequence (FastaByte genomef, String outfileS) {
+        genomef.sortByName();
+        try {
+            BufferedWriter bw = IOUtils.getTextWriter(outfileS);
+            for (int i = 0; i < this.getGeneNumber(); i++) {
+                String title = String.valueOf(this.getGeneChromosome(i))+"_"+String.valueOf(this.getGeneStart(i)+"_"+String.valueOf(this.getGeneEnd(i))+"_"+String.valueOf(this.getGeneName(i)));
+                int chrIndex = genomef.getIndexByName(String.valueOf(this.getGeneChromosome(i)));
+                String chrseq = genomef.getSeq(chrIndex);
+                String geneSeq = chrseq.substring(this.getGeneStart(i)-1, this.getGeneEnd(i)-1);
+                String[] geneSeqs = FStringUtils.getMultilineString(60, geneSeq);
+                bw.write(">"+title);
+                bw.newLine();
+                for (int j = 0; j < geneSeqs.length; j++) {
+                    bw.write(geneSeqs[j]);
+                    bw.newLine();
+                }
+            }
+            bw.flush();
+            bw.close();
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
     
     /**
      * Write kgf file of gene annotation
@@ -217,6 +226,23 @@ public class GeneFeature {
         }
         catch (Exception e) {
             e.printStackTrace();
+        }
+    }
+    
+    /**
+     * Return transcription start site (TSS) of a gene, null if 5'UTR does not exist.
+     * @param geneIndex
+     * @return 
+     */
+    public ChrPos getTSSOfGene (int geneIndex) {
+        int index = this.getLongestTranscriptIndex(geneIndex);
+        List<Range> utr5 = this.get5UTRList(geneIndex, index);
+        if (utr5.isEmpty()) return null;
+        if (this.getTranscriptStrand(geneIndex, index) == 1) {
+            return new ChrPos((short)this.getGeneChromosome(geneIndex),utr5.get(0).getRangeStart());
+        }
+        else {
+            return new ChrPos((short)this.getGeneChromosome(geneIndex),utr5.get(utr5.size()-1).getRangeEnd()-1);
         }
     }
     
@@ -671,167 +697,6 @@ public class GeneFeature {
         this.sortType = 0;
         Arrays.sort(genes);
     }
-    
-//    /**
-//     * Return a RangeAttribute object for from all 5UTR
-//     * @return 
-//     */
-//    public RangeValStrs getAllGene5UTRRange () {
-//        List<RangeValStr> rs = new ArrayList();
-//        for (int i = 0; i < this.getGeneNumber(); i++) {
-//            if (!this.isThere5UTR(i, 0)) continue;
-//            ArrayList<Range> l = this.get5UTRList(i, 0);
-//            for (int j = 0; j < l.size(); j++) rs.add(l.get(j));
-//            byteList.add(this.genes[i].ts.get(0).strand);
-//            floatList.add(Float.NaN);
-//        }
-//        return new RangeAttribute(rs.toArray(new Range[rs.size()]), "5'UTR", byteList.toArray(new byte[byteList.size()]), floatList.toArray(new float[floatList.size()]));
-//    }
-    
-    /**
-     * Return a RangeAttribute object for from all CDS
-     * @return 
-     */
-//    public RangeAttribute getAllGeneCDSRange () {
-//        ArrayList<Range> rs = new ArrayList();
-//        TByteArrayList byteList = new TByteArrayList();
-//        TFloatArrayList floatList = new TFloatArrayList();
-//        for (int i = 0; i < this.getGeneNumber(); i++) {
-//            ArrayList<Range> l = this.getCDSList(i, 0);
-//            for (int j = 0; j < l.size(); j++) {
-//                rs.add(l.get(j));
-//                byteList.add(this.genes[i].ts.get(0).strand);
-//                floatList.add(Float.NaN);
-//            }
-//        }
-//        return new RangeAttribute(rs.toArray(new Range[rs.size()]), "CDS", byteList.toArray(new byte[byteList.size()]), floatList.toArray(new float[floatList.size()]));
-//    }
-    
-    /**
-     * Return a RangeAttribute object for from all Intron
-     * @return 
-     */
-//    public RangeAttribute getAllIntronRange () {
-//        ArrayList<Range> rs = new ArrayList();
-//        TByteArrayList byteList = new TByteArrayList();
-//        TFloatArrayList floatList = new TFloatArrayList();
-//        for (int i = 0; i < this.getGeneNumber(); i++) {
-//            ArrayList<Range> l = this.getIntronList(i, 0);
-//            if (l.isEmpty()) continue;
-//            for (int j = 0; j < l.size(); j++) {
-//                rs.add(l.get(j));
-//                byteList.add(this.genes[i].ts.get(0).strand);
-//                floatList.add(Float.NaN);
-//            }
-//        }
-//        return new RangeAttribute(rs.toArray(new Range[rs.size()]), "Intron", byteList.toArray(new byte[byteList.size()]), floatList.toArray(new float[floatList.size()]));
-//    }
-    
-    /**
-     * Return a RangeAttribute object for from all 3UTR
-     * @return 
-     */
-//    public RangeAttribute getAllGene3UTRRange () {
-//        ArrayList<Range> rs = new ArrayList();
-//        TByteArrayList byteList = new TByteArrayList();
-//        TFloatArrayList floatList = new TFloatArrayList();
-//        for (int i = 0; i < this.getGeneNumber(); i++) {
-//            if (!this.isThere3UTR(i, 0)) continue;
-//            ArrayList<Range> l = this.get3UTRList(i, 0);
-//            for (int j = 0; j < l.size(); j++) rs.add(l.get(j));
-//            byteList.add(this.genes[i].ts.get(0).strand);
-//            floatList.add(Float.NaN);
-//        }
-//        return new RangeAttribute(rs.toArray(new Range[rs.size()]), "3'UTR", byteList.toArray(new byte[byteList.size()]), floatList.toArray(new float[floatList.size()]));
-//    }
-    
-    /**
-     * Return a RangeAttribute object for from all intergenic region
-     * @return 
-     */
-//    public RangeAttribute getIntergeneicRange () {
-//        ArrayList<Range> rs = new ArrayList();
-//        TByteArrayList byteList = new TByteArrayList();
-//        TFloatArrayList floatList = new TFloatArrayList();
-//        for (int i = 0; i < this.getGeneNumber()-1; i++) {
-//            int chr = this.genes[i].ts.get(0).transcriptRange.chr;
-//            int start = this.genes[i].ts.get(0).transcriptRange.end;
-//            if (chr != this.genes[i+1].ts.get(0).transcriptRange.chr) continue;
-//            int end = this.genes[i+1].ts.get(0).transcriptRange.start;
-//            rs.add(new Range(chr, start, end));
-//            byteList.add(Byte.MIN_VALUE);
-//            floatList.add(Float.NaN);
-//        }
-//        return new RangeAttribute(rs.toArray(new Range[rs.size()]), "Intergenic", byteList.toArray(new byte[byteList.size()]), floatList.toArray(new float[floatList.size()]));
-//    }
-    
-    /**
-     * Return a RangeAttribute object for from all first transcripts
-     * @return 
-     */
-//    public RangeAttribute getAllGeneTranscriptRange () {
-//        ArrayList<Range> rs = new ArrayList();
-//        TByteArrayList byteList = new TByteArrayList();
-//        TFloatArrayList floatList = new TFloatArrayList();
-//        for (int i = 0; i < this.getGeneNumber(); i++) {
-//            rs.add(this.genes[i].ts.get(0).transcriptRange);
-//            byteList.add(this.genes[i].ts.get(0).strand);
-//            floatList.add(Float.NaN);
-//        }
-//        return new RangeAttribute(rs.toArray(new Range[rs.size()]), "Transcript", byteList.toArray(new byte[byteList.size()]), floatList.toArray(new float[floatList.size()]));
-//    }
-    
-    /**
-     * Return a RangeAttribute object for from all nBp upstream of transcripts
-     * @return 
-     */
-//    public RangeAttribute getAllGeneUpstreamRange (int bps) {
-//        ArrayList<Range> rs = new ArrayList();
-//        TByteArrayList byteList = new TByteArrayList();
-//        TFloatArrayList floatList = new TFloatArrayList();
-//        for (int i = 0; i < this.getGeneNumber(); i++) {
-//            Range r = null;
-//            if (this.genes[i].ts.get(0).strand == 1) {
-//                int start = this.getTranscriptStart(i, 0)-bps;
-//                if (start < 0) start = 1;
-//                r = new Range(this.getTranscriptChromosome(i, 0), start, this.getTranscriptStart(i, 0));
-//            }
-//            else {
-//                int start = this.getTranscriptEnd(i, 0)+bps;
-//                r = new Range(this.getTranscriptChromosome(i, 0), this.getTranscriptEnd(i, 0), start);
-//            }
-//            rs.add(r);
-//            byteList.add(this.genes[i].ts.get(0).strand);
-//            floatList.add(Float.NaN);
-//        }
-//        return new RangeAttribute(rs.toArray(new Range[rs.size()]), "Upstream"+String.valueOf(bps), byteList.toArray(new byte[byteList.size()]), floatList.toArray(new float[floatList.size()]));
-//    }
-    
-    /**
-     * Return a RangeAttribute object for from all nBp downstream of transcripts
-     * @return 
-     */
-//    public RangeAttribute getAllGeneDownstreamRange (int bps) {
-//        ArrayList<Range> rs = new ArrayList();
-//        TByteArrayList byteList = new TByteArrayList();
-//        TFloatArrayList floatList = new TFloatArrayList();
-//        for (int i = 0; i < this.getGeneNumber(); i++) {
-//            Range r = null;
-//            if (this.genes[i].ts.get(0).strand == 1) {
-//                int end = this.getTranscriptEnd(i, 0)+bps;
-//                r = new Range(this.getTranscriptChromosome(i, 0), this.getTranscriptEnd(i, 0), end);
-//            }
-//            else {
-//                int end = this.getTranscriptStart(i, 0)-bps;
-//                if (end < 1) end = 1;
-//                r = new Range(this.getTranscriptChromosome(i, 0), end, this.getTranscriptStart(i, 0));
-//            }
-//            rs.add(r);
-//            byteList.add(this.genes[i].ts.get(0).strand);
-//            floatList.add(Float.NaN);
-//        }
-//        return new RangeAttribute(rs.toArray(new Range[rs.size()]), "Downstream"+String.valueOf(bps), byteList.toArray(new byte[byteList.size()]), floatList.toArray(new float[floatList.size()]));
-//    }
     
     class Gene implements Comparable<Gene> {
         String geneName = null;
