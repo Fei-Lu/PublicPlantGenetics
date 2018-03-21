@@ -6,6 +6,8 @@
 package format.genomeAnnotation;
 
 import format.range.Range;
+import format.range.RangeValStr;
+import format.range.RangeValStrs;
 import format.range.Ranges;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -25,6 +27,7 @@ import xuebo.analysis.annotation.FStringUtils;
  */
 public class GeneFeature {
     Gene[] genes;
+    //0 by position, 1 by sort
     int sortType = 0;
     public GeneFeature () {}
     
@@ -50,7 +53,9 @@ public class GeneFeature {
                 temp = br.readLine();
                 String[] tem = temp.split("\t");
                 genes[i] = new Gene(tem[1], Integer.valueOf(tem[2]), Integer.valueOf(tem[3]), Integer.valueOf(tem[4]), Byte.valueOf(tem[5]), tem[6], tem[7]);
-                int transcriptNumber = Integer.valueOf(br.readLine().split("\t")[1]);
+                tem = br.readLine().split("\t");
+                int transcriptNumber = Integer.valueOf(tem[1]);
+                genes[i].setLongestTranscriptIndex(Integer.valueOf(tem[2]));
                 for (int j = 0; j < transcriptNumber; j++) {
                     temp = br.readLine();
                     tem = temp.split("\t");
@@ -167,7 +172,9 @@ public class GeneFeature {
                 sb.append("\t").append(this.getGeneBiotype(i)).append("\t").append(this.getGeneDescription(i));
                 bw.write(sb.toString());
                 bw.newLine();
-                bw.write("TranscriptNumber\t"+String.valueOf(this.getTranscriptNumber(i)));
+                sb = new StringBuilder("TranscriptNumber\t");
+                sb.append(this.getTranscriptNumber(i)).append("\t").append(genes[i].longestTranscriptIndex);
+                bw.write(sb.toString());
                 bw.newLine();
                 for (int j = 0; j < this.getTranscriptNumber(i); j++) {
                     sb = new StringBuilder();
@@ -607,6 +614,7 @@ public class GeneFeature {
                     genes[i].ts.get(j).sort3UTRByPosition();
                     genes[i].ts.get(j).calculateIntron();
                 }
+                genes[i].calculateLongestTranscriptIndex();
             }
         }
         catch (Exception e) {
@@ -630,6 +638,15 @@ public class GeneFeature {
      */
     public int getTranscriptNumber (int index) {
         return genes[index].getTranscriptNumber();
+    }
+    
+    /**
+     * Return the index of the longest transcript of a gene
+     * @param index
+     * @return 
+     */
+    public int getLongestTranscriptIndex (int index) {
+        return genes[index].longestTranscriptIndex;
     }
     
     /**
@@ -659,10 +676,8 @@ public class GeneFeature {
 //     * Return a RangeAttribute object for from all 5UTR
 //     * @return 
 //     */
-//    public RangeAttribute getAllGene5UTRRange () {
-//        ArrayList<Range> rs = new ArrayList();
-//        TByteArrayList byteList = new TByteArrayList();
-//        TFloatArrayList floatList = new TFloatArrayList();
+//    public RangeValStrs getAllGene5UTRRange () {
+//        List<RangeValStr> rs = new ArrayList();
 //        for (int i = 0; i < this.getGeneNumber(); i++) {
 //            if (!this.isThere5UTR(i, 0)) continue;
 //            ArrayList<Range> l = this.get5UTRList(i, 0);
@@ -825,6 +840,7 @@ public class GeneFeature {
         String biotype = null;
         String description = null;
         ArrayList<Transcript> ts = new ArrayList();
+        int longestTranscriptIndex = -1;
         
         public Gene (String geneName, int chr, int start, int end, byte strand, String biotype, String discription) {
             this.geneName = geneName;
@@ -850,8 +866,28 @@ public class GeneFeature {
             return ts.size();
         }
         
+        public int getLongestTranscriptIndex () {
+            return this.longestTranscriptIndex;
+        }
+        
         public int getTranscriptIndex (String transcriptName) {
             return Collections.binarySearch(ts, new Transcript(transcriptName));
+        }
+        
+        public void calculateLongestTranscriptIndex () {
+            int index = -1;
+            int len = -1;
+            for (int i = 0; i < this.getTranscriptNumber(); i++) {
+                if (ts.get(i).transcriptRange.getRangeSize()>len) {
+                    len = ts.get(i).transcriptRange.getRangeSize();
+                    index = i;
+                }
+            }
+            this.longestTranscriptIndex = index;
+        }
+        
+        public void setLongestTranscriptIndex (int index) {
+            this.longestTranscriptIndex = index;
         }
         
         public void sortTranscriptsByName () {
