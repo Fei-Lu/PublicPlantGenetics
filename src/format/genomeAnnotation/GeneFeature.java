@@ -30,7 +30,7 @@ import xuebo.analysis.annotation.FStringUtils;
  */
 public class GeneFeature {
     Gene[] genes;
-    //0 by position, 1 by sort
+    //0 sort by position, 1 by sort by name
     int sortType = 0;
     public GeneFeature () {}
     
@@ -251,10 +251,10 @@ public class GeneFeature {
     }
     
     /**
-     * Return gene index from of a position
+     * Return gene index from of a position, make sure the genes are sorted by position
      * @param chr
      * @param pos
-     * @return 
+     * @return negative value if the position is not in the range of any gene
      */
     public int getGeneIndex (int chr, int pos) {
         if (this.sortType != 0) {
@@ -286,9 +286,9 @@ public class GeneFeature {
     }
     
     /**
-     * Return index of a gene
+     * Return index of a gene, make sure the genes are sorted by name first
      * @param geneName
-     * @return 
+     * @return negative value if the gene name is not found
      */
     public int getGeneIndex (String geneName) {
         if (this.sortType != 1) {
