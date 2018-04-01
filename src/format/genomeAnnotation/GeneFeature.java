@@ -25,7 +25,7 @@ import xuebo.analysis.annotation.FStringUtils;
 
 
 /**
- * Class holding gene feature for fast access. Annotation information from GFF format.
+ * Class holding protein-coding gene feature for fast access. Annotation information from GFF format.
  * @author Fei Lu
  */
 public class GeneFeature {
@@ -35,7 +35,7 @@ public class GeneFeature {
     public GeneFeature () {}
     
     /**
-     * Constructs a object from reading kgf (key gene feature) format 
+     * Constructs a object from reading pgf (key gene feature) format 
      * @param infileS 
      */
     public GeneFeature (String infileS) {
@@ -43,7 +43,7 @@ public class GeneFeature {
     }
     
     /**
-     * Read from kgf file of gene annotation
+     * Read from pgf file of gene annotation
      * @param infileS 
      */
     private void readFile (String infileS) {
@@ -167,7 +167,7 @@ public class GeneFeature {
     }
     
     /**
-     * Write kgf file of gene annotation
+     * Write pgf file of gene annotation
      * @param outfileS 
      */
     public void writeFile (String outfileS) {
@@ -589,7 +589,17 @@ public class GeneFeature {
                     String[] te = tem[8].split(";");
                     String query = te[0].split(":")[1];
                     int index = Arrays.binarySearch(geneNames, query);
-                    genes[index] = new Gene (query, Integer.valueOf(tem[0]), Integer.valueOf(tem[3]), Integer.valueOf(tem[4])+1, (byte)(tem[6].equals("+")? 1:0), te[1].split("=")[1], te[2].split("=")[1]);
+                    String biotype = "NA";
+                    String description = "NA";
+                    for (int j = 1; j < te.length; j++) {
+                        if (te[j].startsWith("biotype")) {
+                            biotype = te[j].replaceFirst("biotype=", "");
+                        }
+                        else if (te[j].startsWith("description")) {
+                            description = te[j].replaceFirst("description=", "");
+                        }
+                    }
+                    genes[index] = new Gene (query, Integer.valueOf(tem[0]), Integer.valueOf(tem[3]), Integer.valueOf(tem[4])+1, (byte)(tem[6].equals("+")? 1:0), biotype, description);
                 }
             }
             for (int i = 0; i < info.length; i++) {
