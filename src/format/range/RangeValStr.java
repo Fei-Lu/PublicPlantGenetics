@@ -55,7 +55,7 @@ public class RangeValStr extends RangeVal {
     
     /**
      * Set the value of the range
-     * @param value 
+     * @param str
      */
     public void setRangeStrand (byte str) {
         this.str = str;
