@@ -7,7 +7,8 @@ package format.genomeAnnotation;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
-import zhouyao.analysis.wheatHapMap.IOUtils;
+import utils.IOUtils;
+
 
 /**
  *

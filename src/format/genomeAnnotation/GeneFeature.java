@@ -21,7 +21,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import utils.IOUtils;
-import xuebo.analysis.annotation.FStringUtils;
+import utils.PStringUtils;
+
 
 
 /**
@@ -125,7 +126,7 @@ public class GeneFeature {
                 }
                 bw.write(">"+title);
                 bw.newLine();
-                bw.write(FStringUtils.getMultiplelineString(60, cdsSeq));
+                bw.write(PStringUtils.getMultiplelineString(60, cdsSeq));
                 bw.newLine();
             }
             bw.flush();
@@ -150,7 +151,7 @@ public class GeneFeature {
                 int chrIndex = genomef.getIndexByName(String.valueOf(this.getGeneChromosome(i)));
                 String chrseq = genomef.getSeq(chrIndex);
                 String geneSeq = chrseq.substring(this.getGeneStart(i)-1, this.getGeneEnd(i)-1);
-                String[] geneSeqs = FStringUtils.getMultilineString(60, geneSeq);
+                String[] geneSeqs = PStringUtils.getMultilineString(60, geneSeq);
                 bw.write(">"+title);
                 bw.newLine();
                 for (int j = 0; j < geneSeqs.length; j++) {
@@ -569,7 +570,7 @@ public class GeneFeature {
             while ((temp = br.readLine()) != null) {
                 char s = temp.charAt(0);
                 if ((int)s < 48 || (int)s > 57) continue;
-                List<String> tList= FStringUtils.fastSplit(temp);
+                List<String> tList= PStringUtils.fastSplit(temp);
                 tem = tList.toArray(new String[tList.size()]);
                 if (tem[2].startsWith("exon")) continue;
                 if (tem[2].startsWith("chromosome")) continue;
