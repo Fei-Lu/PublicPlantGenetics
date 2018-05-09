@@ -16,7 +16,7 @@ public class Range extends RangeAbstract {
     }
 
     @Override
-    public RangeInterface getIntersection(RangeInterface ri) {
+    public Range getIntersection(RangeInterface ri) {
         if (!this.isOverlap(ri)) return null;
         if (this.start < ri.getRangeStart()) return new Range(this.chr, ri.getRangeStart(), this.end < ri.getRangeEnd()? this.end : ri.getRangeEnd());
         return new Range(this.chr, this.start, this.end < ri.getRangeEnd()? this.end : ri.getRangeEnd());

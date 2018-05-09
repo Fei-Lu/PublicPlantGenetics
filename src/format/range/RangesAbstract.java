@@ -152,6 +152,8 @@ public abstract class RangesAbstract implements RangesInterface {
         if (hit < 0) hit = -hit-1;
         while (this.getRange(hit).isContain(chr, pos)) {
             indexList.add(hit);
+            hit++;
+            if (hit > this.getRangeNumber()-1) break;
         }
         return indexList.toArray();
     }
