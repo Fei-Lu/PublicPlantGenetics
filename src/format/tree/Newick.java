@@ -5,20 +5,172 @@
  */
 package format.tree;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.List;
+import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.TreeNode;
+
 /**
  *
  * @author feilu
  */
 public class Newick {
-    TreeNode<NodeWHeight> root = new TreeNode<>(new NodeWHeight("Root", 0));
+    
+    DefaultMutableTreeNode root = new DefaultMutableTreeNode(new NodeWithHeight("root", 0));
+    List<NodeWithHeight> leafList = new ArrayList<>();
+    List<String> taxaList = new ArrayList();
+    HashMap<String, DefaultMutableTreeNode> taxaNodeMap = new HashMap<>();
     
     public Newick (String nwkS) {
-        nwkS = "(B:6.0,(A:5.0,C:3.0,E:4.0):5.0,D:11.0)";
+        //nwkS = "(B:6.0,(A:5.0,C:3.0,E:4.0):5.0,D:11.0)";
         //nwkS = "((raccoon:19.19959,bear:6.80041):0.84600,((sea_lion:11.99700, seal:12.00300):7.52973,((monkey:100.85930,cat:47.14069):20.59201, weasel:18.87953):2.09460):3.87382,dog:25.46154);";
-        this.ParseNwk(nwkS, root);
+        //this.ParseNwk(nwkS, root);
+        this.readNwk(nwkS, root);
+        this.buildTaxaListAndMap();
+        System.out.println(getMaxHeightToRootAcrossTaxa ());
     }
     
-    private void ParseNwk (String nwkS, TreeNode<NodeWHeight> parent) {
+    public double getMaxHeightToRootAcrossTaxa () {
+        double max = -1;
+        for (int i = 0; i < taxaList.size(); i++) {
+            double cHeight = this.getHeightToRoot(taxaList.get(i));
+            if (cHeight > max) max = cHeight;
+        }
+        return max;
+    }
+    
+    public double getHeightToRoot (String taxon) {
+        double[] height = this.getPathToRootOfHeight(taxon);
+        double sum = 0;
+        for (int i = 0; i < height.length; i++) {
+            sum+=height[i];
+        }
+        return sum;
+    }
+    
+    public double getHeightToRoot (DefaultMutableTreeNode node) {
+        double[] height = this.getPathToRootOfHeight(node);
+        double sum = 0;
+        for (int i = 0; i < height.length; i++) {
+            sum+=height[i];
+        }
+        return sum;
+    }
+    
+    public double[] getPathToRootOfHeight (DefaultMutableTreeNode node) {
+        NodeWithHeight[] nhPath = this.getPathToRoot(node);
+        double[] heightPath = new double[nhPath.length];
+        for (int i = 0; i < heightPath.length; i++) {
+            heightPath[i] = nhPath[i].getHeight();
+        }
+        return heightPath;
+    }
+    
+    public String[] getPathToRootOfTaxa (DefaultMutableTreeNode node) {
+        NodeWithHeight[] nhPath = this.getPathToRoot(node);
+        String[] taxaPath = new String[nhPath.length];
+        for (int i = 0; i < taxaPath.length; i++) {
+            taxaPath[i] = nhPath[i].getName();
+            System.out.println(taxaPath[i]);
+        }
+        return taxaPath;
+    }
+    
+    public double[] getPathToRootOfHeight (String taxon) {
+        NodeWithHeight[] nhPath = this.getPathToRoot(taxon);
+        double[] heightPath = new double[nhPath.length];
+        for (int i = 0; i < heightPath.length; i++) {
+            heightPath[i] = nhPath[i].getHeight();
+        }
+        return heightPath;
+    }
+    
+    public String[] getPathToRootOfTaxa (String taxon) {
+        NodeWithHeight[] nhPath = this.getPathToRoot(taxon);
+        String[] taxaPath = new String[nhPath.length];
+        for (int i = 0; i < taxaPath.length; i++) {
+            taxaPath[i] = nhPath[i].getName();
+            System.out.println(taxaPath[i]);
+        }
+        return taxaPath;
+    }
+    
+    private NodeWithHeight[] getPathToRoot (String taxon) {
+        DefaultMutableTreeNode tnode = this.getTaxonNode(taxon);
+        TreeNode[] path = tnode.getPath();
+        NodeWithHeight[] nhPath = new NodeWithHeight[path.length];
+        for (int i = 0; i < path.length; i++) {
+            DefaultMutableTreeNode no = (DefaultMutableTreeNode)path[i];
+            NodeWithHeight nh = (NodeWithHeight)no.getUserObject();
+            nhPath[i] = nh;
+        }
+        return nhPath;
+    }
+    
+    private NodeWithHeight[] getPathToRoot (DefaultMutableTreeNode node) {
+        TreeNode[] path = node.getPath();
+        NodeWithHeight[] nhPath = new NodeWithHeight[path.length];
+        for (int i = 0; i < path.length; i++) {
+            DefaultMutableTreeNode no = (DefaultMutableTreeNode)path[i];
+            NodeWithHeight nh = (NodeWithHeight)no.getUserObject();
+            nhPath[i] = nh;
+        }
+        return nhPath;
+    }
+    
+    public DefaultMutableTreeNode getTaxonNode (String taxon) {
+        return taxaNodeMap.get(taxon);
+    }
+    
+    public double getDistanceBetweenTaxa (String taxon1, String taxon2) {
+        DefaultMutableTreeNode sNode = this.getSharedAncesterNode(taxon1, taxon2);
+        double dis = this.getHeightToRoot(taxon1) + this.getHeightToRoot(taxon2)-2*this.getHeightToRoot(sNode);
+        return dis;
+    }
+    
+    public String getSharedAncesterTaxon (String taxon1, String taxon2) {
+        DefaultMutableTreeNode node = this.getSharedAncesterNode(taxon1, taxon2);
+        return Newick.getTaxonName(node);
+    }
+    
+    public DefaultMutableTreeNode getSharedAncesterNode (String taxon1, String taxon2) {
+        DefaultMutableTreeNode tnode = this.getTaxonNode(taxon1);
+        TreeNode t = tnode.getSharedAncestor(this.getTaxonNode(taxon2));
+        DefaultMutableTreeNode sNode= (DefaultMutableTreeNode)t;
+        return sNode;
+    }
+    
+    public static String getTaxonName (DefaultMutableTreeNode node) {
+        return ((NodeWithHeight)node.getUserObject()).getName();
+    }
+    
+    public static double getHeight (DefaultMutableTreeNode node) {
+        return ((NodeWithHeight)node.getUserObject()).getHeight();
+    }
+    
+    public int getTaxaCount () {
+        return taxaList.size();
+    }
+    
+    private void buildTaxaListAndMap () {
+        Enumeration e = root.breadthFirstEnumeration();
+        while (e.hasMoreElements()) {
+            DefaultMutableTreeNode d = (DefaultMutableTreeNode)e.nextElement();
+            if (!d.isLeaf()) continue;
+            NodeWithHeight ee = (NodeWithHeight)d.getUserObject();
+            leafList.add(ee);
+            taxaNodeMap.put(ee.getName(), d);
+        }
+        Collections.sort(leafList);
+        for (int i = 0; i < leafList.size(); i++) {
+            taxaList.add(leafList.get(i).getName());
+        }
+    }
+    
+    private void readNwk (String nwkS, DefaultMutableTreeNode parent) {
         if (nwkS.endsWith(";")) nwkS = nwkS.replaceFirst(";", "");
         if (nwkS.startsWith("(") && nwkS.endsWith(")")) {
             nwkS = nwkS.substring(1, nwkS.length()-1);
@@ -32,36 +184,37 @@ public class Newick {
                 if (cnt == 0) {
                     String currentNwkS = nwkS.substring(currentIndex, i);
                     currentIndex = i+1;
-                    System.out.println(currentNwkS);
-                    if (currentNwkS.contains(")")) {
-                        int cIndex = currentNwkS.length()-1;
-                        for (int j = 0; j < currentNwkS.length(); j++) {
-                            if (currentNwkS.charAt(cIndex) == ':') break;
-                            cIndex--;
-                        }
-                        TreeNode<NodeWHeight> child = new TreeNode<>(new NodeWHeight(currentNwkS.substring(0, cIndex), Double.parseDouble(currentNwkS.substring(cIndex+1, currentNwkS.length()))));
-                        parent.addChild(child);
-                        //this.ParseNwk(currentNwkS, child);
-                    }
-                }
-            }
-            if (i == nwkS.length()-1) {
-                String currentNwkS = nwkS.substring(currentIndex, i+1);
-                System.out.println(currentNwkS);
-                if (currentNwkS.contains(")")) {
+                    //System.out.println(currentNwkS);                    
                     int cIndex = currentNwkS.length()-1;
                     for (int j = 0; j < currentNwkS.length(); j++) {
                         if (currentNwkS.charAt(cIndex) == ':') break;
                         cIndex--;
                     }
-                    TreeNode<NodeWHeight> child = new TreeNode<>(new NodeWHeight(currentNwkS.substring(0, cIndex), Double.parseDouble(currentNwkS.substring(cIndex+1, currentNwkS.length()))));
-                    parent.addChild(child);
-                    //this.ParseNwk(currentNwkS, child);
+                    String name = currentNwkS.substring(0, cIndex);
+                    double height = Double.parseDouble(currentNwkS.substring(cIndex+1, currentNwkS.length()));
+                    DefaultMutableTreeNode child = new DefaultMutableTreeNode(new NodeWithHeight(name, height));
+                    parent.add(child);
+                    if (name.contains(")")){
+                        this.readNwk(name, child);
+                    }                                                
                 }
             }
+            if (i == nwkS.length()-1) {
+                String currentNwkS = nwkS.substring(currentIndex, i+1);
+                //System.out.println(currentNwkS);
+                int cIndex = currentNwkS.length()-1;
+                for (int j = 0; j < currentNwkS.length(); j++) {
+                    if (currentNwkS.charAt(cIndex) == ':') break;
+                    cIndex--;
+                }
+                String name = currentNwkS.substring(0, cIndex);
+                double height = Double.parseDouble(currentNwkS.substring(cIndex+1, currentNwkS.length()));
+                DefaultMutableTreeNode child = new DefaultMutableTreeNode(new NodeWithHeight(name, height));
+                parent.add(child);
+                if (name.contains(")")){
+                    this.readNwk(name, child);
+                }                     
+            }
         }
-        
-        
-        
     }
 }

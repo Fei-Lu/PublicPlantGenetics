@@ -9,13 +9,13 @@ package format.tree;
  *
  * @author feilu
  */
-public class NodeWHeight {
+public class NodeWithHeight implements Comparable<NodeWithHeight> {
     
     String name = null;
     
     double height = 0;
     
-    public NodeWHeight (String name, double height) {
+    public NodeWithHeight (String name, double height) {
         this.name = name;
         this.height = height;
     }
@@ -26,5 +26,13 @@ public class NodeWHeight {
     
     public double getHeight () {
         return height;
+    }
+
+    @Override
+    public int compareTo(NodeWithHeight o) {
+        return name.compareTo(o.name);
+//        if (this.height < o.height) return -1;
+//        else if (this.height > o.height) return 1;
+//        return 0;
     }
 }
