@@ -27,7 +27,15 @@ public class NodeWithHeight implements Comparable<NodeWithHeight> {
     public double getHeight () {
         return height;
     }
-
+    
+    public void setName (String name) {
+        this.name = name;
+    }
+    
+    public void setHeight (double height) {
+        this.height = height;
+    }
+    
     @Override
     public int compareTo(NodeWithHeight o) {
         return name.compareTo(o.name);

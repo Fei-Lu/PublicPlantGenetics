@@ -27,10 +27,72 @@ public class Newick {
     public Newick (String nwkS) {
         //nwkS = "(B:6.0,(A:5.0,C:3.0,E:4.0):5.0,D:11.0)";
         //nwkS = "((raccoon:19.19959,bear:6.80041):0.84600,((sea_lion:11.99700, seal:12.00300):7.52973,((monkey:100.85930,cat:47.14069):20.59201, weasel:18.87953):2.09460):3.87382,dog:25.46154);";
-        //this.ParseNwk(nwkS, root);
         this.readNwk(nwkS, root);
         this.buildTaxaListAndMap();
-        System.out.println(getMaxHeightToRootAcrossTaxa ());
+    }
+    
+    /**
+     * 
+     * @param n
+     * @return 
+     */
+    public List<String> selectTaxaWithMaxDiversity (int n) {
+        while (root.getLeafCount() > n) {
+            DefaultMutableTreeNode minDmt = this.getLeafNodeWithMinHeight();
+            DefaultMutableTreeNode parentDmt = (DefaultMutableTreeNode)minDmt.getParent();
+            minDmt.removeFromParent();
+            if (parentDmt.getChildCount() == 1) {
+                NodeWithHeight parentNwh = (NodeWithHeight)parentDmt.getUserObject();
+                DefaultMutableTreeNode childDmt = (DefaultMutableTreeNode)parentDmt.getFirstChild();
+                NodeWithHeight childNwh = (NodeWithHeight)childDmt.getUserObject();
+                double newParentHeight = parentNwh.height+childNwh.height;
+                DefaultMutableTreeNode newParent = new DefaultMutableTreeNode(new NodeWithHeight(childNwh.name, newParentHeight));
+                DefaultMutableTreeNode grandDmt = (DefaultMutableTreeNode)parentDmt.getParent();
+                parentDmt.removeFromParent();
+                grandDmt.add(newParent);
+            }
+        }
+        leafList.clear();
+        taxaList.clear();
+        taxaNodeMap.clear();
+        this.buildTaxaListAndMap();
+        return this.taxaList;
+    }
+    
+    public DefaultMutableTreeNode getLeafNodeWithMinHeight () {
+        DefaultMutableTreeNode currentDmt = null;
+        double currentV = Double.MAX_VALUE;
+        Enumeration e = root.breadthFirstEnumeration();
+        while (e.hasMoreElements()) {
+            DefaultMutableTreeNode d = (DefaultMutableTreeNode)e.nextElement();
+            if (!d.isLeaf()) continue;
+            NodeWithHeight ee = (NodeWithHeight)d.getUserObject();
+            if (ee.getHeight() < currentV) {
+                currentV = ee.getHeight();
+                currentDmt = d;
+            }
+        }
+        return currentDmt;
+    }
+    
+    public String getTaxonWithMinHeight () {
+        String currentT = null;
+        double currentV = Double.MAX_VALUE;
+        for (int i = 0; i < taxaList.size(); i++) {
+            DefaultMutableTreeNode dmt = this.getTaxonNode(taxaList.get(i));
+            NodeWithHeight nwh = (NodeWithHeight)dmt.getUserObject();
+            if (nwh.getHeight() < currentV) {
+                currentT = nwh.getName();
+                currentV = nwh.getHeight();
+            }
+        }
+        return currentT;
+    }
+    
+    public double getHeight (String taxon) {
+        DefaultMutableTreeNode dmt = this.getTaxonNode(taxon);
+        NodeWithHeight nwh = (NodeWithHeight)dmt.getUserObject();
+        return nwh.height;
     }
     
     public double getMaxHeightToRootAcrossTaxa () {
