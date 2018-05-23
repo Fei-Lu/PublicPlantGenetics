@@ -25,8 +25,6 @@ public class Newick {
     HashMap<String, DefaultMutableTreeNode> taxaNodeMap = new HashMap<>();
     
     public Newick (String nwkS) {
-        //nwkS = "(B:6.0,(A:5.0,C:3.0,E:4.0):5.0,D:11.0)";
-        //nwkS = "((raccoon:19.19959,bear:6.80041):0.84600,((sea_lion:11.99700, seal:12.00300):7.52973,((monkey:100.85930,cat:47.14069):20.59201, weasel:18.87953):2.09460):3.87382,dog:25.46154);";
         this.readNwk(nwkS, root);
         this.buildTaxaListAndMap();
     }
@@ -44,12 +42,15 @@ public class Newick {
             if (parentDmt.getChildCount() == 1) {
                 NodeWithHeight parentNwh = (NodeWithHeight)parentDmt.getUserObject();
                 DefaultMutableTreeNode childDmt = (DefaultMutableTreeNode)parentDmt.getFirstChild();
-                NodeWithHeight childNwh = (NodeWithHeight)childDmt.getUserObject();
+                NodeWithHeight childNwh = (NodeWithHeight)childDmt.getUserObject();                
                 double newParentHeight = parentNwh.height+childNwh.height;
                 DefaultMutableTreeNode newParent = new DefaultMutableTreeNode(new NodeWithHeight(childNwh.name, newParentHeight));
+                if (!childDmt.isLeaf()) {
+                    newParent.add(childDmt);
+                }
                 DefaultMutableTreeNode grandDmt = (DefaultMutableTreeNode)parentDmt.getParent();
                 parentDmt.removeFromParent();
-                grandDmt.add(newParent);
+                grandDmt.add(newParent);                
             }
         }
         leafList.clear();
