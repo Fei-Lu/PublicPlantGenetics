@@ -104,7 +104,7 @@ public abstract class RangesAbstract implements RangesInterface {
         RangeInterface query = new Range(chr+1, Integer.MIN_VALUE, Integer.MIN_VALUE);
         int hit  = Collections.binarySearch(getRangeList(), query);
         if (hit < 0) {
-            int index = -hit-1;
+            int index = -hit-2;
             if (this.getRangeChromosome(index) == chr) return index;
             return hit;
         }
@@ -118,7 +118,7 @@ public abstract class RangesAbstract implements RangesInterface {
         for (int i = 0; i < this.getRangeNumber(); i++) {
             s.add(this.getRangeChromosome(i));
         }
-        this.chrs = s.toArray(chrs);
+        this.chrs = s.toIntArray();
         Arrays.sort(chrs);
         return chrs;
     }
