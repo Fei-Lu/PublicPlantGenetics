@@ -18,6 +18,8 @@ public class LibGBSGo {
     String workingDirS = null;
     String barcodeFileS = null;
     String libraryFastqMapFileS = null;
+    String cutter1 = null;
+    String cutter2 = null;
     String[] subDirS = {"tagsBySample","tagsLibrary","alignment", "rawGenotype", "filteredGenotype"};
     LibraryInfo li = null;
     
@@ -27,9 +29,11 @@ public class LibGBSGo {
     }
     
     public void mkTagsBySample () {
-        li = new LibraryInfo(barcodeFileS, libraryFastqMapFileS);
+        li = new LibraryInfo(barcodeFileS, libraryFastqMapFileS, this.cutter1, this.cutter2);
+        String tagBySampleDirS = new File (this.workingDirS, this.subDirS[0]).getAbsolutePath();
+        String tagLibraryDirS = new File (this.workingDirS, this.subDirS[1]).getAbsolutePath();
         TagParser tp = new TagParser(li);
-        tp.parseFastq();
+        tp.parseFastq(tagBySampleDirS);
         tp.compressTagsBySample();
         tp.mergeTagsBySample();
     }
@@ -59,6 +63,8 @@ public class LibGBSGo {
         this.workingDirS = paList.get(0);
         this.barcodeFileS = paList.get(1);
         this.libraryFastqMapFileS = paList.get(2);
+        this.cutter1 = paList.get(3).toUpperCase();
+        this.cutter2 = paList.get(4).toUpperCase();
         File workingDir = new File(this.workingDirS);
         workingDir.mkdir();
         for (int i = 0; i < this.subDirS.length; i++) {

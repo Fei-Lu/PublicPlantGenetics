@@ -27,16 +27,53 @@ public class LibraryInfo {
     String[][] barcodeR2 = null;
     HashMap<String, Set<String>>[] barcodeR1TaxaMaps = null;
     HashMap<String, Set<String>>[] barcodeR2TaxaMaps = null;
-    HashMap<String, String>[][] taxaOutputFileSMaps = null;
     String[] libFastqsR1 = null;
     String[] libFastqsR2 = null;
+    String cutter1 = null;
+    String cutter2 = null;
     
-    public LibraryInfo (String barcodeFileS, String libraryFastqMapFileS) {
+    public LibraryInfo (String barcodeFileS, String libraryFastqMapFileS, String cutter1, String cutter2) {
         this.parseBarcode(barcodeFileS, libraryFastqMapFileS);
+        this.cutter1 = cutter1;
+        this.cutter2 = cutter2;
+    }
+    
+    public int getLibraryNumber () {
+        return libs.length;
+    }
+    
+    public String[] getLibArray () {
+        String[] na = new String[libs.length];
+        System.arraycopy(libs, 0, na, 0, libs.length);
+        return na;
+    }
+    
+    public String getCutter1 () {
+        return this.cutter1;
+    }
+    
+    public String getCutter2 () {
+        return this.cutter2;
     }
     
     public String getLibraryName (int index) {
         return libs[index];
+    }
+    
+    public String[] getTaxaNames (int index) {
+        return taxaNames[index];
+    }
+    
+    public String[] getLibBarcodeR1 (int index) {
+        String[] na = new String[barcodeR1[index].length];
+        System.arraycopy(barcodeR1[index], 0, na, 0, barcodeR1[index].length);
+        return na;
+    }
+    
+    public String[] getLibBarcodeR2 (int index) {
+        String[] na = new String[barcodeR2[index].length];
+        System.arraycopy(barcodeR2[index], 0, na, 0, barcodeR2[index].length);
+        return na;
     }
     
     public HashMap<String, Set<String>> getbarcodeR1TaxaMap (int index) {
@@ -52,7 +89,7 @@ public class LibraryInfo {
     }
     
     public String getFastqFileSR2 (int index) {
-        return libFastqsR1[index];
+        return libFastqsR2[index];
     }
     
     private void parseBarcode (String barcodeFileS, String libraryFastqMapFileS) {
