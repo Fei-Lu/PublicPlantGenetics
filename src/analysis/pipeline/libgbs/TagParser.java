@@ -6,11 +6,13 @@
 package analysis.pipeline.libgbs;
 
 import gnu.trove.list.array.TDoubleArrayList;
+import graphcis.r.DensityPlot;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Set;
 import utils.IOUtils;
 
@@ -20,6 +22,8 @@ import utils.IOUtils;
  */
 public class TagParser {
     LibraryInfo li = null;
+    int minReadLength = 32;
+    int maxReadLength = 96;
     
     public TagParser (LibraryInfo li) {
         this.li = li;
@@ -80,9 +84,15 @@ public class TagParser {
             BufferedWriter bw = null;
             int totalCnt = 0;
             int processedCnt = 0;
+            System.out.println("Parsing " + fastqR1 + "\t" + fastqR2);
+            String readR1 = null;
+            String readR2 = null;            
             while ((temp1 = br1.readLine()) != null) {
-                totalCnt++;
                 temp2 = br2.readLine();
+                totalCnt++;
+                if (totalCnt%1000000 == 0) {
+                    System.out.println("Total read count: "+String.valueOf(totalCnt)+"\tPassed read count: "+processedCnt);
+                }
                 temp1 = br1.readLine(); temp2 = br2.readLine();
                 index1 = Arrays.binarySearch(barcodeR1, temp1);
                 index2 = Arrays.binarySearch(barcodeR2, temp2);
@@ -91,28 +101,29 @@ public class TagParser {
                     br1.readLine(); br2.readLine();
                     continue;
                 }
-                index1 = -index1 - 2;index2 = -index2 - 2;
+                index1 = -index1 - 2;
+                index2 = -index2 - 2;
                 taxaSR1 = barcodeR1TaxaMap.get(barcodeR1[index1]);
                 taxaSR2 = barcodeR2TaxaMap.get(barcodeR2[index2]);
-                taxaSR1.retainAll(taxaSR2);
-                if (taxaSR1.size() != 1) {
+                Set<String> newSet = new HashSet<>(taxaSR1);
+                newSet.retainAll(taxaSR2);
+                if (newSet.size() != 1) {
                     br1.readLine(); br2.readLine();
                     br1.readLine(); br2.readLine();
                     continue;
-                }
-                temp1 = temp1.substring(barcodeR1[index1].length()-1, temp1.length());
-                temp2 = temp2.substring(barcodeR2[index2].length()-1, temp2.length());
-                temp1 = this.getProcessedRead(cutter1, cutter2, temp1);
-                temp2 = this.getProcessedRead(cutter1, cutter2, temp2);
-                
-               
+                }      
+                readR1 = this.getProcessedRead(cutter1, cutter2, temp1, barcodeR1[index1].length());
+                readR2 = this.getProcessedRead(cutter1, cutter2, temp2, barcodeR2[index2].length());
+                bw = taxaWriterMap.get(newSet.toArray(new String[newSet.size()])[0]);
                 
                 
                 
-                
-                
-                temp1 = br1.readLine(); temp2 = br2.readLine();
-                temp1 = br1.readLine(); temp2 = br2.readLine();
+                bw.write(readR1);
+                bw.newLine();
+                bw.write(readR2);
+                bw.newLine();
+                br1.readLine(); br2.readLine();
+                br1.readLine(); br2.readLine();
                 processedCnt++;
             }
             for (int i = 0; i < bws.length; i++) {
@@ -121,7 +132,8 @@ public class TagParser {
             }
             br1.close();
             br2.close();
-            System.out.println(totalCnt+"\t"+processedCnt);
+            System.out.println("Finished parsing " + fastqR1 + "\t" + fastqR2);
+            System.out.println("Total read count: "+String.valueOf(totalCnt)+". \tPassed read count: "+processedCnt);
         }
         catch (Exception e) {
             e.printStackTrace();
@@ -131,11 +143,10 @@ public class TagParser {
             System.exit(1);
             System.out.println("Program quits");
         }
-        
-        int a = 3;
     }
     
-    private String getProcessedRead (String cutter1, String cutter2, String read) {
+    private String getProcessedRead (String cutter1, String cutter2, String read, int barcodeLength) {
+        read = read.substring(barcodeLength, read.length());
         int index1 = read.indexOf(cutter1);
         int index2 = read.indexOf(cutter2);
         if (index1 < 0) {
