@@ -145,7 +145,7 @@ public class LibraryInfo {
         for (int i = 0; i < libs.length; i++) {
             int index = Collections.binarySearch(lList, libs[i]);
             if (index < 0) {
-                System.out.println("Something in the libraryFastqMapFileS. Program quits");
+                System.out.println("Something wrong in the libraryFastqMapFileS. Program quits");
                 System.exit(1);
             }
             this.libFastqsR1[i] = t.getCell(index, 1);

@@ -34,7 +34,7 @@ public class LibGBSGo {
         String tagLibraryDirS = new File (this.workingDirS, this.subDirS[1]).getAbsolutePath();
         TagParser tp = new TagParser(li);
         tp.parseFastq(tagBySampleDirS);
-        tp.compressTagsBySample();
+        tp.compressTagsBySample(tagBySampleDirS);
         tp.mergeTagsBySample();
     }
     

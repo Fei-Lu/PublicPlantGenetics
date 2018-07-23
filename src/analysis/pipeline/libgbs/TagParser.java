@@ -5,16 +5,18 @@
  */
 package analysis.pipeline.libgbs;
 
-import gnu.trove.list.array.TDoubleArrayList;
-import graphcis.r.DensityPlot;
+import com.koloboke.collect.map.hash.HashByteByteMap;
+import format.dna.BaseEncoder;
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
+import java.io.DataOutputStream;
 import java.io.File;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import utils.IOUtils;
+import utils.PArrayUtils;
 
 /**
  *
@@ -22,8 +24,10 @@ import utils.IOUtils;
  */
 public class TagParser {
     LibraryInfo li = null;
-    int minReadLength = 32;
-    int maxReadLength = 96;
+    int chunkSize = 3;
+    String polyA = "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA";
+    int setReadLength = chunkSize*BaseEncoder.longChunkSize;
+    int paraLevel = 8;
     
     public TagParser (LibraryInfo li) {
         this.li = li;
@@ -31,28 +35,42 @@ public class TagParser {
     
     public void parseFastq(String tagBySampleDirS) {
         String[] libs = li.getLibArray();
-        for (int i = 0; i < libs.length; i++) {
-            String fastqR1 = li.getFastqFileSR1(i);
-            String fastqR2 = li.getFastqFileSR2(i);
-            HashMap<String, Set<String>> barcodeR1TaxaMap = li.getbarcodeR1TaxaMap(i);
-            HashMap<String, Set<String>> barcodeR2TaxaMap = li.getbarcodeR2TaxaMap(i);
-            String[] taxaNames = li.getTaxaNames(i);
-            String cutter1 = li.getCutter1();
-            String cutter2 = li.getCutter2();
-            this.splitFastq(fastqR1, fastqR2, barcodeR1TaxaMap, barcodeR2TaxaMap, taxaNames, tagBySampleDirS, cutter1, cutter2);
+        int[][] indices = PArrayUtils.getSubsetsIndicesBySubsetSize(libs.length, this.paraLevel);
+        for (int i = 0; i < indices.length; i++) {
+            Integer[] subLibIndices = new Integer[indices[i][1]-indices[i][0]];
+            for (int j = 0; j < subLibIndices.length; j++) {
+                subLibIndices[j] = indices[i][0]+j;
+            }
+            List<Integer> indexList = Arrays.asList(subLibIndices);
+            indexList.parallelStream().forEach(index -> {
+                String fastqR1 = li.getFastqFileSR1(index);
+                String fastqR2 = li.getFastqFileSR2(index);
+                HashMap<String, Set<String>> barcodeR1TaxaMap = li.getbarcodeR1TaxaMap(index);
+                HashMap<String, Set<String>> barcodeR2TaxaMap = li.getbarcodeR2TaxaMap(index);
+                String[] taxaNames = li.getTaxaNames(index);
+                String cutter1 = li.getCutter1();
+                String cutter2 = li.getCutter2();
+                this.splitFastq(fastqR1, fastqR2, barcodeR1TaxaMap, barcodeR2TaxaMap, taxaNames, tagBySampleDirS, cutter1, cutter2);
+            });
         }
-        
     }
     
     private void splitFastq (String fastqR1, String fastqR2, 
             HashMap<String, Set<String>> barcodeR1TaxaMap, HashMap<String, Set<String>> barcodeR2TaxaMap, String[] taxaNames, String tagBySampleDirS, String cutter1, String cutter2) {
-        HashMap<String, BufferedWriter> taxaWriterMap = new HashMap<>();
-        BufferedWriter[] bws = new BufferedWriter[taxaNames.length];
+        HashMap<String, DataOutputStream> taxaWriterMap = new HashMap<>();
+        DataOutputStream[] doss = new DataOutputStream[taxaNames.length];
         for (int i = 0; i < taxaNames.length; i++) {
             String outfile = new File(tagBySampleDirS, taxaNames[i]+".bin").getAbsolutePath();
-            BufferedWriter bw = IOUtils.getTextWriter(outfile);
-            taxaWriterMap.put(taxaNames[i], bw);
-            bws[i] = bw;
+            DataOutputStream dos = IOUtils.getBinaryWriter(outfile);
+            try {
+                dos.writeInt(this.chunkSize);
+                dos.writeInt(-1);
+            }
+            catch (Exception e) {
+                e.printStackTrace();
+            }
+            taxaWriterMap.put(taxaNames[i], dos);
+            doss[i] = dos;
         }          
         try {
             BufferedReader br1 = null;
@@ -81,12 +99,15 @@ public class TagParser {
             int index2 = -1;
             Set<String> taxaSR1 = null;
             Set<String> taxaSR2 = null;
-            BufferedWriter bw = null;
+            DataOutputStream dos = null;
             int totalCnt = 0;
             int processedCnt = 0;
             System.out.println("Parsing " + fastqR1 + "\t" + fastqR2);
             String readR1 = null;
-            String readR2 = null;            
+            String readR2 = null;
+            byte readR1Len = 0;
+            byte readR2Len = 0;
+            HashByteByteMap ascIIByteMap = BaseEncoder.getAscIIByteMap();
             while ((temp1 = br1.readLine()) != null) {
                 temp2 = br2.readLine();
                 totalCnt++;
@@ -114,26 +135,28 @@ public class TagParser {
                 }      
                 readR1 = this.getProcessedRead(cutter1, cutter2, temp1, barcodeR1[index1].length());
                 readR2 = this.getProcessedRead(cutter1, cutter2, temp2, barcodeR2[index2].length());
-                bw = taxaWriterMap.get(newSet.toArray(new String[newSet.size()])[0]);
-                
-                
-                
-                bw.write(readR1);
-                bw.newLine();
-                bw.write(readR2);
-                bw.newLine();
+                readR1Len = (byte)readR1.length();
+                readR2Len = (byte)readR2.length();
+                long[] tag = this.getTagFromReads(readR1, readR2, ascIIByteMap);
+                dos = taxaWriterMap.get(newSet.toArray(new String[newSet.size()])[0]);
+                for (int i = 0; i < tag.length; i++) {
+                    dos.writeLong(tag[i]);
+                }
+                dos.writeByte(readR1Len);
+                dos.writeByte(readR2Len);
+                dos.writeInt(1);               
                 br1.readLine(); br2.readLine();
                 br1.readLine(); br2.readLine();
                 processedCnt++;
             }
-            for (int i = 0; i < bws.length; i++) {
-                bws[i].flush();
-                bws[i].close();
+            for (int i = 0; i < doss.length; i++) {
+                doss[i].flush();
+                doss[i].close();
             }
             br1.close();
             br2.close();
             System.out.println("Finished parsing " + fastqR1 + "\t" + fastqR2);
-            System.out.println("Total read count: "+String.valueOf(totalCnt)+". \tPassed read count: "+processedCnt);
+            System.out.println("Total read count: "+String.valueOf(totalCnt)+" \tPassed read count: "+processedCnt);
         }
         catch (Exception e) {
             e.printStackTrace();
@@ -143,6 +166,35 @@ public class TagParser {
             System.exit(1);
             System.out.println("Program quits");
         }
+    }
+    
+    private long[] getTagFromReads (String readR1, String readR2, HashByteByteMap ascIIByteMap) {
+        long[] tag = new long[2*this.chunkSize];
+        StringBuilder sb = new StringBuilder(readR1);
+        if (sb.length()<this.setReadLength) {
+            sb.append(this.polyA);
+            readR1 = sb.substring(0, this.setReadLength);
+        }
+        sb = new StringBuilder(readR2);
+        if (sb.length()<this.setReadLength) {
+            sb.append(this.polyA);
+            readR2 = sb.substring(0, this.setReadLength);
+        }
+        byte[] bArray = readR1.getBytes();
+        for (int i = 0; i < bArray.length; i++) {
+            bArray[i] = ascIIByteMap.get(bArray[i]);
+        }
+        for (int i = 0; i < this.chunkSize; i++) {
+            tag[i] = BaseEncoder.getLongSeqFromSubByteArray(bArray, i*BaseEncoder.longChunkSize, (i+1)*BaseEncoder.longChunkSize);
+        }
+        bArray = readR2.getBytes();
+        for (int i = 0; i < bArray.length; i++) {
+            bArray[i] = ascIIByteMap.get(bArray[i]);
+        }
+        for (int i = 0; i < this.chunkSize; i++) {
+            tag[i+this.chunkSize] = BaseEncoder.getLongSeqFromSubByteArray(bArray, i*BaseEncoder.longChunkSize, (i+1)*BaseEncoder.longChunkSize);
+        }
+        return tag;
     }
     
     private String getProcessedRead (String cutter1, String cutter2, String read, int barcodeLength) {
@@ -168,8 +220,12 @@ public class TagParser {
         }
     }
     
-    public void compressTagsBySample () {
-        
+    public void compressTagsBySample (String tagBySampleDirS) {
+        File[] fs = new File(tagBySampleDirS).listFiles();
+        fs = IOUtils.listFilesEndsWith(fs, ".bin");
+        for (int i = 0; i < fs.length; i++) {
+            
+        }
     }
     
     public void mergeTagsBySample () {
