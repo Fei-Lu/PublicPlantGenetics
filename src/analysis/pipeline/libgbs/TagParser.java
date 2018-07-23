@@ -10,6 +10,7 @@ import format.dna.BaseEncoder;
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -223,8 +224,20 @@ public class TagParser {
     public void compressTagsBySample (String tagBySampleDirS) {
         File[] fs = new File(tagBySampleDirS).listFiles();
         fs = IOUtils.listFilesEndsWith(fs, ".bin");
-        for (int i = 0; i < fs.length; i++) {
-            
+        int[][] indices = PArrayUtils.getSubsetsIndicesBySubsetSize(fs.length, this.paraLevel);
+        for (int i = 0; i < indices.length; i++) {
+            Integer[] indexes = new Integer[indices[i][1]-indices[i][0]];
+            List<File> subFList = new ArrayList();
+            for (int j = indices[i][0]; j < indices[i][1]; j++) {
+                subFList.add(fs[j]);
+            }
+            subFList.parallelStream().forEach(f -> {
+                String taxonName = f.getName().replaceFirst(".bin", "");
+                String oufileS = new File (tagBySampleDirS, taxonName+".sbin").getAbsolutePath();
+                TagCount tc = new TagCount(f.getAbsolutePath());
+                tc.collapseCounts();
+                tc.writeBinaryFile(oufileS);
+            });
         }
     }
     
