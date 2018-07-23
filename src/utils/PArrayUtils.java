@@ -20,7 +20,7 @@ import org.apache.commons.lang.ArrayUtils;
  *
  * @author Fei Lu 
  */
-public class FArrayUtils {
+public class PArrayUtils {
     
     /**
      * Return the indices of unique string from input string array,
