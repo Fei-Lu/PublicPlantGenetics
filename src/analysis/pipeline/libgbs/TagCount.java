@@ -39,7 +39,7 @@ public class TagCount implements Swapper, IntComparator {
             DataInputStream dis = IOUtils.getBinaryReader(infileS);
             this.tagLengthInLong = dis.readInt();
             tagNum = dis.readInt();
-            if (tagNum == -1) tagNum = (int)((new File(infileS).length()-8)/(tagLengthInLong*BaseEncoder.longChunkSize+2+4));
+            if (tagNum == -1) tagNum = (int)((new File(infileS).length()-8)/(tagLengthInLong*2*8+2+4));
             tags = new long[tagNum][2*this.tagLengthInLong];
             r1Len = new byte[tagNum];
             r2Len = new byte[tagNum];
@@ -103,7 +103,7 @@ public class TagCount implements Swapper, IntComparator {
     @Override
     public void swap (int index1, int index2) {
         long temp;
-        for (int i = 0; i < tagLengthInLong; i++) {
+        for (int i = 0; i < tagLengthInLong*2; i++) {
             temp = tags[index1][i];
             tags[index1][i] = tags[index2][i];
             tags[index2][i] = temp;
@@ -123,7 +123,7 @@ public class TagCount implements Swapper, IntComparator {
 
     @Override
     public int compare (int index1, int index2) {
-        for (int i = 0; i < tagLengthInLong; i++) {
+        for (int i = 0; i < tagLengthInLong*2; i++) {
             if (tags[index1][i] < tags[index2][i]) {
                 return -1;
             }

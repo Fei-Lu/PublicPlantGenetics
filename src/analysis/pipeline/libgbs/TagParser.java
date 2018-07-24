@@ -25,9 +25,9 @@ import utils.PArrayUtils;
  */
 public class TagParser {
     LibraryInfo li = null;
-    int chunkSize = 3;
+    int tagLengthInLong = 3;
     String polyA = "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA";
-    int setReadLength = chunkSize*BaseEncoder.longChunkSize;
+    int setReadLength = tagLengthInLong*BaseEncoder.longChunkSize;
     int paraLevel = 8;
     
     public TagParser (LibraryInfo li) {
@@ -64,7 +64,7 @@ public class TagParser {
             String outfile = new File(tagBySampleDirS, taxaNames[i]+".bin").getAbsolutePath();
             DataOutputStream dos = IOUtils.getBinaryWriter(outfile);
             try {
-                dos.writeInt(this.chunkSize);
+                dos.writeInt(this.tagLengthInLong);
                 dos.writeInt(-1);
             }
             catch (Exception e) {
@@ -136,6 +136,8 @@ public class TagParser {
                 }      
                 readR1 = this.getProcessedRead(cutter1, cutter2, temp1, barcodeR1[index1].length());
                 readR2 = this.getProcessedRead(cutter1, cutter2, temp2, barcodeR2[index2].length());
+                if (readR1.length()>this.setReadLength) readR1 = readR1.substring(0, this.setReadLength);
+                if (readR2.length()>this.setReadLength) readR2 = readR2.substring(0, this.setReadLength);
                 readR1Len = (byte)readR1.length();
                 readR2Len = (byte)readR2.length();
                 long[] tag = this.getTagFromReads(readR1, readR2, ascIIByteMap);
@@ -170,7 +172,7 @@ public class TagParser {
     }
     
     private long[] getTagFromReads (String readR1, String readR2, HashByteByteMap ascIIByteMap) {
-        long[] tag = new long[2*this.chunkSize];
+        long[] tag = new long[2*this.tagLengthInLong];
         StringBuilder sb = new StringBuilder(readR1);
         if (sb.length()<this.setReadLength) {
             sb.append(this.polyA);
@@ -185,15 +187,15 @@ public class TagParser {
         for (int i = 0; i < bArray.length; i++) {
             bArray[i] = ascIIByteMap.get(bArray[i]);
         }
-        for (int i = 0; i < this.chunkSize; i++) {
+        for (int i = 0; i < this.tagLengthInLong; i++) {
             tag[i] = BaseEncoder.getLongSeqFromSubByteArray(bArray, i*BaseEncoder.longChunkSize, (i+1)*BaseEncoder.longChunkSize);
         }
         bArray = readR2.getBytes();
         for (int i = 0; i < bArray.length; i++) {
             bArray[i] = ascIIByteMap.get(bArray[i]);
         }
-        for (int i = 0; i < this.chunkSize; i++) {
-            tag[i+this.chunkSize] = BaseEncoder.getLongSeqFromSubByteArray(bArray, i*BaseEncoder.longChunkSize, (i+1)*BaseEncoder.longChunkSize);
+        for (int i = 0; i < this.tagLengthInLong; i++) {
+            tag[i+this.tagLengthInLong] = BaseEncoder.getLongSeqFromSubByteArray(bArray, i*BaseEncoder.longChunkSize, (i+1)*BaseEncoder.longChunkSize);
         }
         return tag;
     }
@@ -226,7 +228,6 @@ public class TagParser {
         fs = IOUtils.listFilesEndsWith(fs, ".bin");
         int[][] indices = PArrayUtils.getSubsetsIndicesBySubsetSize(fs.length, this.paraLevel);
         for (int i = 0; i < indices.length; i++) {
-            Integer[] indexes = new Integer[indices[i][1]-indices[i][0]];
             List<File> subFList = new ArrayList();
             for (int j = indices[i][0]; j < indices[i][1]; j++) {
                 subFList.add(fs[j]);
