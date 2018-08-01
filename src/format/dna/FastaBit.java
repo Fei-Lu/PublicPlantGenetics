@@ -140,7 +140,7 @@ public class FastaBit extends FastaAbstract {
         if (this.sType != sortType.byName) {
             this.sortByName();
         }
-        return Arrays.binarySearch(records, new FastaRecord(name,null,-1), new sortByName());
+        return Arrays.binarySearch(records, new FastaRecord(name,"A",-1), new sortByName());
     }
     
     @Override
