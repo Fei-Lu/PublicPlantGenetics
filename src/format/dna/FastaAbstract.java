@@ -232,22 +232,26 @@ public abstract class FastaAbstract implements FastaInterface {
     @Override
     public void sortByName () {
         Arrays.parallelSort(records, new sortByName());
+        this.sType = sortType.byName;
     }
     
 
     @Override
     public void sortByID () {
         Arrays.parallelSort (records, new sortByID());
+        this.sType = sortType.byID;
     }
     
     @Override
     public void sortByLengthAscending () {
         Arrays.parallelSort (records, new sortByLengthAscending());
+        this.sType = sortType.byLengthAscending;
     }
     
     @Override
     public void sortByLengthDescending () {
         Arrays.parallelSort (records, new sortByLengthDescending());
+        this.sType = sortType.byLengthDescending;
     }
     
     @Override

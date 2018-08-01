@@ -10,6 +10,9 @@ import format.dna.BaseEncoder;
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.File;
+import java.sql.Connection;
+import java.sql.DatabaseMetaData;
+import java.sql.DriverManager;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -116,11 +119,11 @@ public class TagParser {
                     System.out.println("Total read count: "+String.valueOf(totalCnt)+"\tPassed read count: "+processedCnt);
                 }
                 temp1 = br1.readLine(); temp2 = br2.readLine();
+                br1.readLine(); br2.readLine();
+                br1.readLine(); br2.readLine();
                 index1 = Arrays.binarySearch(barcodeR1, temp1);
                 index2 = Arrays.binarySearch(barcodeR2, temp2);
                 if (index1 == -1 || index2 == -1) {
-                    br1.readLine(); br2.readLine();
-                    br1.readLine(); br2.readLine();
                     continue;
                 }
                 index1 = -index1 - 2;
@@ -130,14 +133,15 @@ public class TagParser {
                 Set<String> newSet = new HashSet<>(taxaSR1);
                 newSet.retainAll(taxaSR2);
                 if (newSet.size() != 1) {
-                    br1.readLine(); br2.readLine();
-                    br1.readLine(); br2.readLine();
                     continue;
                 }      
                 readR1 = this.getProcessedRead(cutter1, cutter2, temp1, barcodeR1[index1].length());
                 readR2 = this.getProcessedRead(cutter1, cutter2, temp2, barcodeR2[index2].length());
                 if (readR1.length()>this.setReadLength) readR1 = readR1.substring(0, this.setReadLength);
                 if (readR2.length()>this.setReadLength) readR2 = readR2.substring(0, this.setReadLength);
+                if (readR1.contains("N") || readR2.contains("N")) {
+                    continue;
+                }
                 readR1Len = (byte)readR1.length();
                 readR2Len = (byte)readR2.length();
                 long[] tag = this.getTagFromReads(readR1, readR2, ascIIByteMap);
@@ -148,8 +152,6 @@ public class TagParser {
                 dos.writeByte(readR1Len);
                 dos.writeByte(readR2Len);
                 dos.writeInt(1);               
-                br1.readLine(); br2.readLine();
-                br1.readLine(); br2.readLine();
                 processedCnt++;
             }
             for (int i = 0; i < doss.length; i++) {
@@ -242,8 +244,19 @@ public class TagParser {
         }
     }
     
-    public void mergeTagsBySample () {
-        
+    public void mergeTagsBySample (String tagDBFileS) {
+        String url = "jdbc:sqlite:" + tagDBFileS;
+        try {
+            Connection conn = DriverManager.getConnection(url);
+            DatabaseMetaData meta = conn.getMetaData();
+            System.out.println("The driver name is " + meta.getDriverName());
+            System.out.println("A new database has been created.");
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
+       
+
     }
     
 }

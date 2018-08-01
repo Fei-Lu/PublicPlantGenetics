@@ -32,10 +32,11 @@ public class LibGBSGo {
         li = new LibraryInfo(barcodeFileS, libraryFastqMapFileS, this.cutter1, this.cutter2);
         String tagBySampleDirS = new File (this.workingDirS, this.subDirS[0]).getAbsolutePath();
         String tagLibraryDirS = new File (this.workingDirS, this.subDirS[1]).getAbsolutePath();
+        String dbFileS = new File(tagLibraryDirS, "tag.db").getAbsolutePath();
         TagParser tp = new TagParser(li);
-        tp.parseFastq(tagBySampleDirS);
-        tp.compressTagsBySample(tagBySampleDirS);
-        tp.mergeTagsBySample();
+        //tp.parseFastq(tagBySampleDirS);
+        //tp.compressTagsBySample(tagBySampleDirS);
+        tp.mergeTagsBySample(dbFileS);
     }
     
     public void initializeParameter (String parameterFileS) {

@@ -6,6 +6,7 @@
 package analysis.pipeline.libgbs;
 
 import format.table.RowTable;
+import gnu.trove.list.array.TIntArrayList;
 import java.io.DataOutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -142,14 +143,55 @@ public class LibraryInfo {
         t = new RowTable<>(libraryFastqMapFileS);
         t.sortAsText(0);
         List<String> lList = t.getColumn(0);
+        TIntArrayList availableIndexList = new TIntArrayList();
         for (int i = 0; i < libs.length; i++) {
             int index = Collections.binarySearch(lList, libs[i]);
             if (index < 0) {
-                System.out.println("Something wrong in the libraryFastqMapFileS. Program quits");
-                System.exit(1);
+                System.out.println(libs[i] + " does not have corresponding fastqs");
             }
-            this.libFastqsR1[i] = t.getCell(index, 1);
-            this.libFastqsR2[i] = t.getCell(index, 2);
+            else {
+                if (t.getCell(index, 1).equals("NA") || t.getCell(index, 2).equals("NA")) {
+                    System.out.println(libs[i] + " does not have corresponding fastqs");
+                }
+                else {
+                    this.libFastqsR1[i] = t.getCell(index, 1);
+                    this.libFastqsR2[i] = t.getCell(index, 2);
+                    availableIndexList.add(i);
+                }
+            } 
+        }
+        List<String> libList = new ArrayList();
+        List<String[]> taxaNameList = new ArrayList();
+        List<String[]> barcodeR1List = new ArrayList();
+        List<String[]> barcodeR2List = new ArrayList();
+        List<HashMap<String, Set<String>>> r1MapList = new ArrayList();
+        List<HashMap<String, Set<String>>> r2MapList = new ArrayList();
+        List<String> libFqR1List = new ArrayList();
+        List<String> libFqR2List = new ArrayList();
+        int[] aIndex = availableIndexList.toArray();
+        for (int i = 0; i < aIndex.length; i++) {
+            libList.add(libs[aIndex[i]]);
+            taxaNameList.add(taxaNames[aIndex[i]]);
+            barcodeR1List.add(barcodeR1[aIndex[i]]);
+            barcodeR2List.add(barcodeR1[aIndex[i]]);
+            r1MapList.add(barcodeR1TaxaMaps[aIndex[i]]);
+            r2MapList.add(barcodeR2TaxaMaps[aIndex[i]]);
+            libFqR1List.add(libFastqsR1[aIndex[i]]);
+            libFqR2List.add(libFastqsR2[aIndex[i]]);
+        }
+        
+        libs = libList.toArray(new String[libList.size()]);
+        taxaNames = taxaNameList.toArray(new String[taxaNameList.size()][]);
+        barcodeR1 = barcodeR1List.toArray(new String[barcodeR1List.size()][]);
+        barcodeR2 = barcodeR2List.toArray(new String[barcodeR2List.size()][]);
+        barcodeR1TaxaMaps = r1MapList.toArray(new HashMap[r1MapList.size()]);
+        barcodeR2TaxaMaps = r2MapList.toArray(new HashMap[r2MapList.size()]);
+        libFastqsR1 = libFqR1List.toArray(new String[libFqR1List.size()]);
+        libFastqsR2 = libFqR2List.toArray(new String[libFqR2List.size()]);
+        
+        System.out.println(libs.length+" libraries will be paralell processd. They are:");
+        for (int i = 0; i < libs.length; i++) {
+            System.out.println(libs[i]);
         }
     }
     
