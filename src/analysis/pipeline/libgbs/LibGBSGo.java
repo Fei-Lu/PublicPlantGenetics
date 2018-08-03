@@ -34,9 +34,9 @@ public class LibGBSGo {
         String tagLibraryDirS = new File (this.workingDirS, this.subDirS[1]).getAbsolutePath();
         String dbFileS = new File(tagLibraryDirS, "tag.db").getAbsolutePath();
         TagParser tp = new TagParser(li);
-        //tp.parseFastq(tagBySampleDirS);
-        //tp.compressTagsBySample(tagBySampleDirS);
-        tp.mergeTagsBySample(dbFileS);
+        tp.parseFastq(tagBySampleDirS);
+        tp.compressTagsBySample(tagBySampleDirS);
+        //tp.mergeTagsBySample(dbFileS);
     }
     
     public void initializeParameter (String parameterFileS) {

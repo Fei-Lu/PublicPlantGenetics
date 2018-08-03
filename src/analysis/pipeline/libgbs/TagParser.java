@@ -135,8 +135,8 @@ public class TagParser {
                 if (newSet.size() != 1) {
                     continue;
                 }      
-                readR1 = this.getProcessedRead(cutter1, cutter2, temp1, barcodeR1[index1].length());
-                readR2 = this.getProcessedRead(cutter1, cutter2, temp2, barcodeR2[index2].length());
+                readR1 = this.getChimericRemovedRead(cutter1, cutter2, temp1, barcodeR1[index1].length());
+                readR2 = this.getChimericRemovedRead(cutter1, cutter2, temp2, barcodeR2[index2].length());
                 if (readR1.length()>this.setReadLength) readR1 = readR1.substring(0, this.setReadLength);
                 if (readR2.length()>this.setReadLength) readR2 = readR2.substring(0, this.setReadLength);
                 if (readR1.contains("N") || readR2.contains("N")) {
@@ -202,7 +202,7 @@ public class TagParser {
         return tag;
     }
     
-    private String getProcessedRead (String cutter1, String cutter2, String read, int barcodeLength) {
+    private String getChimericRemovedRead (String cutter1, String cutter2, String read, int barcodeLength) {
         read = read.substring(barcodeLength, read.length());
         int index1 = read.indexOf(cutter1);
         int index2 = read.indexOf(cutter2);
