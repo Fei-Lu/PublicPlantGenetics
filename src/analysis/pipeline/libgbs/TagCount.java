@@ -8,15 +8,16 @@ package analysis.pipeline.libgbs;
 import cern.colt.GenericSorting;
 import cern.colt.Swapper;
 import cern.colt.function.IntComparator;
-import format.dna.BaseEncoder;
 import gnu.trove.list.array.TByteArrayList;
 import gnu.trove.list.array.TIntArrayList;
+import java.io.BufferedWriter;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import utils.IOUtils;
+import xuebo.analysis.data4C.BaseEncoder;
 
 /**
  *
@@ -52,6 +53,42 @@ public class TagCount implements Swapper, IntComparator {
                 r2Len[i] = dis.readByte();
                 readNum[i] = dis.readInt();
             }
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+    
+    public void writeTextFile (String outfileS) {
+        try {
+            BufferedWriter bw = IOUtils.getTextWriter(outfileS);
+            StringBuilder sb = new StringBuilder();
+            bw.write("TagLengthInLong:\t"+String.valueOf(this.getTagLengthInLong()));
+            bw.newLine();
+            bw.write("TagNumber:\t"+String.valueOf(this.getTagNumber()));
+            bw.newLine();
+            bw.write("ReadNumber:\t"+String.valueOf(this.getTotalReadNum()));
+            bw.newLine();
+            for (int i = 0; i < this.getTagNumber(); i++) {
+                bw.write(String.valueOf(this.getReadNumber(i)));
+                bw.newLine();
+                sb = new StringBuilder();
+                sb.append(r1Len[i]).append("\t");
+                for (int j = 0; j < this.getTagLengthInLong(); j++) {
+                    sb.append(BaseEncoder.getSequenceFromLong(tags[i][j]));
+                }
+                bw.write(sb.toString());
+                bw.newLine();
+                sb = new StringBuilder();
+                sb.append(r2Len[i]).append("\t");
+                for (int j = this.getTagLengthInLong(); j < this.getTagLengthInLong()*2; j++) {
+                    sb.append(BaseEncoder.getSequenceFromLong(tags[i][j]));
+                }
+                bw.write(sb.toString());
+                bw.newLine();
+            }
+            bw.flush();
+            bw.close();
         }
         catch (Exception e) {
             e.printStackTrace();

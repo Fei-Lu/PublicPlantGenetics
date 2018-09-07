@@ -240,6 +240,11 @@ public class TagParser {
                 TagCount tc = new TagCount(f.getAbsolutePath());
                 tc.collapseCounts();
                 tc.writeBinaryFile(oufileS);
+                f.delete();
+//Output text                
+//                taxonName = f.getName().replaceFirst(".bin", "");
+//                oufileS = new File (tagBySampleDirS, taxonName+".txt").getAbsolutePath();
+//                tc.writeTextFile(oufileS);
             });
         }
     }

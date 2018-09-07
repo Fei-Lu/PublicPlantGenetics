@@ -35,8 +35,16 @@ public class ShortreadAlignment {
     /**0 by query (Default). 1 by hit and pos.*/
     byte sortType = 0; 
     
+    /**
+     * Construct a {@link format.alignment.ShortreadAlignment} object
+     */
     public ShortreadAlignment() {}
     
+    /**
+     * Constructs the object from alignment files, supporting ".txt" or ".txt.gz"
+     * @param alignmentFileS
+     * @param f 
+     */
     public ShortreadAlignment(String alignmentFileS, IOFileFormat f) {
         if (f == IOFileFormat.Text) this.readTextSimpleAlignment(alignmentFileS);
         else if (f == IOFileFormat.Binary) this.readBinarySimpleAlignment(alignmentFileS);
@@ -582,7 +590,7 @@ public class ShortreadAlignment {
     }
     
     /**
-     * Make a SimpleAlignment instance from BWAMEM sam file
+     * Make a SimpleAlignment instance from BWAMEM sam file, supporting ".txt" or ".txt.gz" format
      * @param inputFileS 
      */
     public void readFromBWAMEM (String inputFileS) {
