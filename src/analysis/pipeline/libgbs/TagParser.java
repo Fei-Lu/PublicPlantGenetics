@@ -64,7 +64,7 @@ public class TagParser {
         HashMap<String, DataOutputStream> taxaWriterMap = new HashMap<>();
         DataOutputStream[] doss = new DataOutputStream[taxaNames.length];
         for (int i = 0; i < taxaNames.length; i++) {
-            String outfile = new File(tagBySampleDirS, taxaNames[i]+".bin").getAbsolutePath();
+            String outfile = new File(tagBySampleDirS, taxaNames[i]+".tp").getAbsolutePath();
             DataOutputStream dos = IOUtils.getBinaryWriter(outfile);
             try {
                 dos.writeInt(this.tagLengthInLong);
@@ -144,7 +144,7 @@ public class TagParser {
                 }
                 readR1Len = (byte)readR1.length();
                 readR2Len = (byte)readR2.length();
-                long[] tag = this.getTagFromReads(readR1, readR2, ascIIByteMap);
+                long[] tag = TagUtils.getTagFromReads(readR1, readR2, ascIIByteMap, tagLengthInLong);
                 dos = taxaWriterMap.get(newSet.toArray(new String[newSet.size()])[0]);
                 for (int i = 0; i < tag.length; i++) {
                     dos.writeLong(tag[i]);
@@ -173,35 +173,6 @@ public class TagParser {
         }
     }
     
-    private long[] getTagFromReads (String readR1, String readR2, HashByteByteMap ascIIByteMap) {
-        long[] tag = new long[2*this.tagLengthInLong];
-        StringBuilder sb = new StringBuilder(readR1);
-        if (sb.length()<this.setReadLength) {
-            sb.append(this.polyA);
-            readR1 = sb.substring(0, this.setReadLength);
-        }
-        sb = new StringBuilder(readR2);
-        if (sb.length()<this.setReadLength) {
-            sb.append(this.polyA);
-            readR2 = sb.substring(0, this.setReadLength);
-        }
-        byte[] bArray = readR1.getBytes();
-        for (int i = 0; i < bArray.length; i++) {
-            bArray[i] = ascIIByteMap.get(bArray[i]);
-        }
-        for (int i = 0; i < this.tagLengthInLong; i++) {
-            tag[i] = BaseEncoder.getLongSeqFromSubByteArray(bArray, i*BaseEncoder.longChunkSize, (i+1)*BaseEncoder.longChunkSize);
-        }
-        bArray = readR2.getBytes();
-        for (int i = 0; i < bArray.length; i++) {
-            bArray[i] = ascIIByteMap.get(bArray[i]);
-        }
-        for (int i = 0; i < this.tagLengthInLong; i++) {
-            tag[i+this.tagLengthInLong] = BaseEncoder.getLongSeqFromSubByteArray(bArray, i*BaseEncoder.longChunkSize, (i+1)*BaseEncoder.longChunkSize);
-        }
-        return tag;
-    }
-    
     private String getChimericRemovedRead (String cutter1, String cutter2, String read, int barcodeLength) {
         read = read.substring(barcodeLength, read.length());
         int index1 = read.indexOf(cutter1);
@@ -227,7 +198,7 @@ public class TagParser {
     
     public void compressTagsBySample (String tagBySampleDirS) {
         File[] fs = new File(tagBySampleDirS).listFiles();
-        fs = IOUtils.listFilesEndsWith(fs, ".bin");
+        fs = IOUtils.listFilesEndsWith(fs, ".tp");
         int[][] indices = PArrayUtils.getSubsetsIndicesBySubsetSize(fs.length, this.paraLevel);
         for (int i = 0; i < indices.length; i++) {
             List<File> subFList = new ArrayList();
@@ -235,33 +206,14 @@ public class TagParser {
                 subFList.add(fs[j]);
             }
             subFList.parallelStream().forEach(f -> {
-                String taxonName = f.getName().replaceFirst(".bin", "");
-                String oufileS = new File (tagBySampleDirS, taxonName+".sbin").getAbsolutePath();
-                TagCount tc = new TagCount(f.getAbsolutePath());
+                String taxonName = f.getName().replaceFirst(".tp", "");
+                String oufileS = new File (tagBySampleDirS, taxonName+".tc").getAbsolutePath();
+                TagCounts tc = new TagCounts(f.getAbsolutePath());
                 tc.collapseCounts();
                 tc.writeBinaryFile(oufileS);
+                //tc.writeTextFile(oufileS);
                 f.delete();
-//Output text                
-//                taxonName = f.getName().replaceFirst(".bin", "");
-//                oufileS = new File (tagBySampleDirS, taxonName+".txt").getAbsolutePath();
-//                tc.writeTextFile(oufileS);
             });
         }
     }
-    
-    public void mergeTagsBySample (String tagDBFileS) {
-        String url = "jdbc:sqlite:" + tagDBFileS;
-        try {
-            Connection conn = DriverManager.getConnection(url);
-            DatabaseMetaData meta = conn.getMetaData();
-            System.out.println("The driver name is " + meta.getDriverName());
-            System.out.println("A new database has been created.");
-        }
-        catch (Exception e) {
-            e.printStackTrace();
-        }
-       
-
-    }
-    
 }

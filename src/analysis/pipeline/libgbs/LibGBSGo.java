@@ -8,6 +8,7 @@ package analysis.pipeline.libgbs;
 import java.io.BufferedReader;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.List;
 import utils.IOUtils;
 
 /**
@@ -26,6 +27,7 @@ public class LibGBSGo {
     public LibGBSGo (String parameterFileS) {
         this.initializeParameter(parameterFileS);
         this.mkTagsBySample();
+        this.mkTagDB();
     }
     
     public void mkTagsBySample () {
@@ -36,7 +38,18 @@ public class LibGBSGo {
         TagParser tp = new TagParser(li);
         tp.parseFastq(tagBySampleDirS);
         tp.compressTagsBySample(tagBySampleDirS);
-        //tp.mergeTagsBySample(dbFileS);
+    }
+    
+    public void mkTagDB () {
+       String tagBySampleDirS = new File (this.workingDirS, this.subDirS[0]).getAbsolutePath();
+       File[] fs = new File(tagBySampleDirS).listFiles();
+       fs = IOUtils.listFilesEndsWith(fs, ".tc");
+       int sum = 0;
+       for (int i = 0; i < fs.length; i++) {
+           TagCounts tc = new TagCounts(fs[i].getAbsolutePath());
+           sum+=tc.getTotalReadNumber();
+       }
+       System.out.println(sum);
     }
     
     public void initializeParameter (String parameterFileS) {
