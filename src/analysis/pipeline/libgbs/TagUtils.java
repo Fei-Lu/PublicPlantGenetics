@@ -7,6 +7,7 @@ package analysis.pipeline.libgbs;
 
 import com.koloboke.collect.map.hash.HashByteByteMap;
 import format.dna.BaseEncoder;
+import java.util.Comparator;
 
 /**
  *
@@ -14,7 +15,7 @@ import format.dna.BaseEncoder;
  */
 public class TagUtils {
     static String polyA = "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA";
-    
+    public static TagComparator tagCom = new TagComparator();
     static long[] getTagFromReads (String readR1, String readR2, HashByteByteMap ascIIByteMap, int tagLengthInLong) {
         int setReadLength = tagLengthInLong*BaseEncoder.longChunkSize;
         long[] tag = new long[tagLengthInLong*2];
@@ -79,4 +80,19 @@ public class TagUtils {
         }
         return index;
     }
+}
+
+class TagComparator implements Comparator <long[]> {
+    @Override
+    public int compare(long[] o1, long[] o2) {
+        for (int i = 0; i < o1.length; i++) {
+            if (o1[i] < o2[i]) {
+                return -1;
+            }
+            if (o1[i] > o2[i]) {
+                return 1;
+            }
+        }
+        return 0;
+    }        
 }

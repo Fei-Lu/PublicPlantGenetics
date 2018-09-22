@@ -94,7 +94,7 @@ public class TagCount implements Swapper, IntComparator {
     }
     
     public int getTagIndex (long[] tag) {
-        return Collections.binarySearch(tagList, tag, new TagComparator());
+        return Collections.binarySearch(tagList, tag, TagUtils.tagCom);
     }
     
     @Override
@@ -160,19 +160,4 @@ public class TagCount implements Swapper, IntComparator {
 //        System.out.println("Tag rows collapsed after sorting:" + collapsedRows);
         return collapsedRows;
     }
-}
-
-class TagComparator implements Comparator <long[]> {
-    @Override
-    public int compare(long[] o1, long[] o2) {
-        for (int i = 0; i < o1.length; i++) {
-            if (o1[i] < o2[i]) {
-                return -1;
-            }
-            if (o1[i] > o2[i]) {
-                return 1;
-            }
-        }
-        return 0;
-    }        
 }
