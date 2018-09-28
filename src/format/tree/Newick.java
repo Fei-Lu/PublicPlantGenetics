@@ -50,7 +50,8 @@ public class Newick {
                 }
                 DefaultMutableTreeNode grandDmt = (DefaultMutableTreeNode)parentDmt.getParent();
                 parentDmt.removeFromParent();
-                grandDmt.add(newParent);                
+                if (grandDmt != null) grandDmt.add(newParent); 
+                else root = newParent;
             }
         }
         leafList.clear();
@@ -182,6 +183,16 @@ public class Newick {
             nhPath[i] = nh;
         }
         return nhPath;
+    }
+    
+    //need to adjust corresponding fields
+    public boolean deleteTaxonNode (String taxon) {
+        DefaultMutableTreeNode  node = this.getTaxonNode(taxon);
+        if (node == null) return false;
+        else {
+            node.removeFromParent();
+        }
+        return true;
     }
     
     public DefaultMutableTreeNode getTaxonNode (String taxon) {

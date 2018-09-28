@@ -27,18 +27,25 @@ public class LibGBSGo {
     public LibGBSGo (String parameterFileS) {
         this.initializeParameter(parameterFileS);
         this.mkTagsBySample();
-        this.mkTagDB();
+        this.mergeTagCounts();
+        //this.mkTagDB();
+    }
+    
+    public void mergeTagCounts () {
+        String tagBySampleDirS = new File (this.workingDirS, this.subDirS[0]).getAbsolutePath();
+        String tagLibraryDirS = new File (this.workingDirS, this.subDirS[1]).getAbsolutePath();
+        String mergedTagCountFileS = new File(tagLibraryDirS, "tag.tc").getAbsolutePath();
+        new TagMerger(tagBySampleDirS, mergedTagCountFileS);
     }
     
     public void mkTagsBySample () {
         li = new LibraryInfo(barcodeFileS, libraryFastqMapFileS, this.cutter1, this.cutter2);
         String tagBySampleDirS = new File (this.workingDirS, this.subDirS[0]).getAbsolutePath();
-        String tagLibraryDirS = new File (this.workingDirS, this.subDirS[1]).getAbsolutePath();
-        String dbFileS = new File(tagLibraryDirS, "tag.db").getAbsolutePath();
         TagParser tp = new TagParser(li);
         tp.parseFastq(tagBySampleDirS);
         tp.compressTagsBySample(tagBySampleDirS);
     }
+    
     
     public void mkTagDB () {
        String tagBySampleDirS = new File (this.workingDirS, this.subDirS[0]).getAbsolutePath();

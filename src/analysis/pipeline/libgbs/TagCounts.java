@@ -9,6 +9,9 @@ import java.io.BufferedWriter;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 import utils.IOUtils;
 
 /**
@@ -18,9 +21,11 @@ import utils.IOUtils;
 public class TagCounts {
     int tagLengthInLong = -1;
     int offSet = 8;
-    int groupIdentifierLength = 3;
+    int groupIdentifierLength = 4;
+    boolean ifSorted;
     int groupCount = -1;
-    TagCount[] tcs = null;
+    List<TagCount> tcList = null;
+
     
     public TagCounts (String infileS) {
         if (infileS.endsWith(".tp")) {
@@ -31,18 +36,34 @@ public class TagCounts {
         }
     }
     
+    public boolean addTagCounts (TagCounts atc) {
+        if (this.getTagLengthInLong() != atc.getTagLengthInLong()) return false;
+        if (this.getGroupIdentiferOffset() != atc.getGroupIdentiferOffset()) return false;
+        if (this.getGroupIdentiferLength() != atc.getGroupIdentiferLength()) return false;
+        tcList.parallelStream().forEach(tc -> {
+            tc.r1LenList.addAll(atc.tcList.get(tc.groupIndex).r1LenList);
+            tc.r2LenList.addAll(atc.tcList.get(tc.groupIndex).r2LenList);
+            tc.readCountList.addAll(atc.tcList.get(tc.groupIndex).readCountList);
+            tc.tagList.addAll(atc.tcList.get(tc.groupIndex).tagList);
+        });
+        this.ifSorted = false;
+        return true;
+    }
+    
     public void readBinaryFile (String infileS) {
         try {
             DataInputStream dis = IOUtils.getBinaryReader(infileS);
             this.tagLengthInLong = dis.readInt();
             this.offSet = dis.readInt();
             this.groupIdentifierLength = dis.readInt();
+            ifSorted = dis.readBoolean();
             this.groupCount = (int)Math.pow(4, groupIdentifierLength);
-            tcs = new TagCount[this.groupCount];
+            tcList = new ArrayList<>();
             for (int i = 0; i < groupCount; i++) {
                 int tagNumber = dis.readInt();
-                boolean ifSorted = dis.readBoolean();
-                tcs[i] = new TagCount(this.tagLengthInLong, tagNumber, ifSorted);
+                int groupIndex = dis.readInt();
+                TagCount tc = new TagCount(this.tagLengthInLong, groupIndex, tagNumber, ifSorted);
+                tcList.add(tc);
                 for (int j = 0; j < tagNumber; j++) {
                     long[] tag = new long[this.tagLengthInLong*2];
                     for (int k = 0; k < tag.length; k++) {
@@ -51,7 +72,7 @@ public class TagCounts {
                     byte r1Len = dis.readByte();
                     byte r2Len = dis.readByte();
                     int readNumber = dis.readInt();
-                    tcs[i].appendTag(tag, r1Len, r2Len, readNumber);
+                    tcList.get(i).appendTag(tag, r1Len, r2Len, readNumber);
                 }
             }
         }
@@ -97,17 +118,18 @@ public class TagCounts {
             dos.writeInt(this.getTagLengthInLong());
             dos.writeInt(this.getGroupIdentiferOffset());
             dos.writeInt(this.groupIdentifierLength);
+            dos.writeBoolean(this.ifSorted);
             for (int i = 0; i < this.getGroupNumber(); i++) {
                 dos.writeInt(this.getTagNumber(i));
-                dos.writeBoolean(tcs[i].ifSorted);
-                for (int j = 0; j < tcs[i].getTagNumber(); j++) {
-                    long[] tag = tcs[i].getTag(j);
+                dos.writeInt(i);
+                for (int j = 0; j < tcList.get(i).getTagNumber(); j++) {
+                    long[] tag = tcList.get(i).getTag(j);
                     for (int k = 0; k < tag.length; k++) {
                         dos.writeLong(tag[k]);
                     }
-                    dos.writeByte(tcs[i].getR1TagLength(j));
-                    dos.writeByte(tcs[i].getR2TagLength(j));
-                    dos.writeInt(tcs[i].getReadNumber(j));
+                    dos.writeByte(tcList.get(i).getR1TagLength(j));
+                    dos.writeByte(tcList.get(i).getR2TagLength(j));
+                    dos.writeInt(tcList.get(i).getReadNumber(j));
                 }
             }
             dos.flush();
@@ -125,12 +147,12 @@ public class TagCounts {
             this.tagLengthInLong = dis.readInt();
             int currentTagNum = dis.readInt();
             groupCount = (int)Math.pow(4, groupIdentifierLength);
-            tcs = new TagCount[groupCount];
-            for (int i = 0; i < tcs.length; i++) {
-                tcs[i] = new TagCount(this.tagLengthInLong);
+            tcList = new ArrayList<>();
+            for (int i = 0; i < groupCount; i++) {
+                TagCount tc = new TagCount(this.tagLengthInLong, i);
+                tcList.add(tc);
             }
             if (currentTagNum == -1) currentTagNum = (int)((new File(infileS).length()-8)/(tagLengthInLong*2*8+2+4));
-            
             for (int i = 0; i < currentTagNum; i++) {
                 long[] tag = new long[2*this.tagLengthInLong];
                 byte r1Len = 0;
@@ -144,40 +166,51 @@ public class TagCounts {
                 r2Len = dis.readByte();
                 readCount = dis.readInt();
                 groupIndex = TagUtils.getGroupIndexFromTag(tag, offSet, groupIdentifierLength);
-                tcs[groupIndex].appendTag(tag, r1Len, r2Len, readCount);
+                tcList.get(groupIndex).appendTag(tag, r1Len, r2Len, readCount);
             }
             dis.close();
         }
         catch (Exception e) {
             e.printStackTrace();
         }
-        for (int i = 0; i < this.getGroupNumber(); i++) {
-            tcs[i].sort();
-        }
+        this.sort();
     }
     
     public void sort () {
         System.out.println("TagCounts sort begins");
-        for (int i = 0; i < this.getGroupNumber(); i++) {
-            tcs[i].sort();
-        }
+        tcList.parallelStream().forEach(tc -> {
+            tc.sort();
+        });
         System.out.println("TagCounts sort ends");
+        this.ifSorted = true;
+    }
+    
+    public boolean isSorted () {
+        return this.ifSorted;
+    }
+    
+    public int getMaxTagNumberInGroups () {
+        int max = Integer.MIN_VALUE;
+        for (int i = 0; i < this.getGroupNumber(); i++) {
+            if (this.getTagNumber(i) > max) max = this.getTagNumber(i);
+        }
+        return max;
     }
     
     public int getReadNumber (int groupIndex, int tagIndex) {
-        return tcs[groupIndex].getReadNumber(tagIndex);
+        return tcList.get(groupIndex).getReadNumber(tagIndex);
     }
     
     public byte getR1TagLength (int groupIndex, int tagIndex) {
-        return tcs[groupIndex].getR1TagLength(tagIndex);
+        return tcList.get(groupIndex).getR1TagLength(tagIndex);
     }
     
     public byte getR2TagLength (int groupIndex, int tagIndex) {
-        return tcs[groupIndex].getR2TagLength(tagIndex);
+        return tcList.get(groupIndex).getR2TagLength(tagIndex);
     }
     
     public int getTagIndex (long[] tag, int groupIndex) {
-        return tcs[groupIndex].getTagIndex(tag);
+        return tcList.get(groupIndex).getTagIndex(tag);
     }
     
     public int getGroupIndex (long[] tag) {
@@ -187,19 +220,19 @@ public class TagCounts {
     public long getTotalReadNumber () {
         long sum = 0; 
         for (int i = 0; i < this.getGroupNumber(); i++) {
-            sum += tcs[i].getTotalReadNum();
+            sum += tcList.get(i).getTotalReadNum();
         }
         return sum;
     }
     
     public int getTagNumber (int groupIndex) {
-        return tcs[groupIndex].getTagNumber();
+        return tcList.get(groupIndex).getTagNumber();
     }
     
     public long getTagNumber () {
         long sum = 0;
         for (int i = 0; i < this.getGroupNumber(); i++) {
-            sum += tcs[i].getTagNumber();
+            sum += tcList.get(i).getTagNumber();
         }
         return sum;
     }
@@ -221,14 +254,16 @@ public class TagCounts {
     }
     
     public long[] getTag (int groupIndex, int tagIndex) {
-        return tcs[groupIndex].getTag(tagIndex);
+        return tcList.get(groupIndex).getTag(tagIndex);
     }
     
     public void collapseCounts () {
-        int sum = 0;
-        for (int i = 0; i < tcs.length; i++) {
-            sum += tcs[i].collapseCounts();
-        }
-        System.out.println("Tag rows collapsed after sorting: " + sum);
+        AtomicInteger acnt = new AtomicInteger();
+        if (this.isSorted() == false) this.sort();
+        tcList.parallelStream().forEach(tc -> {
+            int cnt = tc.collapseCounts();
+            acnt.addAndGet(cnt);
+        });     
+        System.out.println("Tag rows collapsed after sorting: " + acnt.get());
     }
 }

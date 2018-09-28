@@ -27,27 +27,28 @@ import xuebo.analysis.data4C.BaseEncoder;
  */
 public class TagCount implements Swapper, IntComparator {
     protected int tagLengthInLong = -1;
+    protected int groupIndex = -1;
     protected List<long[]> tagList = null;
     protected TByteArrayList r1LenList = null;
     protected TByteArrayList r2LenList = null;
     protected TIntArrayList readCountList = null;
-    boolean ifSorted = false;
-    
-    public TagCount (int tagLengthInLong) {
+
+    public TagCount (int tagLengthInLong, int groupIndex) {
         this.tagLengthInLong = tagLengthInLong;
+        this.groupIndex = groupIndex;
         tagList = new ArrayList();
         r1LenList = new TByteArrayList();
         r2LenList = new TByteArrayList();
         readCountList = new TIntArrayList();
     }
     
-    public TagCount (int tagLengthInLong, int tagNumber, boolean ifSorted) {
+    public TagCount (int tagLengthInLong, int groupIndex, int tagNumber, boolean ifSorted) {
         this.tagLengthInLong = tagLengthInLong;
+        this.groupIndex = groupIndex;
         tagList = new ArrayList(tagNumber);
         r1LenList = new TByteArrayList(tagNumber);
         r2LenList = new TByteArrayList(tagNumber);
         readCountList = new TIntArrayList(tagNumber);
-        this.ifSorted = ifSorted;
     }
     
     public void appendTag (long[] tag, byte r1Len, byte r2Len, int readNumber) {
@@ -59,10 +60,6 @@ public class TagCount implements Swapper, IntComparator {
     
     public long[] getTag (int tagIndex) {
         return this.tagList.get(tagIndex);
-    }
-    
-    public boolean isSorted () {
-        return this.ifSorted;
     }
     
     public byte getR1TagLength (int tagIndex) {
@@ -130,11 +127,9 @@ public class TagCount implements Swapper, IntComparator {
         //System.out.println("TagCount sort begins");
         GenericSorting.quickSort(0, this.getTagNumber(), this, this);
         //System.out.println("TagCount sort ends");
-        this.ifSorted = true;
     }
     
     protected int collapseCounts () {
-        if (ifSorted == false) sort();
         int collapsedRows = 0;
         for (int i = 0; i < this.getTagNumber()-1; i++) {
             if (this.readCountList.get(i) == 0) continue;
@@ -157,7 +152,6 @@ public class TagCount implements Swapper, IntComparator {
             readCountList.removeAt(i);
             i--;
         }
-//        System.out.println("Tag rows collapsed after sorting:" + collapsedRows);
         return collapsedRows;
     }
 }
