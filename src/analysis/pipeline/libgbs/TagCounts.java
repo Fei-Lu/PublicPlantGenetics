@@ -81,6 +81,38 @@ public class TagCounts {
         }
     }
     
+    public void writeFastqFile (String r1FastqFileS, String r2FastqFileS) {
+        String polyQ = "????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????";
+        try {
+            BufferedWriter bw1 = IOUtils.getTextWriter(r1FastqFileS);
+            BufferedWriter bw2 = IOUtils.getTextWriter(r2FastqFileS);
+            StringBuilder sb = new StringBuilder();
+            String identifier = null;
+            String[] reads = null;
+            for (int i = 0; i < this.getGroupNumber(); i++) {
+                for (int j = 0; j < this.getTagNumber(i); j++) {
+                    sb = new StringBuilder();
+                    sb.append("@").append(i).append("_").append(j).append("_").append(this.getReadNumber(i, j));
+                    identifier = sb.toString();
+                    bw1.write(identifier); bw1.newLine();
+                    bw2.write(identifier); bw2.newLine();
+                    reads = TagUtils.getReadsFromTag(this.getTag(i, j), this.getR1TagLength(i, j), this.getR2TagLength(i, j));
+                    bw1.write(reads[0]);bw1.newLine();
+                    bw2.write(reads[1]);bw2.newLine();
+                    bw1.write("+");bw1.newLine();
+                    bw2.write("+");bw2.newLine();
+                    bw1.write(polyQ.substring(0, this.getR1TagLength(i, j)));bw1.newLine();
+                    bw2.write(polyQ.substring(0, this.getR2TagLength(i, j)));bw2.newLine();
+                }
+            }
+            bw1.flush();bw1.close();
+            bw2.flush();bw2.close();
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+    
     public void writeTextFile (String outfileS) {
         try {
             BufferedWriter bw = IOUtils.getTextWriter(outfileS);

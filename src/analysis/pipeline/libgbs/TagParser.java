@@ -211,7 +211,6 @@ public class TagParser {
                 TagCounts tc = new TagCounts(f.getAbsolutePath());
                 tc.collapseCounts();
                 tc.writeBinaryFile(oufileS);
-                //tc.writeTextFile(oufileS);
                 f.delete();
             });
         }

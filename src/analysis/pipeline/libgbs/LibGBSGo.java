@@ -19,6 +19,8 @@ public class LibGBSGo {
     String workingDirS = null;
     String barcodeFileS = null;
     String libraryFastqMapFileS = null;
+    String referenceFileS = null;
+    String bwaPath = null;
     String cutter1 = null;
     String cutter2 = null;
     String[] subDirS = {"tagsBySample","tagsLibrary","alignment", "rawGenotype", "filteredGenotype"};
@@ -26,9 +28,29 @@ public class LibGBSGo {
     
     public LibGBSGo (String parameterFileS) {
         this.initializeParameter(parameterFileS);
-        this.mkTagsBySample();
-        this.mergeTagCounts();
+        //this.mkTagsBySample();
+        //this.mergeTagCounts();
+        this.alignTags();
         //this.mkTagDB();
+    }
+    
+    public void mkTagDB () {
+       String tagBySampleDirS = new File (this.workingDirS, this.subDirS[0]).getAbsolutePath();
+       File[] fs = new File(tagBySampleDirS).listFiles();
+       fs = IOUtils.listFilesEndsWith(fs, ".tc");
+       int sum = 0;
+       for (int i = 0; i < fs.length; i++) {
+           TagCounts tc = new TagCounts(fs[i].getAbsolutePath());
+           sum+=tc.getTotalReadNumber();
+       }
+       System.out.println(sum);
+    }
+    
+    public void alignTags () {
+        String tagLibraryDirS = new File (this.workingDirS, this.subDirS[1]).getAbsolutePath();
+        String mergedTagCountFileS = new File(tagLibraryDirS, "tag.tc").getAbsolutePath();
+        String alignmentDirS = new File (this.workingDirS, this.subDirS[2]).getAbsolutePath();
+        new TagAligner(referenceFileS, this.bwaPath, mergedTagCountFileS, alignmentDirS);
     }
     
     public void mergeTagCounts () {
@@ -44,19 +66,6 @@ public class LibGBSGo {
         TagParser tp = new TagParser(li);
         tp.parseFastq(tagBySampleDirS);
         tp.compressTagsBySample(tagBySampleDirS);
-    }
-    
-    
-    public void mkTagDB () {
-       String tagBySampleDirS = new File (this.workingDirS, this.subDirS[0]).getAbsolutePath();
-       File[] fs = new File(tagBySampleDirS).listFiles();
-       fs = IOUtils.listFilesEndsWith(fs, ".tc");
-       int sum = 0;
-       for (int i = 0; i < fs.length; i++) {
-           TagCounts tc = new TagCounts(fs[i].getAbsolutePath());
-           sum+=tc.getTotalReadNumber();
-       }
-       System.out.println(sum);
     }
     
     public void initializeParameter (String parameterFileS) {
@@ -84,8 +93,10 @@ public class LibGBSGo {
         this.workingDirS = paList.get(0);
         this.barcodeFileS = paList.get(1);
         this.libraryFastqMapFileS = paList.get(2);
-        this.cutter1 = paList.get(3).toUpperCase();
-        this.cutter2 = paList.get(4).toUpperCase();
+        this.referenceFileS = paList.get(3);
+        this.bwaPath = paList.get(4);
+        this.cutter1 = paList.get(5).toUpperCase();
+        this.cutter2 = paList.get(6).toUpperCase();
         File workingDir = new File(this.workingDirS);
         workingDir.mkdir();
         for (int i = 0; i < this.subDirS.length; i++) {
