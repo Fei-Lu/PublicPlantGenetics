@@ -32,6 +32,7 @@ public class TagParser {
     String polyA = "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA";
     int setReadLength = tagLengthInLong*BaseEncoder.longChunkSize;
     int paraLevel = 8;
+    int minReadLength = 16;
     
     public TagParser (LibraryInfo li) {
         this.li = li;
@@ -143,7 +144,9 @@ public class TagParser {
                     continue;
                 }
                 readR1Len = (byte)readR1.length();
+                if (readR1Len < this.minReadLength) continue;
                 readR2Len = (byte)readR2.length();
+                if (readR2Len < this.minReadLength) continue;
                 long[] tag = TagUtils.getTagFromReads(readR1, readR2, ascIIByteMap, tagLengthInLong);
                 dos = taxaWriterMap.get(newSet.toArray(new String[newSet.size()])[0]);
                 for (int i = 0; i < tag.length; i++) {

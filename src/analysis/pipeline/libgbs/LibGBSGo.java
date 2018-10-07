@@ -34,7 +34,7 @@ public class LibGBSGo {
         //this.mkTagsBySample();
         //this.mergeTagCounts();
         this.alignTags();
-        this.mkTagDB();
+        //this.mkTagDB();
     }
     
     public void mkTagDB () {
