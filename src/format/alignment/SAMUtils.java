@@ -3,12 +3,164 @@
  */
 package format.alignment;
 
+import format.alignment.ShortreadAlignment.AlignmentInfo;
+import gnu.trove.list.array.TByteArrayList;
+import gnu.trove.list.array.TCharArrayList;
+import gnu.trove.list.array.TIntArrayList;
+import java.util.Arrays;
+import java.util.List;
+import utils.PStringUtils;
+import utils.Tuple;
+
 /**
  *
- * @author James Harriman
+ * @author Fei Lu
  */
 public class SAMUtils {
-
+    /**
+     * CIGAR consume operators are '=', 'D', 'M', 'N', 'X'
+     */
+    public static final byte[] consumeCigarOPByte = {61, 68, 77, 78, 88};
+    
+    /**
+     * Return a {@link format.alignment.SEAlignRecord} object from an input alignment
+     * @param inputStr
+     * @return 
+     */
+    public static SEAlignRecord getSEAlignRecord (String inputStr) {
+        return getSEAlignRecord (PStringUtils.fastSplit(inputStr));
+    }
+    
+    /**
+     * Return a {@link format.alignment.SEAlignRecord} object from elements of an input alignment
+     * @param l
+     * @return 
+     */
+    private static SEAlignRecord getSEAlignRecord (List<String> l) {
+        int flag = Integer.parseInt(l.get(1));
+        String hit = null;
+        byte strand = Byte.MIN_VALUE;
+        int startPos = Integer.MIN_VALUE;
+        int endPos = Integer.MIN_VALUE;
+        short mapQ = Short.MIN_VALUE;
+        short alnMatchNumber = Short.MIN_VALUE;
+        short editDistance = Short.MIN_VALUE;
+        if (l.get(5).equals("*")) {
+            //continue;
+        }
+        else {
+            hit = l.get(2);
+            if (((flag >> 4) & 1) == 1) strand = 0;
+            else strand = 1;
+            startPos = Integer.parseInt(l.get(3));
+            String cigar = l.get(5);
+            Tuple<byte[], int[]> cigarOpPosIndex = getCigarOPAndPosIndex (cigar);
+            endPos = getEndPos(cigar, cigarOpPosIndex, startPos);
+            mapQ = Short.parseShort(l.get(4));
+            alnMatchNumber  = getAlignMatchNumberInCigar (cigar, cigarOpPosIndex);
+            editDistance = Short.valueOf(l.get(11).split(":")[2]);
+        }
+        SEAlignRecord sar = new SEAlignRecord (l.get(0), hit, startPos, endPos, strand, mapQ, alnMatchNumber, editDistance);
+        return sar;
+    }
+    
+    /**
+     * Return the end position of reference from an alignment
+     * Return -1 if the query is not aligned, in which cigar is *
+     * @param cigar
+     * @param startPos
+     * @return 
+     */
+    public static int getEndPos (String cigar, int startPos) {
+        Tuple<byte[], int[]> opPosIndex = getCigarOPAndPosIndex(cigar);
+        return getEndPos(cigar, opPosIndex, startPos);
+    }
+    
+    /**
+     * Return the end position of reference from an alignment
+     * Return -1 if the query is not aligned, in which cigar is *
+     * @param cigar
+     * @param opPosIndex
+     * @param startPos
+     * @return 
+     */
+    private static int getEndPos (String cigar, Tuple<byte[], int[]> opPosIndex, int startPos) {
+        if (opPosIndex == null) return -1;
+        byte[] op = opPosIndex.getFirstElement();
+        int[] posIndex = opPosIndex.getSecondElement();
+        int endPos = startPos - 1;
+        for (int i = 0; i < op.length; i++) {
+            int index = Arrays.binarySearch(consumeCigarOPByte, op[i]);
+            if (index < 0) continue;
+            if (i == 0) {
+                endPos += Integer.valueOf(cigar.substring(0, posIndex[i]));
+            }
+            else {
+                endPos += Integer.valueOf(cigar.substring(posIndex[i-1]+1, posIndex[i]));
+            }
+        }
+        return endPos;
+    }
+    
+    /**
+     * Return total length of alignment match in CIGAR, including both sequence match and mismatch
+     * @param cigar
+     * @param cigarOpPosIndex
+     * @return 
+     */
+    private static short getAlignMatchNumberInCigar (String cigar, Tuple<byte[], int[]> cigarOpPosIndex) {
+        byte[] op = cigarOpPosIndex.getFirstElement();
+        int[] posIndex = cigarOpPosIndex.getSecondElement();
+        int len = 0;
+        for (int i = 0; i < op.length; i++) {
+            if (op[i] != 77) continue;
+            if (i == 0) {
+                len += Integer.valueOf(cigar.substring(0, posIndex[i]));
+            }
+            else {
+                len += Integer.valueOf(cigar.substring(posIndex[i-1]+1, posIndex[i]));
+            }
+        }
+        return (short)len;
+    }
+    
+    /**
+     * Return operators and their position index of CIGAR in a {@link utils.Tuple} format
+     * @param cigar
+     * @return 
+     */
+    private static Tuple<byte[], int[]> getCigarOPAndPosIndex (String cigar) {
+        if (cigar.startsWith("*")) return null;
+        TByteArrayList opList = new TByteArrayList();
+        TIntArrayList posList = new TIntArrayList();
+        byte[] cigarB = cigar.getBytes();
+        for (int i = 0; i < cigar.length(); i++) {
+            if (cigarB[i] > 64) {
+                opList.add(cigarB[i]);
+                posList.add(i);
+            }
+        }
+        byte[] op = opList.toArray(new byte[opList.size()]);
+        int[] posIndex = posList.toArray(new int[posList.size()]);
+        return new Tuple<byte[], int[]> (op, posIndex);
+    }
+    
+    public static void getVariation (String inputStr) {
+        List<String> l = PStringUtils.fastSplit(inputStr);
+    }
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     /**Parses an input line from a SAM file to determine all variants.
      * @param inputLine A line from a SAM file.
      * @return  A 3 X (number of variants) array holding all SNPs,

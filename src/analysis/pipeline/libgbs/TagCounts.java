@@ -93,8 +93,12 @@ public class TagCounts {
                 for (int j = 0; j < this.getTagNumber(i); j++) {
                     sb = new StringBuilder();
                     sb.append("@").append(i).append("_").append(j).append("_").append(this.getReadNumber(i, j));
+                    sb.append("_r1");
                     identifier = sb.toString();
                     bw1.write(identifier); bw1.newLine();
+                    sb.deleteCharAt(sb.length()-1);
+                    sb.append(2);
+                    identifier = sb.toString();
                     bw2.write(identifier); bw2.newLine();
                     reads = TagUtils.getReadsFromTag(this.getTag(i, j), this.getR1TagLength(i, j), this.getR2TagLength(i, j));
                     bw1.write(reads[0]);bw1.newLine();

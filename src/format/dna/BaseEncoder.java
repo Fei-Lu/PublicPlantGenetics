@@ -7,6 +7,8 @@ package format.dna;
 
 import com.koloboke.collect.map.hash.HashByteByteMap;
 import com.koloboke.collect.map.hash.HashByteByteMaps;
+import com.koloboke.collect.map.hash.HashCharByteMap;
+import com.koloboke.collect.map.hash.HashCharByteMaps;
 
 
 
@@ -21,9 +23,18 @@ public class BaseEncoder {
     public static final int intChunkSize = 16;
     public static final int shortChunkSize = 8;
     public static final char[] bases = {'A', 'C', 'G', 'T'};
+    public static final byte[] baseBytes = {0, 1, 2, 3};
     
     /**
-     * Build a byte converter to convert AscII byte following the BaseCoder rules
+     * Build a byte converter to convert base character following the base encoding rules
+     * @return 
+     */
+    public static HashCharByteMap getCharByteMap () {
+        HashCharByteMap charByteMap = HashCharByteMaps.newImmutableMap(bases, baseBytes);
+        return charByteMap;
+    }
+    /**
+     * Build a byte converter to convert AscII byte following the base encoding rules
      * A(00000000), C(00000001), G(00000010), T(0000000011), others(00000100)
      * @return 
      */

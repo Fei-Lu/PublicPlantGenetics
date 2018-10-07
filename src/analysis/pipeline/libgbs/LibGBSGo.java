@@ -5,10 +5,13 @@
  */
 package analysis.pipeline.libgbs;
 
+import format.alignment.SAMSEAlignment;
+import format.alignment.SAMUtils;
+import format.alignment.ShortreadAlignment;
 import java.io.BufferedReader;
 import java.io.File;
 import java.util.ArrayList;
-import java.util.List;
+import java.util.Arrays;
 import utils.IOUtils;
 
 /**
@@ -31,19 +34,14 @@ public class LibGBSGo {
         //this.mkTagsBySample();
         //this.mergeTagCounts();
         this.alignTags();
-        //this.mkTagDB();
+        this.mkTagDB();
     }
     
     public void mkTagDB () {
-       String tagBySampleDirS = new File (this.workingDirS, this.subDirS[0]).getAbsolutePath();
-       File[] fs = new File(tagBySampleDirS).listFiles();
-       fs = IOUtils.listFilesEndsWith(fs, ".tc");
-       int sum = 0;
-       for (int i = 0; i < fs.length; i++) {
-           TagCounts tc = new TagCounts(fs[i].getAbsolutePath());
-           sum+=tc.getTotalReadNumber();
-       }
-       System.out.println(sum);
+       String inputFileS = "/Users/feilu/Documents/analysisL/pipelineTest/Lib_GBS/pipeOutput/alignment/tag.sam";
+       SAMSEAlignment sa = new SAMSEAlignment ();
+       sa.readFromBWAMEM(inputFileS);
+       
     }
     
     public void alignTags () {
