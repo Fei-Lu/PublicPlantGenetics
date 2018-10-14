@@ -3,11 +3,12 @@
  */
 package format.alignment;
 
-import format.alignment.ShortreadAlignment.AlignmentInfo;
+import format.dna.snp.SNP;
 import gnu.trove.list.array.TByteArrayList;
-import gnu.trove.list.array.TCharArrayList;
 import gnu.trove.list.array.TIntArrayList;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import utils.PStringUtils;
 import utils.Tuple;
@@ -54,7 +55,7 @@ public class SAMUtils {
             else strand = 1;
             startPos = Integer.parseInt(l.get(3));
             String cigar = l.get(5);
-            Tuple<byte[], int[]> cigarOpPosIndex = getCigarOPAndPosIndex (cigar);
+            Tuple<TByteArrayList, TIntArrayList> cigarOpPosIndex = getCigarOPAndPosIndex (cigar);
             endPos = getEndPos(cigar, cigarOpPosIndex, startPos);
             mapQ = Short.parseShort(l.get(4));
             alnMatchNumber  = getAlignMatchNumberInCigar (cigar, cigarOpPosIndex);
@@ -72,7 +73,7 @@ public class SAMUtils {
      * @return 
      */
     public static int getEndPos (String cigar, int startPos) {
-        Tuple<byte[], int[]> opPosIndex = getCigarOPAndPosIndex(cigar);
+        Tuple<TByteArrayList, TIntArrayList> opPosIndex = getCigarOPAndPosIndex(cigar);
         return getEndPos(cigar, opPosIndex, startPos);
     }
     
@@ -84,10 +85,10 @@ public class SAMUtils {
      * @param startPos
      * @return 
      */
-    private static int getEndPos (String cigar, Tuple<byte[], int[]> opPosIndex, int startPos) {
+    private static int getEndPos (String cigar, Tuple<TByteArrayList, TIntArrayList> opPosIndex, int startPos) {
         if (opPosIndex == null) return -1;
-        byte[] op = opPosIndex.getFirstElement();
-        int[] posIndex = opPosIndex.getSecondElement();
+        byte[] op = opPosIndex.getFirstElement().toArray();
+        int[] posIndex = opPosIndex.getSecondElement().toArray();
         int endPos = startPos - 1;
         for (int i = 0; i < op.length; i++) {
             int index = Arrays.binarySearch(consumeCigarOPByte, op[i]);
@@ -108,9 +109,9 @@ public class SAMUtils {
      * @param cigarOpPosIndex
      * @return 
      */
-    private static short getAlignMatchNumberInCigar (String cigar, Tuple<byte[], int[]> cigarOpPosIndex) {
-        byte[] op = cigarOpPosIndex.getFirstElement();
-        int[] posIndex = cigarOpPosIndex.getSecondElement();
+    private static short getAlignMatchNumberInCigar (String cigar, Tuple<TByteArrayList, TIntArrayList> cigarOpPosIndex) {
+        byte[] op = cigarOpPosIndex.getFirstElement().toArray();
+        int[] posIndex = cigarOpPosIndex.getSecondElement().toArray();
         int len = 0;
         for (int i = 0; i < op.length; i++) {
             if (op[i] != 77) continue;
@@ -129,7 +130,7 @@ public class SAMUtils {
      * @param cigar
      * @return 
      */
-    private static Tuple<byte[], int[]> getCigarOPAndPosIndex (String cigar) {
+    private static Tuple<TByteArrayList, TIntArrayList> getCigarOPAndPosIndex (String cigar) {
         if (cigar.startsWith("*")) return null;
         TByteArrayList opList = new TByteArrayList();
         TIntArrayList posList = new TIntArrayList();
@@ -140,13 +141,88 @@ public class SAMUtils {
                 posList.add(i);
             }
         }
-        byte[] op = opList.toArray(new byte[opList.size()]);
-        int[] posIndex = posList.toArray(new int[posList.size()]);
-        return new Tuple<byte[], int[]> (op, posIndex);
+        return new Tuple<TByteArrayList, TIntArrayList> (opList, posList);
     }
     
-    public static void getVariation (String inputStr) {
+    public static List<SNP> getVariation (String inputStr, int mapQThresh) {
         List<String> l = PStringUtils.fastSplit(inputStr);
+        String cigar = l.get(5);
+        if (cigar.startsWith("*")) return null;
+        if (Integer.parseInt(l.get(4)) < mapQThresh) return null;
+        String seq = l.get(9);
+        String md = l.get(12).split(":")[2];
+        Tuple<TByteArrayList, TIntArrayList> cigarOPPosIndex = getCigarOPAndPosIndex(cigar);
+        TByteArrayList opList = cigarOPPosIndex.getFirstElement();
+        TIntArrayList posIndexList = cigarOPPosIndex.getSecondElement();
+        if (opList.get(0) == 83) {//S
+            int length = Integer.parseInt(cigar.substring(0, posIndexList.get(0)));
+            seq = seq.substring(length);
+            cigar = cigar.substring(posIndexList.get(0)+1);
+            if (opList.get(opList.size()-1) == 83 || opList.get(opList.size()-1) == 72) {
+                cigarOPPosIndex = getCigarOPAndPosIndex(cigar);
+                opList = cigarOPPosIndex.getFirstElement();
+                posIndexList = cigarOPPosIndex.getSecondElement();
+            }
+        }
+        else if (opList.get(0) == 72) {
+            cigar = cigar.substring(posIndexList.get(0)+1);
+            if (opList.get(opList.size()-1) == 83 || opList.get(opList.size()-1) == 72) {
+                cigarOPPosIndex = getCigarOPAndPosIndex(cigar);
+                opList = cigarOPPosIndex.getFirstElement();
+                posIndexList = cigarOPPosIndex.getSecondElement();
+            }
+        }
+        if (opList.get(opList.size()-1) == 83) {
+            int length = Integer.parseInt(cigar.substring(posIndexList.get(opList.size()-2)+1, posIndexList.get(opList.size()-1)));
+            seq = seq.substring(0, seq.length()-length);
+            cigar = cigar.substring(0, posIndexList.get(opList.size()-2)+1);
+        }
+        else if (opList.get(opList.size()-1) == 72) {
+            cigar = cigar.substring(0, posIndexList.get(opList.size()-2)+1);
+        }
+        List<SNP> snpList = new ArrayList();
+        short chr = (short)Integer.parseInt(l.get(2));
+        int startPos = Integer.parseInt(l.get(3));
+        int currentPos = startPos-1;
+        
+//        startPos = 1;
+//        currentPos = 1-1;
+//        md = "5A4G11C30A35^A7";
+        for (int i = 0; i < md.length(); i++) {
+            char c = md.charAt(i);
+            if (Character.isDigit(c)) {
+                int j;
+                for (j = i + 1; j < md.length(); j++) {
+                    if (!Character.isDigit(md.charAt(j))) {
+                        break;
+                    }
+                }
+                currentPos = currentPos + Integer.parseInt(md.substring(i, j));
+                i = j-1;
+            }
+            else if (Character.isLetter(c)){
+                currentPos++;
+                char alt = seq.charAt(currentPos-startPos);
+                snpList.add(new SNP(chr, currentPos, c, alt));
+            }
+            else if (c == '^'){
+                int j;
+                for (j = i + 1; j < md.length(); j++) {
+                    if (!Character.isLetter(md.charAt(j))) break;
+                }
+                String deletionS = md.substring(i+1, j);
+                char alt = 'D';
+                char ref = md.charAt(i+1);
+                snpList.add(new SNP(chr, currentPos+1, ref, alt));
+                currentPos += deletionS.length();
+                i = j -1;
+            }
+            else {
+                System.out.println(c);
+            }
+        }
+        Collections.sort(snpList);
+        return snpList;
     }
     
     

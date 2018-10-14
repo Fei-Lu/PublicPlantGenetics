@@ -26,14 +26,6 @@ public class BaseEncoder {
     public static final byte[] baseBytes = {0, 1, 2, 3};
     
     /**
-     * Build a byte converter to convert base character following the base encoding rules
-     * @return 
-     */
-    public static HashCharByteMap getCharByteMap () {
-        HashCharByteMap charByteMap = HashCharByteMaps.newImmutableMap(bases, baseBytes);
-        return charByteMap;
-    }
-    /**
      * Build a byte converter to convert AscII byte following the base encoding rules
      * A(00000000), C(00000001), G(00000010), T(0000000011), others(00000100)
      * @return 
@@ -46,14 +38,14 @@ public class BaseEncoder {
             key[i] = (byte)i;
             value[i] = (byte)4;
         }
-        value[65] = 0;
-        value[97] = 0;
-        value[67] = 1;
-        value[99] = 1;
-        value[71] = 2;
-        value[103] = 2;
-        value[84] = 3;
-        value[116] = 3;
+        value[65] = baseBytes[0];
+        value[97] = baseBytes[0];
+        value[67] = baseBytes[1];
+        value[99] = baseBytes[1];
+        value[71] = baseBytes[2];
+        value[103] = baseBytes[2];
+        value[84] = baseBytes[3];
+        value[116] = baseBytes[3];
         HashByteByteMap ascIIByteMap = HashByteByteMaps.newImmutableMap(key, value);
 //        HashByteByteMap ascIIByteMap = HashByteByteMaps.newMutableMap();
 //        for (int i = 0; i < 128; i++) {

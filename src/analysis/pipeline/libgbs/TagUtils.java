@@ -16,6 +16,7 @@ import java.util.Comparator;
 public class TagUtils {
     static String polyA = "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA";
     public static TagComparator tagCom = new TagComparator();
+    
     static long[] getTagFromReads (String readR1, String readR2, HashByteByteMap ascIIByteMap, int tagLengthInLong) {
         int setReadLength = tagLengthInLong*BaseEncoder.longChunkSize;
         long[] tag = new long[tagLengthInLong*2];

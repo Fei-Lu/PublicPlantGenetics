@@ -33,15 +33,18 @@ public class LibGBSGo {
         this.initializeParameter(parameterFileS);
         //this.mkTagsBySample();
         //this.mergeTagCounts();
-        this.alignTags();
-        //this.mkTagDB();
+        //this.alignTags();
+        this.mkTagDB();
     }
     
     public void mkTagDB () {
-       String inputFileS = "/Users/feilu/Documents/analysisL/pipelineTest/Lib_GBS/pipeOutput/alignment/tag.sam";
-       SAMSEAlignment sa = new SAMSEAlignment ();
-       sa.readFromBWAMEM(inputFileS);
-       
+        String tagLibraryDirS = new File (this.workingDirS, this.subDirS[1]).getAbsolutePath();
+        String mergedTagCountFileS = new File(tagLibraryDirS, "tag.tc").getAbsolutePath();
+        String dbFileS = new File(tagLibraryDirS, "tag.db").getAbsolutePath();
+        String alignmentDirS = new File (this.workingDirS, this.subDirS[2]).getAbsolutePath();
+        String samFileS = new File (alignmentDirS, "tag_single.sam").getAbsolutePath();
+        TagDB db = new TagDB();
+        db.SNPCalling(samFileS);
     }
     
     public void alignTags () {
