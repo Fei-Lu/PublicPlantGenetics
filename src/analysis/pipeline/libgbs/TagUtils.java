@@ -69,9 +69,10 @@ public class TagUtils {
         long mask = 3;
         int value = 0;
         int index = 0;
+        int dOff = offSet * 2;
         for (int i = 0; i < groupIdentifierLength; i++) {
-            move = 32 - offSet - i * 2 - 2;
-            value = (int)((a >> move) & mask);
+            move = 64 - dOff - i * 2 - 2;
+            value = (int)((a >>> move) & mask);
             if (i == 0) {
                 index += value;
             }
