@@ -576,9 +576,8 @@ public class ShortreadAlignment {
             hit = temp[2];
             if (this.getBitFromInt(flag, 4) == 1)  strand = -1;
             else  strand = 1;
-            int[] alignSpan = SAMUtils.adjustCoordinates(temp[5], Integer.parseInt(temp[3]));
-            startPos = alignSpan[0];
-            endPos = alignSpan[1];
+            startPos = Integer.parseInt(temp[3]);
+            endPos = SAMUtils.getEndPos(temp[5], startPos);
             score = Short.valueOf(temp[4]);
             matchNumber = this.getMatchNumberFromCigar(temp[5]);
             if (temp[17].startsWith("NM")) editDistance = Short.parseShort(temp[17].split(":")[2]);
@@ -641,9 +640,8 @@ public class ShortreadAlignment {
             hit = temp[2];
             if (this.getBitFromInt(orientiation, 4) == 1) strand = -1;
             else strand = 1;
-            int[] alignSpan = SAMUtils.adjustCoordinates(temp[5], Integer.parseInt(temp[3]));
-            startPos = alignSpan[0];
-            endPos = alignSpan[1];
+            startPos = Integer.parseInt(temp[3]);
+            endPos = SAMUtils.getEndPos(temp[5], startPos);
             score = Short.valueOf(temp[4]);
             matchNumber = this.getMatchNumberFromCigar(temp[5]);
             if (NMIndex > -1) editDistance = Short.valueOf(temp[NMIndex].split(":")[2]);
