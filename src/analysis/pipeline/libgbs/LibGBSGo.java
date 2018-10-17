@@ -42,7 +42,7 @@ public class LibGBSGo {
         String mergedTagCountFileS = new File(tagLibraryDirS, "tag.tc").getAbsolutePath();
         String dbFileS = new File(tagLibraryDirS, "tag.db").getAbsolutePath();
         String alignmentDirS = new File (this.workingDirS, this.subDirS[2]).getAbsolutePath();
-        String samFileS = new File (alignmentDirS, "tag_single.sam").getAbsolutePath();
+        String samFileS = new File (alignmentDirS, "tag.sam").getAbsolutePath();
         TagDB db = new TagDB();
         db.SNPCalling(samFileS);
     }

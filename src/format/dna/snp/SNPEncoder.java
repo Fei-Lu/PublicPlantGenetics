@@ -17,13 +17,14 @@ import com.koloboke.collect.map.hash.HashCharByteMaps;
  * @author feilu
  */
 public class SNPEncoder {
-    public static final char[] alleles = {'A', 'C', 'G', 'T', 'D', 'I', '.'};
+    // 'N' indicates both biolocial missing and technoligical missing
+    public static final char[] alleles = {'A', 'C', 'G', 'T', 'D', 'I', 'N'};
     public static final byte[] alleleBytes = {0, 1, 2, 3, 4, 5, 6};
     
     public static final HashCharByteMap alleleCharByteMap = 
             HashCharByteMaps.getDefaultFactory().withDefaultValue((byte)-1).newImmutableMap(alleles, alleleBytes);
     
     public static final HashByteCharMap alleleByteCharMap = 
-            HashByteCharMaps.getDefaultFactory().withDefaultValue('N').newImmutableMap(alleleBytes, alleles);
+            HashByteCharMaps.getDefaultFactory().withDefaultValue('0').newImmutableMap(alleleBytes, alleles);
     
 }

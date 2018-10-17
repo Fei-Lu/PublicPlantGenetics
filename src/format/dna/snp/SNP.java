@@ -36,7 +36,7 @@ public class SNP implements SNPInterface {
                 return (int)this.getAlternativeAlleleByte() - (int)this.getAlternativeAlleleByte();
             }
             else if (this.getPosition() < o.getPosition()) {
-                
+                return -1;
             }
             return 1;
         }
