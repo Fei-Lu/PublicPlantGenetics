@@ -24,7 +24,7 @@ public class SAMUtils {
     public static final byte[] consumeCigarOPByte = {61, 68, 77, 78, 88};
     
     /**
-     * Return a {@link format.alignment.SEAlignRecord} object from an input alignment
+     * Return a {@link format.alignment.SEAlignRecord} object from a SAM alignment record
      * @param inputStr
      * @return 
      */
@@ -33,7 +33,7 @@ public class SAMUtils {
     }
     
     /**
-     * Return a {@link format.alignment.SEAlignRecord} object from elements of an input alignment
+     * Return a {@link format.alignment.SEAlignRecord} object from elements of a SAM alignment record
      * @param l
      * @return 
      */
@@ -144,8 +144,33 @@ public class SAMUtils {
         return new Tuple<TByteArrayList, TIntArrayList> (opList, posList);
     }
     
-    public static List<SNP> getVariation (String inputStr, int mapQThresh) {
+    /**
+     * Return a list of elements from a SAM alignment record
+     * @param inputStr
+     * @return 
+     */
+    public static List<String> getAlignElements (String inputStr) {
+        return PStringUtils.fastSplit(inputStr);
+    }
+    
+    /**
+     * Return a list of called SNPs from a SAM alignment record
+     * @param inputStr
+     * @param mapQThresh
+     * @return 
+     */
+    public static List<SNP> getVariants (String inputStr, int mapQThresh) {
         List<String> l = PStringUtils.fastSplit(inputStr);
+        return getVariants(l, mapQThresh);
+    }
+    
+    /**
+     * Return a list of called SNPs from elements of a SAM alignment record
+     * @param inputStr
+     * @param mapQThresh
+     * @return 
+     */
+    public static List<SNP> getVariants (List<String> l, int mapQThresh) {
         String cigar = l.get(5);
         if (cigar.startsWith("*")) return null;
         if (Integer.parseInt(l.get(4)) < mapQThresh) return null;
@@ -207,9 +232,6 @@ public class SAMUtils {
                         StringBuilder sb = new StringBuilder(seq);
                         sb.delete(currentAltPos, currentAltPos+length);
                         seq = sb.toString();
-//                        System.out.println(seq);
-//                        int a = 3;
-//                        currentAltPos += length;
                     }
                     else if (cop == 'D' || cop == 'N') {
                         currentPos += length;

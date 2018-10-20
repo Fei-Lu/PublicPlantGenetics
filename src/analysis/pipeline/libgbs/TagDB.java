@@ -6,7 +6,9 @@
 package analysis.pipeline.libgbs;
 
 import format.alignment.SAMUtils;
+import format.dna.snp.SNP;
 import java.io.BufferedReader;
+import java.util.List;
 import utils.IOUtils;
 
 /**
@@ -32,7 +34,9 @@ public class TagDB {
             String temp = null;
             while ((temp = br.readLine()).startsWith("@SQ")){}
             while ((temp = br.readLine()) != null) {
-                SAMUtils.getVariation(temp, mapQThresh);
+                List<String> l = SAMUtils.getAlignElements(temp);
+                List<SNP> snpList = SAMUtils.getVariants(l, mapQThresh);
+                
             }
         }
         catch (Exception e) {
