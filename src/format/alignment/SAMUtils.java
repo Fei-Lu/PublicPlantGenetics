@@ -23,6 +23,126 @@ public class SAMUtils {
      */
     public static final byte[] consumeCigarOPByte = {61, 68, 77, 78, 88};
     
+    
+    /**
+     * Return if the seq has multiple alignments
+     * @param flag
+     * @return 
+     */
+    public static boolean isHavingMultipleAlignment (int flag) {
+        if (getBinaryValueAtNthBit(flag, 1) == 1) return true;
+        return false;
+    }
+    
+    /**
+     * Return if a read pair is properly aligned
+     * @param flag
+     * @return 
+     */
+    public static boolean isReadsMappedInPropePair (int flag) {
+        if (getBinaryValueAtNthBit(flag, 2) == 1) return true;
+        return false;
+    }
+    
+    /**
+     * Return if the seq is unmapped
+     * @param flag
+     * @return 
+     */
+    public static boolean isUnmapped (int flag) {
+        if (getBinaryValueAtNthBit(flag, 3) == 1) return true;
+        return false;
+    }
+    
+    /**
+     * Return if the mate of the seq is unmapped
+     * @param flag
+     * @return 
+     */
+    public static boolean isMateUnmapped (int flag) {
+        if (getBinaryValueAtNthBit(flag, 4) == 1) return true;
+        return false;
+    }
+    
+    /**
+     * Return if the seq is reversely aligned
+     * @param flag
+     * @return 
+     */
+    public static boolean isReverseAligned (int flag) {
+        if (getBinaryValueAtNthBit(flag, 5) == 1) return true;
+        return false;
+    }
+    
+    /**
+     * Return if the mate of the seq is reversely aligned
+     * @param flag
+     * @return 
+     */
+    public static boolean isMateReverseAligned (int flag) {
+        if (getBinaryValueAtNthBit(flag, 6) == 1) return true;
+        return false;
+    }
+    
+    /**
+     * Return if the seq the first read in a pair
+     * @param flag
+     * @return 
+     */
+    public static boolean isFirstSegmentInPair (int flag) {
+        if (getBinaryValueAtNthBit(flag, 7) == 1) return true;
+        return false;
+    }
+    
+    /**
+     * Return if the seq the second read in a pair
+     * @param flag
+     * @return 
+     */
+    public static boolean isSecondSegmentInPair (int flag) {
+        if (getBinaryValueAtNthBit(flag, 8) == 1) return true;
+        return false;
+    }
+    
+    /**
+     * Return if the seq is secondary alignment
+     * @param flag
+     * @return 
+     */
+    public static boolean isSecondaryAlignment (int flag) {
+        if (getBinaryValueAtNthBit(flag, 9) == 1) return true;
+        return false;
+    }
+    
+    /**
+     * Return if the seq is a PCR duplicate
+     * @param flag
+     * @return 
+     */
+    public static boolean isPCRDuplicates (int flag) {
+        if (getBinaryValueAtNthBit(flag, 11) == 1) return true;
+        return false;
+    }
+    
+    /**
+     * Return if the alignment is a supplementary alignment
+     * @param flag
+     * @return 
+     */
+    public static boolean isSupplementaryAlignment (int flag) {
+        if (getBinaryValueAtNthBit(flag, 12) == 1) return true;
+        return false;
+    }
+    
+    private static int getBinaryValueAtNthBit (int flag, int bitPosRightMost) {
+        int v = 1;
+        int shift = (bitPosRightMost - 1);
+        v = v << shift;
+        int value = v & flag;
+        value = value >>> shift;
+        return value;
+    }
+    
     /**
      * Return a {@link format.alignment.SEAlignRecord} object from a SAM alignment record
      * @param inputStr
@@ -166,6 +286,7 @@ public class SAMUtils {
     
     /**
      * Return a list of called SNPs from elements of a SAM alignment record
+     * Return null if the seq is not aligned
      * @param inputStr
      * @param mapQThresh
      * @return 
