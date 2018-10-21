@@ -43,8 +43,8 @@ public class LibGBSGo {
         String dbFileS = new File(tagLibraryDirS, "tag.db").getAbsolutePath();
         String alignmentDirS = new File (this.workingDirS, this.subDirS[2]).getAbsolutePath();
         String samFileS = new File (alignmentDirS, "tag.sam").getAbsolutePath();
-        TagDB db = new TagDB();
-        db.SNPCalling(samFileS);
+        TagDB db = new TagDB(dbFileS, mergedTagCountFileS);
+        db.addAlignmentAndSNP(samFileS);
     }
     
     public void alignTags () {
@@ -104,6 +104,7 @@ public class LibGBSGo {
             File f = new File (this.workingDirS, subDirS[i]);
             f.mkdir();
         }
+        System.out.println("Pipeline parameters initialized");
     }
     
     public static void main (String[] args) {

@@ -23,12 +23,16 @@ class TagMerger {
     public void mergeTagCounts (String inputDirS, String outputFileS) {
         File[] fs = new File(inputDirS).listFiles();
         fs = IOUtils.listFilesEndsWith(fs, ".tc");
+        System.out.println("Merging "+String.valueOf(fs.length)+" individual TagCounts files");
         TagCounts tc = new TagCounts(fs[0].getAbsolutePath());
         boolean ifCollapsed = false;
+        int cnt = 0;
         for (int i = 1; i < fs.length; i++) {
             ifCollapsed = false;
             TagCounts atc = new TagCounts(fs[i].getAbsolutePath());
             tc.addTagCounts(atc);
+            cnt++;
+            if (cnt%100 == 0) System.out.println(String.valueOf(cnt) + "TagCounts files have been merged");
             if (tc.getMaxTagNumberInGroups() < collapseThreshold) continue;
             tc.collapseCounts();
             ifCollapsed = true;
@@ -36,6 +40,8 @@ class TagMerger {
         if (!ifCollapsed) {
             tc.collapseCounts();
         }
+        System.out.println("A total of " + String.valueOf(fs.length) + " TagCounts files are merged");
+        System.out.println(String.valueOf(tc.getTagNumber()) + " tags are devided into " + String.valueOf(tc.getGroupNumber()) + " tag groups");
         tc.writeBinaryFile(outputFileS);
     }
 }

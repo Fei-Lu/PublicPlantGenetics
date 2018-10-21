@@ -19,10 +19,10 @@ import utils.IOUtils;
  * @author feilu
  */
 public class TagCounts {
-    int tagLengthInLong = -1;
+    int tagLengthInLong = Integer.MIN_VALUE;
     int offSet = 8;
-    int groupIdentifierLength = 4;
-    boolean ifSorted;
+    int groupIdentifierLength = 5;
+    boolean ifSorted = false;
     int groupCount = -1;
     List<TagCount> tcList = null;
 
@@ -52,6 +52,7 @@ public class TagCounts {
     
     public void readBinaryFile (String infileS) {
         try {
+            System.out.println("Reading TagCounts file from " + infileS);
             DataInputStream dis = IOUtils.getBinaryReader(infileS);
             this.tagLengthInLong = dis.readInt();
             this.offSet = dis.readInt();
@@ -59,12 +60,14 @@ public class TagCounts {
             ifSorted = dis.readBoolean();
             this.groupCount = (int)Math.pow(4, groupIdentifierLength);
             tcList = new ArrayList<>();
+            long cnt = 0;
             for (int i = 0; i < groupCount; i++) {
                 int tagNumber = dis.readInt();
                 int groupIndex = dis.readInt();
                 TagCount tc = new TagCount(this.tagLengthInLong, groupIndex, tagNumber, ifSorted);
                 tcList.add(tc);
                 for (int j = 0; j < tagNumber; j++) {
+                    cnt++;
                     long[] tag = new long[this.tagLengthInLong*2];
                     for (int k = 0; k < tag.length; k++) {
                         tag[k] = dis.readLong();
@@ -73,8 +76,10 @@ public class TagCounts {
                     byte r2Len = dis.readByte();
                     int readNumber = dis.readInt();
                     tcList.get(i).appendTag(tag, r1Len, r2Len, readNumber);
+                    if (cnt%10000000 == 0) System.out.println("Reading in "+String.valueOf(cnt)+" tags");
                 }
             }
+            System.out.println(String.valueOf(cnt) + " tags are in " + infileS);
         }
         catch (Exception e) {
             e.printStackTrace();
@@ -84,11 +89,13 @@ public class TagCounts {
     public void writeFastqFile (String r1FastqFileS, String r2FastqFileS) {
         String polyQ = "????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????";
         try {
+            System.out.println("Writing fastq file from TagCounts");
             BufferedWriter bw1 = IOUtils.getTextWriter(r1FastqFileS);
             BufferedWriter bw2 = IOUtils.getTextWriter(r2FastqFileS);
             StringBuilder sb = new StringBuilder();
             String identifier = null;
             String[] reads = null;
+            long cnt = 0;
             for (int i = 0; i < this.getGroupNumber(); i++) {
                 for (int j = 0; j < this.getTagNumber(i); j++) {
                     sb = new StringBuilder();
@@ -103,10 +110,13 @@ public class TagCounts {
                     bw2.write("+");bw2.newLine();
                     bw1.write(polyQ.substring(0, this.getR1TagLength(i, j)));bw1.newLine();
                     bw2.write(polyQ.substring(0, this.getR2TagLength(i, j)));bw2.newLine();
+                    cnt++;
+                    if (cnt%10000000 == 0) System.out.println(String.valueOf(cnt) + " tags have been converted to Fastq");
                 }
             }
             bw1.flush();bw1.close();
             bw2.flush();bw2.close();
+            System.out.println("Fastq files are written to " + String.valueOf(r1FastqFileS) + " " + String.valueOf(r2FastqFileS));
         }
         catch (Exception e) {
             e.printStackTrace();
@@ -145,12 +155,14 @@ public class TagCounts {
     }
     
     public void writeBinaryFile (String outfileS) {
+        System.out.println("Writing TagCounts file to " + outfileS);
         try {
             DataOutputStream dos = IOUtils.getBinaryWriter(outfileS);
             dos.writeInt(this.getTagLengthInLong());
             dos.writeInt(this.getGroupIdentiferOffset());
             dos.writeInt(this.groupIdentifierLength);
             dos.writeBoolean(this.ifSorted);
+            long cnt = 0;
             for (int i = 0; i < this.getGroupNumber(); i++) {
                 dos.writeInt(this.getTagNumber(i));
                 dos.writeInt(i);
@@ -162,11 +174,13 @@ public class TagCounts {
                     dos.writeByte(tcList.get(i).getR1TagLength(j));
                     dos.writeByte(tcList.get(i).getR2TagLength(j));
                     dos.writeInt(tcList.get(i).getReadNumber(j));
+                    cnt++;
+                    if (cnt%10000000 == 0) System.out.println(String.valueOf(cnt) + " tags ouput to " + outfileS);
                 }
             }
             dos.flush();
             dos.close();
-            System.out.println(outfileS + " is written");
+            System.out.println(String.valueOf(cnt) + " tags are written to " + outfileS);
         }
         catch (Exception e) {
             e.printStackTrace();

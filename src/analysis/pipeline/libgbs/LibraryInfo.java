@@ -190,9 +190,14 @@ public class LibraryInfo {
         libFastqsR2 = libFqR2List.toArray(new String[libFqR2List.size()]);
         
         System.out.println(libs.length+" libraries will be paralell processd. They are:");
+        int cnt = 0;
         for (int i = 0; i < libs.length; i++) {
-            System.out.println(libs[i]);
+            StringBuilder sb = new StringBuilder();
+            sb.append(libs[i]).append(" with ").append(this.taxaNames[i].length).append(" samples");
+            System.out.println(sb.toString());
+            cnt+=this.taxaNames[i].length;
         }
+        System.out.println("A total of " + String.valueOf(cnt) + " samples are in the current batch");
     }
     
 }
