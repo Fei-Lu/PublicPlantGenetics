@@ -142,7 +142,7 @@ public class RowTable<T> extends TableAbstract<T> {
     protected IntComparator compTextByColumn = new IntComparator() {
         @Override
         public int compare(int a, int b) {
-            return cells.get(a).get(sortColumnIndex).toString().compareTo(cells.get(a).get(sortColumnIndex).toString());
+            return cells.get(a).get(sortColumnIndex).toString().compareTo(cells.get(b).get(sortColumnIndex).toString());
         }
     };
     

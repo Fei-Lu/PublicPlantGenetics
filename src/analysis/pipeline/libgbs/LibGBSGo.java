@@ -44,7 +44,7 @@ public class LibGBSGo {
         String alignmentDirS = new File (this.workingDirS, this.subDirS[2]).getAbsolutePath();
         String samFileS = new File (alignmentDirS, "tag.sam").getAbsolutePath();
         TagDB db = new TagDB(dbFileS, mergedTagCountFileS);
-        db.addAlignmentAndSNP(samFileS);
+        //db.addSNPs(samFileS);
     }
     
     public void alignTags () {
