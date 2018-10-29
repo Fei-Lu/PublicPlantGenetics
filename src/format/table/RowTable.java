@@ -32,7 +32,6 @@ public class RowTable<T> extends TableAbstract<T> {
         }
         else {
             this.readTableFile(infileS, IOFileFormat.Text, "\t");
-            String a;
         }
     }
     
@@ -47,7 +46,6 @@ public class RowTable<T> extends TableAbstract<T> {
         }
         else {
             this.readTableFile(infileS, IOFileFormat.Text, delimiter);
-            String a;
         }
     }
     
