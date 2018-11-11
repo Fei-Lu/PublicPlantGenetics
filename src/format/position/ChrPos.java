@@ -8,8 +8,9 @@ package format.position;
 /**
  *
  * @author feilu
+ * @param <T>
  */
-public class ChrPos {
+public class ChrPos<T extends ChrPos> implements Comparable<T>{
     short chr;
     int pos;
     
@@ -18,11 +19,22 @@ public class ChrPos {
         this.pos = pos;
     }
     
-    public short getChr () {
+    public short getChromosome () {
         return chr;
     }
     
-    public int getPos() {
+    public int getPosition() {
         return pos;
+    }
+
+    @Override
+    public int compareTo(ChrPos o) {
+        if (this.chr == o.chr) {
+            if (pos == o.pos) return 0;
+            else if (pos < o.pos) return -1;
+            return 1;
+        }
+        else if (chr < o.chr) return -1;
+        return 1;
     }
 }

@@ -16,7 +16,7 @@ import com.koloboke.collect.map.hash.HashCharByteMaps;
  *
  * @author feilu
  */
-public class SNPEncoder {
+public class AlleleEncoder {
     // 'N' indicates both biolocial missing and technoligical missing
     public static final char[] alleles = {'A', 'C', 'G', 'T', 'D', 'I', 'N'};
     public static final byte[] alleleBytes = {0, 1, 2, 3, 4, 5, 6};

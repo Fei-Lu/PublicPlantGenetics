@@ -9,12 +9,8 @@ package format.dna.snp;
  *
  * @author feilu
  */
-public interface SNPInterface extends Comparable <SNPInterface> {
-    
-    public short getChromosome ();
-    
-    public int getPosition ();
-    
+public interface SNPInterface {
+        
     public byte getReferenceAlleleByte ();
     
     public char getReferenceAllele ();

@@ -37,6 +37,7 @@ public class TagDB {
     
     public TagDB (String dbFileS, String mergedTagCountFileS) {        
         //this.initializeDB(dbFileS, mergedTagCountFileS);
+        
     }
     
     private void initializeDB (String dbFileS, String mergedTagCountFileS) {

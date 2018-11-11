@@ -95,7 +95,7 @@ public class LibraryInfo {
     
     private void parseBarcode (String barcodeFileS, String libraryFastqMapFileS) {
         RowTable<String> t = new RowTable<>(barcodeFileS);
-        List<String> l = t.getColumn(0);
+        List<String> l = t.getColumn(1);
         Set<String> s = new HashSet(l);
         libs = s.toArray(new String[s.size()]);
         Arrays.sort(libs);
@@ -112,12 +112,12 @@ public class LibraryInfo {
             List<String> barcodeR1List = new ArrayList<>();
             List<String> barcodeR2List = new ArrayList<>();
             for (int j = 0; j < t.getRowNumber(); j++) {
-                if (!t.getCell(j, 0).equals(libs[i])) continue;
+                if (!t.getCell(j, 1).equals(libs[i])) continue;
                 StringBuilder sb = new StringBuilder();
-                sb.append(t.getCell(j, 6)).append("_").append(t.getCell(j, 0)).append("_").append(t.getCell(j, 1));
+                sb.append(t.getCell(j, 0)).append("_").append(t.getCell(j, 1)).append("_").append(t.getCell(j, 2)).append("_").append(t.getCell(j, 3));
                 nameList.add(sb.toString());
-                barcodeR1List.add(t.getCell(j, 3));
-                barcodeR2List.add(t.getCell(j, 4));
+                barcodeR1List.add(t.getCell(j, 6));
+                barcodeR2List.add(t.getCell(j, 7));
                 
             }
             taxaNames[i] = nameList.toArray(new String[nameList.size()]);

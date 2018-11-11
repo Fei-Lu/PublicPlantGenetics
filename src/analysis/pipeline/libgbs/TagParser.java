@@ -210,10 +210,10 @@ public class TagParser {
             }
             subFList.parallelStream().forEach(f -> {
                 String taxonName = f.getName().replaceFirst(".tp", "");
-                String oufileS = new File (tagBySampleDirS, taxonName+".tc").getAbsolutePath();
-                TagCounts tc = new TagCounts(f.getAbsolutePath());
-                tc.collapseCounts();
-                tc.writeBinaryFile(oufileS);
+                String oufileS = new File (tagBySampleDirS, taxonName+".tas").getAbsolutePath();
+                TagAnnotations ta = new TagAnnotations (f.getAbsolutePath());
+                ta.collapseCounts();
+                ta.writeBinaryFile(oufileS);
                 f.delete();
             });
         }

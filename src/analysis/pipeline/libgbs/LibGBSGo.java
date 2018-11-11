@@ -12,6 +12,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import utils.IOUtils;
 
 /**
@@ -31,10 +32,10 @@ public class LibGBSGo {
     
     public LibGBSGo (String parameterFileS) {
         this.initializeParameter(parameterFileS);
-        //this.mkTagsBySample();
+        this.mkTagsBySample();
         //this.mergeTagCounts();
         //this.alignTags();
-        this.mkTagDB();
+        //this.mkTagDB();
     }
     
     public void mkTagDB () {
