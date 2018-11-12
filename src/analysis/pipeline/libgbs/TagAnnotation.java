@@ -21,7 +21,6 @@ import java.util.List;
  * @author feilu
  */
 public class TagAnnotation implements Swapper, IntComparator {
-//    protected int tagLengthInLong = -1;
     protected int groupIndex = -1;
     protected List<long[]> tagList = null;
     protected TByteArrayList r1LenList = null;
@@ -32,7 +31,7 @@ public class TagAnnotation implements Swapper, IntComparator {
     protected List<TByteArrayList> alleleList = null;
     
 
-    public TagAnnotation (int groupIndex) {
+    TagAnnotation (int groupIndex) {
         this.groupIndex = groupIndex;
         tagList = new ArrayList<>();
         r1LenList = new TByteArrayList();
@@ -43,15 +42,18 @@ public class TagAnnotation implements Swapper, IntComparator {
         alleleList = new ArrayList<>();
     }
     
-    public TagAnnotation (int tagLengthInLong, int groupIndex, int tagNumber, boolean ifSorted) {
+    TagAnnotation (int tagLengthInLong, int groupIndex, int tagNumber, boolean ifSorted) {
         this.groupIndex = groupIndex;
         tagList = new ArrayList(tagNumber);
         r1LenList = new TByteArrayList(tagNumber);
         r2LenList = new TByteArrayList(tagNumber);
         readCountList = new TIntArrayList(tagNumber);
+        SNPList = new ArrayList<>();
+        allelePosList = new ArrayList<>();
+        alleleList = new ArrayList<>();
     }
     
-    public void appendTag (long[] tag, byte r1Len, byte r2Len, int readNumber) {
+    void appendTag (long[] tag, byte r1Len, byte r2Len, int readNumber) {
         tagList.add(tag);
         r1LenList.add(r1Len);
         r2LenList.add(r2Len);
@@ -61,7 +63,7 @@ public class TagAnnotation implements Swapper, IntComparator {
         alleleList.add(new TByteArrayList());
     }
     
-    public void appendTag (long[] tag, byte r1Len, byte r2Len, int readNumber, List<SNP> tagSNPList, List<ChrPos> tagAllelePosList, TByteArrayList tagAlleleList) {
+    void appendTag (long[] tag, byte r1Len, byte r2Len, int readNumber, List<SNP> tagSNPList, List<ChrPos> tagAllelePosList, TByteArrayList tagAlleleList) {
         tagList.add(tag);
         r1LenList.add(r1Len);
         r2LenList.add(r2Len);
@@ -71,31 +73,31 @@ public class TagAnnotation implements Swapper, IntComparator {
         alleleList.add(tagAlleleList);
     }
     
-    public long[] getTag (int tagIndex) {
+    long[] getTag (int tagIndex) {
         return this.tagList.get(tagIndex);
     }
     
-    public byte getR1TagLength (int tagIndex) {
+    byte getR1TagLength (int tagIndex) {
         return this.r1LenList.get(tagIndex);
     }
     
-    public byte getR2TagLength (int tagIndex) {
+    byte getR2TagLength (int tagIndex) {
         return this.r2LenList.get(tagIndex);
     }
     
-    public List<SNP> getSNPOfTag (int tagIndex) {
+    List<SNP> getSNPOfTag (int tagIndex) {
         return this.SNPList.get(tagIndex);
     }
     
-    public List<ChrPos> getAllelePosOfTag (int tagIndex) {
+    List<ChrPos> getAllelePosOfTag (int tagIndex) {
         return this.allelePosList.get(tagIndex);
     }
     
-    public TByteArrayList getAlleleOfTag (int tagIndex) {
+    TByteArrayList getAlleleOfTag (int tagIndex) {
         return this.alleleList.get(tagIndex);
     }
     
-    public int getTotalReadNum () {
+    int getTotalReadNum () {
         int cnt = 0;
         for (int i = 0; i < this.getTagNumber(); i++) {
             cnt+=this.getReadNumber(i);
@@ -103,19 +105,17 @@ public class TagAnnotation implements Swapper, IntComparator {
         return cnt;
     }
     
-    public int getReadNumber (int tagIndex) {
+    int getReadNumber (int tagIndex) {
         return this.readCountList.get(tagIndex);
     }
     
-    public int getTagNumber () {
+    int getTagNumber () {
         return this.tagList.size();
     }
     
-    public int getTagIndex (long[] tag) {
+    int getTagIndex (long[] tag) {
         return Collections.binarySearch(tagList, tag, TagUtils.tagCom);
-    }
-    
-    
+    }  
     
     @Override
     public void swap (int index1, int index2) {
@@ -155,7 +155,7 @@ public class TagAnnotation implements Swapper, IntComparator {
         return 0;
     }
 
-    public void sort () {
+    void sort () {
         //System.out.println("TagCount sort begins");
         GenericSorting.quickSort(0, this.getTagNumber(), this, this);
         //System.out.println("TagCount sort ends");

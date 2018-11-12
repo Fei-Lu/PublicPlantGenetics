@@ -32,10 +32,10 @@ public class LibGBSGo {
     
     public LibGBSGo (String parameterFileS) {
         this.initializeParameter(parameterFileS);
-        this.mkTagsBySample();
+        //this.mkTagsBySample();
         //this.mergeTagCounts();
         //this.alignTags();
-        //this.mkTagDB();
+        this.mkTagDB();
     }
     
     public void mkTagDB () {
@@ -50,15 +50,15 @@ public class LibGBSGo {
     
     public void alignTags () {
         String tagLibraryDirS = new File (this.workingDirS, this.subDirS[1]).getAbsolutePath();
-        String mergedTagCountFileS = new File(tagLibraryDirS, "tag.tc").getAbsolutePath();
+        String mergedTagAnnotationFileS = new File(tagLibraryDirS, "tag.tas").getAbsolutePath();
         String alignmentDirS = new File (this.workingDirS, this.subDirS[2]).getAbsolutePath();
-        new TagAligner(referenceFileS, this.bwaPath, mergedTagCountFileS, alignmentDirS);
+        new TagAligner(referenceFileS, this.bwaPath, mergedTagAnnotationFileS, alignmentDirS);
     }
     
     public void mergeTagCounts () {
         String tagBySampleDirS = new File (this.workingDirS, this.subDirS[0]).getAbsolutePath();
         String tagLibraryDirS = new File (this.workingDirS, this.subDirS[1]).getAbsolutePath();
-        String mergedTagCountFileS = new File(tagLibraryDirS, "tag.tc").getAbsolutePath();
+        String mergedTagCountFileS = new File(tagLibraryDirS, "tag.tas").getAbsolutePath();
         new TagMerger(tagBySampleDirS, mergedTagCountFileS);
     }
     

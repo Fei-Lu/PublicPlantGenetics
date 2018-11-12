@@ -8,6 +8,7 @@ package analysis.pipeline.libgbs;
 import format.dna.snp.SNP;
 import format.position.ChrPos;
 import gnu.trove.list.array.TByteArrayList;
+import java.io.BufferedWriter;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
@@ -32,7 +33,7 @@ public class TagAnnotations {
         if (infileS.endsWith(".tp")) {
             this.readTPBinaryFile(infileS);
         }
-        else if (infileS.endsWith(".tc")) {
+        else if (infileS.endsWith(".tas")) {
             this.readBinaryFile(infileS);
         }
     }
@@ -71,10 +72,47 @@ public class TagAnnotations {
         }
         this.sort();
     }
-     
-     public void readBinaryFile (String infileS) {
+    
+     public void writeFastqFile (String r1FastqFileS, String r2FastqFileS) {
+        String polyQ = "????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????";
         try {
-            System.out.println("Reading TagCounts file from " + infileS);
+            System.out.println("Writing fastq file from TagAnnotations");
+            BufferedWriter bw1 = IOUtils.getTextWriter(r1FastqFileS);
+            BufferedWriter bw2 = IOUtils.getTextWriter(r2FastqFileS);
+            StringBuilder sb = new StringBuilder();
+            String identifier = null;
+            String[] reads = null;
+            long cnt = 0;
+            for (int i = 0; i < this.getGroupNumber(); i++) {
+                for (int j = 0; j < this.getTagNumber(i); j++) {
+                    sb = new StringBuilder();
+                    sb.append("@").append(i).append("_").append(j).append("_").append(this.getReadNumber(i, j));
+                    identifier = sb.toString();
+                    bw1.write(identifier); bw1.newLine();          
+                    bw2.write(identifier); bw2.newLine();
+                    reads = TagUtils.getReadsFromTag(this.getTag(i, j), this.getR1TagLength(i, j), this.getR2TagLength(i, j));
+                    bw1.write(reads[0]);bw1.newLine();
+                    bw2.write(reads[1]);bw2.newLine();
+                    bw1.write("+");bw1.newLine();
+                    bw2.write("+");bw2.newLine();
+                    bw1.write(polyQ.substring(0, this.getR1TagLength(i, j)));bw1.newLine();
+                    bw2.write(polyQ.substring(0, this.getR2TagLength(i, j)));bw2.newLine();
+                    cnt++;
+                    if (cnt%10000000 == 0) System.out.println(String.valueOf(cnt) + " tags have been converted to Fastq");
+                }
+            }
+            bw1.flush();bw1.close();
+            bw2.flush();bw2.close();
+            System.out.println("Fastq files are written to " + String.valueOf(r1FastqFileS) + " " + String.valueOf(r2FastqFileS));
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+     
+    public void readBinaryFile (String infileS) {
+        try {
+            System.out.println("Reading TagAnnotations file from " + infileS);
             DataInputStream dis = IOUtils.getBinaryReader(infileS);
             this.tagLengthInLong = dis.readInt();
             this.offSet = dis.readInt();
@@ -86,8 +124,7 @@ public class TagAnnotations {
             for (int i = 0; i < groupCount; i++) {
                 int tagNumber = dis.readInt();
                 int groupIndex = dis.readInt();
-                TagAnnotation ta = new TagAnnotation(this.tagLengthInLong, groupIndex, tagNumber, ifSorted);
-                taList.add(ta);
+                TagAnnotation ta = new TagAnnotation(this.tagLengthInLong, groupIndex, tagNumber, ifSorted);               
                 for (int j = 0; j < tagNumber; j++) {
                     cnt++;
                     long[] tag = new long[this.tagLengthInLong*2];
@@ -98,20 +135,21 @@ public class TagAnnotations {
                     byte r2Len = dis.readByte();
                     int readNumber = dis.readInt();
                     byte snpNumber = dis.readByte();
-                    List<SNP> snpList = new ArrayList();
+                    List<SNP> snpList = new ArrayList<>();
                     for (int k = 0; k < snpNumber; k++) {
                         snpList.add(new SNP(dis.readShort(), dis.readInt(), dis.readByte(), dis.readByte()));
                     }
                     byte alleleNumber = dis.readByte();
-                    List<ChrPos> posList = new ArrayList();
+                    List<ChrPos> posList = new ArrayList<>();
                     TByteArrayList tagAlleleList = new TByteArrayList();
                     for (int k = 0; k < alleleNumber; k++) {
                         posList.add(new ChrPos(dis.readShort(), dis.readInt()));
                         tagAlleleList.add(dis.readByte());
                     }
-                    taList.get(i).appendTag(tag, r1Len, r2Len, readNumber, snpList, posList, tagAlleleList);
+                    ta.appendTag(tag, r1Len, r2Len, readNumber, snpList, posList, tagAlleleList);
                     if (cnt%10000000 == 0) System.out.println("Reading in "+String.valueOf(cnt)+" tags");
                 }
+                taList.add(ta);
             }
             System.out.println(String.valueOf(cnt) + " tags are in " + infileS);
         }
@@ -121,7 +159,7 @@ public class TagAnnotations {
     }
     
     public void writeBinaryFile (String outfileS) {
-        System.out.println("Writing TagCounts file to " + outfileS);
+        System.out.println("Writing TagAnnotationss file to " + outfileS);
         try {
             DataOutputStream dos = IOUtils.getBinaryWriter(outfileS);
             dos.writeInt(this.getTagLengthInLong());
@@ -150,6 +188,7 @@ public class TagAnnotations {
                         dos.writeByte(snpList.get(k).getAlternativeAlleleByte());
                     }
                     byte alleleNumber = this.getAlleleNumberOfTag(i, j);
+                    dos.writeByte(alleleNumber);
                     List<ChrPos> posList = this.getAllelePosOfTag(i, j);
                     TByteArrayList tagAlleleList = this.getAlleleOfTag(i, j);
                     for (int k = 0; k < alleleNumber; k++) {
@@ -170,12 +209,75 @@ public class TagAnnotations {
         }
     }
     
+    public void writeTextFile (String outfileS) {
+        try {
+            BufferedWriter bw = IOUtils.getTextWriter(outfileS);
+            bw.write("TagLengthInLong:\t" + String.valueOf(this.getTagLengthInLong()));
+            bw.newLine();
+            bw.write("GroupIdentifierOffset:\t" + String.valueOf(this.getGroupIdentiferOffset()));
+            bw.newLine();
+            bw.write("GroupIdentifierLength:\t" + String.valueOf(this.getGroupIdentiferLength()));
+            bw.newLine();
+            for (int i = 0; i < this.getGroupNumber(); i++) {
+                StringBuilder sb = new StringBuilder();
+                sb.append("GroupIndex:\t").append(i).append("\nTagNumber:\t").append(this.getTagNumber(i));
+                bw.write(sb.toString());
+                bw.newLine();
+                for (int j = 0; j < this.getTagNumber(i); j++) {
+                    sb = new StringBuilder();
+                    sb.append(this.getR1TagLength(i, j)).append("\t").append(this.getR2TagLength(i, j)).append("\t").append(this.getReadNumber(i, j)).append("\n");
+                    String[] reads = TagUtils.getReadsFromTag(this.getTag(i, j), this.getR1TagLength(i, j), this.getR2TagLength(i, j));
+                    sb.append(reads[0]).append("\t").append(reads[1]).append("\n");
+                    List<SNP> snpList = this.getSNPOfTag(i, j);
+                    sb.append("SNPNumber:\t").append(snpList.size());
+                    sb.append("\nSNPs:");
+                    for (int k = 0; k < snpList.size(); k++) {
+                        SNP s = snpList.get(k);
+                        sb.append("\t").append(k).append(":").append(s.getChromosome()).append("\t").append(s.getPosition()).append("\t").append(s.getReferenceAllele()).append("\t").append(s.getAlternativeAllele());
+                    }
+                    sb.append("\n");
+                    TByteArrayList alleleList = this.getAlleleOfTag(i, j);
+                    List<ChrPos> posList = this.getAllelePosOfTag(i, j);
+                    sb.append("AlleleNumber:\t").append(snpList.size());
+                    sb.append("\nAlleles:");
+                    for (int k = 0; k < snpList.size(); k++) {
+                        sb.append("\t").append(k).append(":").append(posList.get(k).getChromosome()).append("\t").append(posList.get(k).getPosition()).append("\t").append((char)alleleList.get(k));
+                    }
+                    bw.write(sb.toString());
+                    bw.newLine();
+                } 
+            }
+            bw.flush();
+            bw.close();
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+    
+    public boolean addTagAnnotations (TagAnnotations ata) {
+        if (this.getTagLengthInLong() != ata.getTagLengthInLong()) return false;
+        if (this.getGroupIdentiferOffset() != ata.getGroupIdentiferOffset()) return false;
+        if (this.getGroupIdentiferLength() != ata.getGroupIdentiferLength()) return false;
+        taList.parallelStream().forEach(ta -> {
+            ta.r1LenList.addAll(ata.taList.get(ta.groupIndex).r1LenList);
+            ta.r2LenList.addAll(ata.taList.get(ta.groupIndex).r2LenList);
+            ta.readCountList.addAll(ata.taList.get(ta.groupIndex).readCountList);
+            ta.tagList.addAll(ata.taList.get(ta.groupIndex).tagList);
+            ta.SNPList.addAll(ata.taList.get(ta.groupIndex).SNPList);
+            ta.allelePosList.addAll(ata.taList.get(ta.groupIndex).allelePosList);
+            ta.alleleList.addAll(ata.taList.get(ta.groupIndex).alleleList);
+        });
+        this.ifSorted = false;
+        return true;
+    }
+    
     public void sort () {
-        System.out.println("TagCounts sort begins");
+        System.out.println("TagAnnotations sort begins");
         taList.parallelStream().forEach(ta -> {
             ta.sort();
         });
-        System.out.println("TagCounts sort ends");
+        System.out.println("TagAnnotations sort ends");
         this.ifSorted = true;
     }
     

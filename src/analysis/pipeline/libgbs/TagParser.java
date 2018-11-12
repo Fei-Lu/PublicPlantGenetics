@@ -202,6 +202,7 @@ public class TagParser {
     public void compressTagsBySample (String tagBySampleDirS) {
         File[] fs = new File(tagBySampleDirS).listFiles();
         fs = IOUtils.listFilesEndsWith(fs, ".tp");
+        Arrays.sort(fs);
         int[][] indices = PArrayUtils.getSubsetsIndicesBySubsetSize(fs.length, this.paraLevel);
         for (int i = 0; i < indices.length; i++) {
             List<File> subFList = new ArrayList();
@@ -214,6 +215,7 @@ public class TagParser {
                 TagAnnotations ta = new TagAnnotations (f.getAbsolutePath());
                 ta.collapseCounts();
                 ta.writeBinaryFile(oufileS);
+                //ta.writeTextFile(oufileS);
                 f.delete();
             });
         }

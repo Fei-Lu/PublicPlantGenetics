@@ -37,7 +37,7 @@ class TagAligner {
         r2FastqFileS = new File (alignmentDirS, "tag_r2.fq").getAbsolutePath();
         samFileS = new File (alignmentDirS, "tag.sam").getAbsolutePath();
         String perlFileS = new File (alignmentDirS, "runBWA.pl").getAbsolutePath();
-        TagCounts tc = new TagCounts(mergedTagCountFileS);
+        TagAnnotations tc = new TagAnnotations(mergedTagCountFileS);
         tc.writeFastqFile(r1FastqFileS, r2FastqFileS);
         try {
             StringBuilder sb = new StringBuilder();
