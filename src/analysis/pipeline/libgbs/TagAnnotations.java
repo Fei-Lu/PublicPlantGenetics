@@ -38,7 +38,7 @@ public class TagAnnotations {
         }
     }
     
-     private void readTPBinaryFile (String infileS) {
+    private void readTPBinaryFile (String infileS) {
         try {
             DataInputStream dis = IOUtils.getBinaryReader(infileS);
             this.tagLengthInLong = dis.readInt();
@@ -240,7 +240,7 @@ public class TagAnnotations {
                     List<ChrPos> posList = this.getAllelePosOfTag(i, j);
                     sb.append("AlleleNumber:\t").append(snpList.size());
                     sb.append("\nAlleles:");
-                    for (int k = 0; k < snpList.size(); k++) {
+                    for (int k = 0; k < posList.size(); k++) {
                         sb.append("\t").append(k).append(":").append(posList.get(k).getChromosome()).append("\t").append(posList.get(k).getPosition()).append("\t").append((char)alleleList.get(k));
                     }
                     bw.write(sb.toString());
@@ -371,6 +371,10 @@ public class TagAnnotations {
     
     public List<ChrPos> getAllelePosOfTag (int groupIndex, int tagIndex) {
         return this.taList.get(groupIndex).getAllelePosOfTag(tagIndex);
+    }
+    
+    public void setSNPOfTag (int groupIndex, int tagIndex, List<SNP> tagSNPList) {
+        taList.get(groupIndex).setSNPOfTag(tagIndex, tagSNPList);
     }
     
     public void collapseCounts () {

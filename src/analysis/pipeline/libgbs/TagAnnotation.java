@@ -117,6 +117,10 @@ public class TagAnnotation implements Swapper, IntComparator {
         return Collections.binarySearch(tagList, tag, TagUtils.tagCom);
     }  
     
+    void setSNPOfTag (int tagIndex, List<SNP> tagSNPList) {
+        this.SNPList.set(tagIndex, tagSNPList);
+    }
+    
     @Override
     public void swap (int index1, int index2) {
         long[] temp = tagList.get(index1);

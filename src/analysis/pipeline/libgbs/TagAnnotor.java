@@ -27,39 +27,26 @@ import utils.PStringUtils;
  *
  * @author feilu
  */
-public class TagDB {
+public class TagAnnotor {
     int mapQThresh = 30;
     int maxMappingIntervalThresh = 1000;
+    String tagAnnotationFileS = null;
+    TagAnnotations tas = null;
     
-    public TagDB (String dbFileS) {
+    public TagAnnotor (String tagAnnotationFileS) {
+        this.tagAnnotationFileS = tagAnnotationFileS;
+        tas = new TagAnnotations(tagAnnotationFileS);
+    }
+    
+    public void removeSNPsByTagCount () {
         
     }
     
-    public TagDB (String dbFileS, String mergedTagCountFileS) {        
-        //this.initializeDB(dbFileS, mergedTagCountFileS);
-        
+    public void save () {
+        tas.writeBinaryFile(this.tagAnnotationFileS);
     }
     
-    private void initializeDB (String dbFileS, String mergedTagCountFileS) {
-        TagCounts tc = new TagCounts(mergedTagCountFileS);
-        System.out.println(tc.getTotalReadNumber());
-        Connection conn = null;
-        try {
-            // db parameters
-            String url = "jdbc:sqlite:"+dbFileS;
-            // create a connection to the database
-            conn = DriverManager.getConnection(url);
-            System.out.println("Connection to SQLite has been established.");
-            Statement stmt = conn.createStatement();
-            ResultSet rs = stmt.executeQuery("SELECT * FROM runoob_tbl");
-            
-            conn.close();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }    
-    }
-    
-    public void addAlignmentAndSNP (String samFileS) {
+    public void callSNP (String samFileS) {
         System.out.println("Start adding alignments and raw SNPs to DB");
         try {
             BufferedReader br = IOUtils.getTextReader(samFileS);
@@ -70,14 +57,18 @@ public class TagDB {
             int queryCount = 0;
             List<SNP> tagSNPList = new ArrayList();
             long cnt = 0;
+            long snpCnt = 0;
+/*          recored alignment position when neccesary  
             int r1Start = Integer.MIN_VALUE;
             int r1End = Integer.MIN_VALUE;
             byte r1Strand = Byte.MIN_VALUE;
             int r2Start = Integer.MIN_VALUE;
             int r2End = Integer.MIN_VALUE;
             byte r2Strand = Byte.MIN_VALUE;
+*/
             while ((temp = br.readLine()) != null) {
                 List<String> l = SAMUtils.getAlignElements(temp);
+                if (Integer.parseInt(l.get(1)) > 2000) continue; //remove supplement alignment to have a pair of alignments for PE reads
                 List<SNP> snpList = SAMUtils.getVariants(l, mapQThresh);
                 if (currentQuery.equals(l.get(0))) {
                     if (snpList != null) tagSNPList.addAll(snpList);
@@ -89,6 +80,7 @@ public class TagDB {
                         if (queryCount == 2 && currentList.get(6).equals("=")) {
                             double len = Math.abs(Double.valueOf(currentList.get(8)));
                             if (len < maxMappingIntervalThresh) {
+/*                              record alignment position when neccesary, also can use position and strand of r1 and r2 to filter out ilegal PE read mapping  
                                 if (currentList.get(5).startsWith("*")) {
                                     r2Start = Integer.MIN_VALUE;
                                     r2End = Integer.MIN_VALUE;
@@ -100,6 +92,7 @@ public class TagDB {
                                     if (SAMUtils.isReverseAligned(Integer.parseInt(currentList.get(1)))) r2Strand = 0;
                                     else r2Strand = 1;
                                 }
+*/                                
                                 List<String> ll = PStringUtils.fastSplit(currentList.get(0), "_");                               
                                 int groupIndex = Integer.parseInt(ll.get(0));
                                 int tagIndex = Integer.parseInt(ll.get(1));
@@ -107,16 +100,16 @@ public class TagDB {
                                 cnt++;
                                 if (cnt%10000000 == 0) System.out.println(String.valueOf(cnt) + " tags are properly aligned for SNP calling");
                                 if (tagSNPList.size() != 0) {
-                                    
-                                    //add the tagSNPList to the database;
+                                    tas.setSNPOfTag(groupIndex, tagIndex, tagSNPList);
+                                    snpCnt++;
                                 }
                             }
                         }
                     }
                     tagSNPList = new ArrayList();
                     if (snpList != null) tagSNPList.addAll(snpList);
-                    
-                    if (l.get(5).startsWith("*")) {
+/*                  record alignment position when necessary  
+                    if (l.get(5).startsWith("*")) {//only one end is aligned, the other is not
                         r1Start = Integer.MIN_VALUE;
                         r1End = Integer.MIN_VALUE;
                         r1Strand = Byte.MIN_VALUE;
@@ -127,7 +120,7 @@ public class TagDB {
                         if (SAMUtils.isReverseAligned(Integer.parseInt(l.get(1)))) r1Strand = 0;
                         else r1Strand = 1;
                     }
-                    
+*/                    
                     currentList = l;
                     currentQuery = currentList.get(0);
                     queryCount = 1;
@@ -136,6 +129,7 @@ public class TagDB {
             if (queryCount == 2 && currentList.get(6).equals("=")) {
                 double len = Math.abs(Double.valueOf(currentList.get(8)));
                 if (len < maxMappingIntervalThresh) {
+/*                    
                     if (currentList.get(5).startsWith("*")) {
                         r2Start = Integer.MIN_VALUE;
                         r2End = Integer.MIN_VALUE;
@@ -147,83 +141,21 @@ public class TagDB {
                         if (SAMUtils.isReverseAligned(Integer.parseInt(currentList.get(1)))) r2Strand = 0;
                         else r2Strand = 1;
                     }
+*/
                     List<String> ll = PStringUtils.fastSplit(currentList.get(0), "_");
                     int groupIndex = Integer.parseInt(ll.get(0));
                     int tagIndex = Integer.parseInt(ll.get(1));
                     int tagCount = Integer.parseInt(ll.get(2));
                     cnt++;
                     if (tagSNPList.size() != 0) {
-                        //add the tagSNPList to the database;
+                        tas.setSNPOfTag(groupIndex, tagIndex, tagSNPList);
+                        snpCnt++;
                     }
                  }
             }
             br.close();
             System.out.println("A total of "+String.valueOf(cnt) + " tags are properly aligned for SNP calling");
-        }
-        catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-    
-    public void addSNPs (String samFileS) {
-        System.out.println("Start adding alignments and raw SNPs to DB");
-        try {
-            BufferedReader br = IOUtils.getTextReader(samFileS);
-            String temp = null;
-            while ((temp = br.readLine()).startsWith("@SQ")){}
-            String currentQuery = "";
-            List<String> currentList = null;
-            int queryCount = 0;
-            List<SNP> tagSNPList = new ArrayList();
-            long cnt = 0;
-            while ((temp = br.readLine()) != null) {
-                List<String> l = SAMUtils.getAlignElements(temp);
-                List<SNP> snpList = SAMUtils.getVariants(l, mapQThresh);
-                if (currentQuery.equals(l.get(0))) {
-                    if (snpList != null) tagSNPList.addAll(snpList);
-                    currentList = l;
-                    queryCount++;
-                }
-                else {
-                    if (!currentQuery.equals("")) {
-                        if (queryCount == 2 && currentList.get(6).equals("=")) {
-                            double len = Math.abs(Double.valueOf(currentList.get(8)));
-                            if (len < maxMappingIntervalThresh) {
-                                List<String> ll = PStringUtils.fastSplit(currentList.get(0), "_");                               
-                                int groupIndex = Integer.parseInt(ll.get(0));
-                                int tagIndex = Integer.parseInt(ll.get(1));
-                                int tagCount = Integer.parseInt(ll.get(2));
-                                cnt++;
-                                if (cnt%10000000 == 0) System.out.println(String.valueOf(cnt) + " tags are properly aligned for SNP calling");
-                                if (tagSNPList.size() != 0) {
-                                    
-                                    //add the tagSNPList to the database;
-                                }
-                            }
-                        }
-                    }
-                    tagSNPList = new ArrayList();
-                    if (snpList != null) tagSNPList.addAll(snpList);
-                    currentList = l;
-                    currentQuery = currentList.get(0);
-                    queryCount = 1;
-                }                
-            }
-            if (queryCount == 2 && currentList.get(6).equals("=")) {
-                double len = Math.abs(Double.valueOf(currentList.get(8)));
-                if (len < maxMappingIntervalThresh) {
-                    List<String> ll = PStringUtils.fastSplit(currentList.get(0), "_");
-                    int groupIndex = Integer.parseInt(ll.get(0));
-                    int tagIndex = Integer.parseInt(ll.get(1));
-                    int tagCount = Integer.parseInt(ll.get(2));
-                    cnt++;
-                    if (tagSNPList.size() != 0) {
-                        //add the tagSNPList to the database;
-                    }
-                 }
-            }
-            br.close();
-            System.out.println("A total of "+String.valueOf(cnt) + " tags are properly aligned for SNP calling");
+            System.out.println("A total of "+String.valueOf(snpCnt) + " tags have SNP calls");
         }
         catch (Exception e) {
             e.printStackTrace();

@@ -35,17 +35,17 @@ public class LibGBSGo {
         //this.mkTagsBySample();
         //this.mergeTagCounts();
         //this.alignTags();
-        this.mkTagDB();
+        this.callSNP();
     }
     
-    public void mkTagDB () {
+    public void callSNP () {
         String tagLibraryDirS = new File (this.workingDirS, this.subDirS[1]).getAbsolutePath();
-        String mergedTagCountFileS = new File(tagLibraryDirS, "tag.tc").getAbsolutePath();
-        String dbFileS = new File(tagLibraryDirS, "tag.db").getAbsolutePath();
+        String tagAnnotationFileS = new File(tagLibraryDirS, "tag.tas").getAbsolutePath();
         String alignmentDirS = new File (this.workingDirS, this.subDirS[2]).getAbsolutePath();
         String samFileS = new File (alignmentDirS, "tag.sam").getAbsolutePath();
-        TagDB db = new TagDB(dbFileS, mergedTagCountFileS);
-        //db.addSNPs(samFileS);
+        TagAnnotor ta = new TagAnnotor(tagAnnotationFileS);
+        ta.callSNP(samFileS);
+        ta.save();
     }
     
     public void alignTags () {
