@@ -10,7 +10,7 @@ package format.position;
  * @author feilu
  * @param <T>
  */
-public class ChrPos<T extends ChrPos> implements Comparable<T>{
+public class ChrPos implements Comparable {
     short chr;
     int pos;
     
@@ -28,13 +28,14 @@ public class ChrPos<T extends ChrPos> implements Comparable<T>{
     }
 
     @Override
-    public int compareTo(ChrPos o) {
-        if (this.chr == o.chr) {
-            if (pos == o.pos) return 0;
-            else if (pos < o.pos) return -1;
+    public int compareTo(Object o) {
+        ChrPos oo = (ChrPos)o;
+        if (this.getChromosome() == oo.getChromosome()) {
+            if (this.getPosition() == oo.getPosition()) return 0;
+            else if (this.getPosition() < oo.getPosition()) return -1;
             return 1;
         }
-        else if (chr < o.chr) return -1;
+        else if (this.getChromosome() < oo.getChromosome()) return -1;
         return 1;
     }
 }

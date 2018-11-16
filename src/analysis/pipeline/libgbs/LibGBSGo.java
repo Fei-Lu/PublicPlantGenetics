@@ -42,10 +42,15 @@ public class LibGBSGo {
         String tagLibraryDirS = new File (this.workingDirS, this.subDirS[1]).getAbsolutePath();
         String tagAnnotationFileS = new File(tagLibraryDirS, "tag.tas").getAbsolutePath();
         String alignmentDirS = new File (this.workingDirS, this.subDirS[2]).getAbsolutePath();
+        String rawSNPFileS = new File(tagLibraryDirS, "rawSNP.bin").getAbsolutePath();
         String samFileS = new File (alignmentDirS, "tag.sam").getAbsolutePath();
-        TagAnnotor ta = new TagAnnotor(tagAnnotationFileS);
-        ta.callSNP(samFileS);
-        ta.save();
+        
+        int mapQThresh = 30;
+        int maxMappingIntervalThresh = 1000;
+        TagAnnotations tas = new TagAnnotations(tagAnnotationFileS);
+        tas.callSNP(samFileS, mapQThresh, maxMappingIntervalThresh);
+        
+        
     }
     
     public void alignTags () {
