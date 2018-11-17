@@ -59,5 +59,5 @@ public class SNP extends ChrPos implements SNPInterface {
         }
         else if (this.getChromosome() < oo.getChromosome()) return -1;
         return 1;
-    }
+    }    
 }

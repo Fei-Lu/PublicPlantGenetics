@@ -35,7 +35,16 @@ public class LibGBSGo {
         //this.mkTagsBySample();
         //this.mergeTagCounts();
         //this.alignTags();
-        this.callSNP();
+        //this.callSNP();
+        this.callAllele();
+    }
+    
+    public void callAllele () {
+        String tagLibraryDirS = new File (this.workingDirS, this.subDirS[1]).getAbsolutePath();
+        String tagAnnotationFileS = new File(tagLibraryDirS, "tag.tas").getAbsolutePath();
+        String alignmentDirS = new File (this.workingDirS, this.subDirS[2]).getAbsolutePath();
+        String rawSNPFileS = new File(tagLibraryDirS, "rawSNP.bin").getAbsolutePath();
+        String samFileS = new File (alignmentDirS, "tag.sam").getAbsolutePath();
     }
     
     public void callSNP () {
@@ -49,8 +58,9 @@ public class LibGBSGo {
         int maxMappingIntervalThresh = 1000;
         TagAnnotations tas = new TagAnnotations(tagAnnotationFileS);
         tas.callSNP(samFileS, mapQThresh, maxMappingIntervalThresh);
-        
-        
+        tas.writeBinaryFile(tagAnnotationFileS);
+        SNPCounts snpSCs = tas.getSNPCountsObj();
+        snpSCs.writeBinaryFile(rawSNPFileS);
     }
     
     public void alignTags () {
