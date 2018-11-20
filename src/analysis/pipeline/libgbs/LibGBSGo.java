@@ -45,6 +45,11 @@ public class LibGBSGo {
         String alignmentDirS = new File (this.workingDirS, this.subDirS[2]).getAbsolutePath();
         String rawSNPFileS = new File(tagLibraryDirS, "rawSNP.bin").getAbsolutePath();
         String samFileS = new File (alignmentDirS, "tag.sam").getAbsolutePath();
+        TagAnnotations tas = new TagAnnotations(tagAnnotationFileS);
+        SNPCounts sc = new SNPCounts (rawSNPFileS);
+        int mapQThresh = 30;
+        int maxMappingIntervalThresh = 1000;
+        //tas.callSNP2(samFileS, null, mapQThresh, maxMappingIntervalThresh);
     }
     
     public void callSNP () {
@@ -57,9 +62,9 @@ public class LibGBSGo {
         int mapQThresh = 30;
         int maxMappingIntervalThresh = 1000;
         TagAnnotations tas = new TagAnnotations(tagAnnotationFileS);
-        tas.callSNP(samFileS, mapQThresh, maxMappingIntervalThresh);
+        tas.callSNP2(samFileS, mapQThresh, maxMappingIntervalThresh);
         tas.writeBinaryFile(tagAnnotationFileS);
-        SNPCounts snpSCs = tas.getSNPCountsObj();
+        SNPCounts snpSCs = tas.getSNPCounts();
         snpSCs.writeBinaryFile(rawSNPFileS);
     }
     

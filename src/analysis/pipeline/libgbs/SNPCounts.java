@@ -52,6 +52,20 @@ public class SNPCounts {
         return cnt;
     }
     
+    public int getReadNumber (int chrIndex, int snpIndex) {
+        return chrSCLists.get(chrIndex).get(snpIndex).getReadNumber();
+    }
+    
+    public long getTotalReadNumber () {
+        long cnt = 0;
+        for (int i = 0; i < this.getChromosomeNumber(); i++) {
+            for (int j = 0; j < this.getSNPNumberOnChromosome(i); j++) {
+                cnt+=this.getReadNumber(i, j);
+            }
+        }
+        return cnt;
+    }
+    
     public void readBinaryFile (String infileS) {
         System.out.println("Reading SNPCounts file");
         try {
@@ -66,6 +80,7 @@ public class SNPCounts {
             for (int i = 0; i < chrNumber; i++) {
                 List<SNPCount> cl = new ArrayList<>();
                 int size = dis.readInt();
+                System.out.println();
                 for (int j = 0; j < size; j++) {
                     SNPCount cs = new SNPCount(dis.readShort(), dis.readInt(), dis.readByte(), dis.readByte(), dis.readInt());
                     cl.add(cs);
@@ -87,7 +102,7 @@ public class SNPCounts {
             DataOutputStream dos = IOUtils.getBinaryWriter(outfileS);
             dos.writeShort(chrs.length);
             for (int i = 0; i < chrs.length; i++) {
-                dos.write(chrs[i]);
+                dos.writeShort(chrs[i]);
             }
             long cnt = 0;
             for (int i = 0; i < chrSCLists.size(); i++) {

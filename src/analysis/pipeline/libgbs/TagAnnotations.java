@@ -260,8 +260,55 @@ public class TagAnnotations {
         }
     }
     
-    public void callSNP (String samFileS, int mapQThresh, int maxMappingIntervalThresh) {
+    public void callSNP2 (String samFileS, int mapQThresh, int maxMappingIntervalThresh) {
         System.out.println("Start adding alignments and raw SNPs to DB");
+        try {
+            BufferedReader br = IOUtils.getTextReader(samFileS);
+            String temp = null;
+            while ((temp = br.readLine()).startsWith("@SQ")){}
+            int queryCount = 0;
+            List<SNP> tagSNPList = new ArrayList();
+            long cnt = 0;
+            long snpCnt = 0;
+            while ((temp = br.readLine()) != null) {
+                List<String> l = SAMUtils.getAlignElements(temp);
+                if (Integer.parseInt(l.get(1)) > 2000) continue; //remove supplement alignment to have a pair of alignments for PE reads
+                queryCount++;
+                List<SNP> snpList = SAMUtils.getVariants(l, mapQThresh);
+                if (queryCount == 1) {
+                    if (snpList != null) tagSNPList.addAll(snpList);
+                }
+                else if (queryCount == 2) {
+                    if (l.get(6).equals("=")) {
+                        double len = Math.abs(Double.valueOf(l.get(8)));
+                        if (len < maxMappingIntervalThresh) {
+                            if (snpList != null) tagSNPList.addAll(snpList);
+                            cnt++;
+                            if (cnt%10000000 == 0) System.out.println(String.valueOf(cnt) + " tags are properly aligned for SNP calling");                           
+                            if (tagSNPList.size() != 0) {
+                                List<String> ll = PStringUtils.fastSplit(l.get(0), "_");                               
+                                int groupIndex = Integer.parseInt(ll.get(0));
+                                int tagIndex = Integer.parseInt(ll.get(1));
+                                setSNPOfTag(groupIndex, tagIndex, tagSNPList);
+                                snpCnt++;
+                            }
+                        }
+                    }
+                    queryCount = 0;
+                    tagSNPList = new ArrayList();
+                }
+            }
+            br.close();
+            System.out.println("A total of "+String.valueOf(cnt) + " tags are properly aligned for SNP calling");
+            System.out.println("A total of "+String.valueOf(snpCnt) + " tags have SNP calls");
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+    
+    public void callSNP (String samFileS, int mapQThresh, int maxMappingIntervalThresh) {
+        System.out.println("Start adding raw SNPs to DB");
         try {
             BufferedReader br = IOUtils.getTextReader(samFileS);
             String temp = null;
@@ -376,7 +423,7 @@ public class TagAnnotations {
         }
     }
     
-    public SNPCounts getSNPCountsObj () {
+    public SNPCounts getSNPCounts () {
         return new SNPCounts(this);
     }
     
