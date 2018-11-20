@@ -5,13 +5,11 @@
  */
 package analysis.pipeline.libgbs;
 
-import format.alignment.SAMSEAlignment;
-import format.alignment.SAMUtils;
-import format.alignment.ShortreadAlignment;
+import format.table.RowTable;
 import java.io.BufferedReader;
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import utils.IOUtils;
 
@@ -37,6 +35,7 @@ public class LibGBSGo {
         //this.alignTags();
         //this.callSNP();
         this.callAllele();
+     
     }
     
     public void callAllele () {
@@ -49,7 +48,7 @@ public class LibGBSGo {
         SNPCounts sc = new SNPCounts (rawSNPFileS);
         int mapQThresh = 30;
         int maxMappingIntervalThresh = 1000;
-        //tas.callSNP2(samFileS, null, mapQThresh, maxMappingIntervalThresh);
+        //tas.callAllele(samFileS, sc, mapQThresh, maxMappingIntervalThresh);
     }
     
     public void callSNP () {
@@ -62,7 +61,7 @@ public class LibGBSGo {
         int mapQThresh = 30;
         int maxMappingIntervalThresh = 1000;
         TagAnnotations tas = new TagAnnotations(tagAnnotationFileS);
-        tas.callSNP2(samFileS, mapQThresh, maxMappingIntervalThresh);
+        tas.callSNP(samFileS, mapQThresh, maxMappingIntervalThresh);
         tas.writeBinaryFile(tagAnnotationFileS);
         SNPCounts snpSCs = tas.getSNPCounts();
         snpSCs.writeBinaryFile(rawSNPFileS);

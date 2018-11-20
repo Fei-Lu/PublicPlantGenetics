@@ -95,8 +95,12 @@ public class LibraryInfo {
     
     private void parseBarcode (String barcodeFileS, String libraryFastqMapFileS) {
         RowTable<String> t = new RowTable<>(barcodeFileS);
-        List<String> l = t.getColumn(1);
-        Set<String> s = new HashSet(l);
+        Set<String> s = new HashSet<>();
+        for (int i = 0; i < t.getRowNumber(); i++) {
+            StringBuilder sb = new StringBuilder();
+            sb.append(t.getCell(i, 1)).append("_").append(t.getCell(i, 2)).append("_").append(t.getCell(i, 3));
+            s.add(sb.toString());
+        }
         libs = s.toArray(new String[s.size()]);
         Arrays.sort(libs);
         taxaNames = new String[libs.length][];
@@ -112,8 +116,10 @@ public class LibraryInfo {
             List<String> barcodeR1List = new ArrayList<>();
             List<String> barcodeR2List = new ArrayList<>();
             for (int j = 0; j < t.getRowNumber(); j++) {
-                if (!t.getCell(j, 1).equals(libs[i])) continue;
                 StringBuilder sb = new StringBuilder();
+                sb.append(t.getCell(i, 1)).append("_").append(t.getCell(i, 2)).append("_").append(t.getCell(i, 3));
+                if (!sb.toString().equals(libs[i])) continue;
+                sb = new StringBuilder();
                 sb.append(t.getCell(j, 0)).append("_").append(t.getCell(j, 1)).append("_").append(t.getCell(j, 2)).append("_").append(t.getCell(j, 3));
                 nameList.add(sb.toString());
                 barcodeR1List.add(t.getCell(j, 6));
@@ -141,8 +147,13 @@ public class LibraryInfo {
             }
         }
         t = new RowTable<>(libraryFastqMapFileS);
-        t.sortAsText(0);
-        List<String> lList = t.getColumn(0);
+        List<String> lList = new ArrayList();
+        for (int i = 0; i < t.getRowNumber(); i++) {
+            StringBuilder sb = new StringBuilder();
+            sb.append(t.getCell(i, 0)).append("_").append(t.getCell(i, 1)).append("_").append(t.getCell(i, 2));
+            lList.add(sb.toString());
+        }
+        Collections.sort(lList);
         TIntArrayList availableIndexList = new TIntArrayList();
         for (int i = 0; i < libs.length; i++) {
             int index = Collections.binarySearch(lList, libs[i]);
@@ -150,12 +161,12 @@ public class LibraryInfo {
                 System.out.println(libs[i] + " does not have corresponding fastqs");
             }
             else {
-                if (t.getCell(index, 1).equals("NA") || t.getCell(index, 2).equals("NA")) {
+                if (t.getCell(index, 3).equals("NA") || t.getCell(index, 4).equals("NA")) {
                     System.out.println(libs[i] + " does not have corresponding fastqs");
                 }
                 else {
-                    this.libFastqsR1[i] = t.getCell(index, 1);
-                    this.libFastqsR2[i] = t.getCell(index, 2);
+                    this.libFastqsR1[i] = t.getCell(index, 3);
+                    this.libFastqsR2[i] = t.getCell(index, 4);
                     availableIndexList.add(i);
                 }
             } 

@@ -6,6 +6,7 @@
 package format.dna.snp;
 
 import format.position.ChrPos;
+import java.util.Comparator;
 
 /**
  *
@@ -47,17 +48,18 @@ public class SNP extends ChrPos implements SNPInterface {
         return AlleleEncoder.alleleByteCharMap.get(this.getAlternativeAlleleByte());
     }
     
-    @Override
-    public int compareTo(Object o) {
-        SNP oo = (SNP)o;
-        if (this.getChromosome() == oo.getChromosome()) {
-            if (this.getPosition() == oo.getPosition()) {
-                return this.getAlternativeAlleleByte()-oo.getAlternativeAlleleByte();
+    public static class CompareSNP implements Comparator<SNP> { 
+        @Override
+        public int compare(SNP a, SNP b) { 
+            if (a.getChromosome() == b.getChromosome()) {
+                if (a.getPosition() == b.getPosition()) {
+                    return a.getAlternativeAlleleByte()-b.getAlternativeAlleleByte();
+                }
+                else if (a.getPosition() < b.getPosition()) return -1;
+                return 1;
             }
-            else if (this.getPosition() < oo.getPosition()) return -1;
+            else if (a.getChromosome() < b.getChromosome()) return -1;
             return 1;
-        }
-        else if (this.getChromosome() < oo.getChromosome()) return -1;
-        return 1;
-    }    
+        } 
+    }
 }

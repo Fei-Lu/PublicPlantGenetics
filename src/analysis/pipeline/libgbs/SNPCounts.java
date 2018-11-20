@@ -80,7 +80,6 @@ public class SNPCounts {
             for (int i = 0; i < chrNumber; i++) {
                 List<SNPCount> cl = new ArrayList<>();
                 int size = dis.readInt();
-                System.out.println();
                 for (int j = 0; j < size; j++) {
                     SNPCount cs = new SNPCount(dis.readShort(), dis.readInt(), dis.readByte(), dis.readByte(), dis.readInt());
                     cl.add(cs);
@@ -89,6 +88,7 @@ public class SNPCounts {
                 }
                 chrSCLists.add(cl);
             }
+            dis.close();
             System.out.println("A total of " + String.valueOf(cnt) + " SNPs are read in from " + infileS);
         }
         catch (Exception e) {
@@ -118,6 +118,8 @@ public class SNPCounts {
                     if (cnt%1000000 == 0) System.out.println(String.valueOf(cnt) + " SNPs are written out");
                 }
             }
+            dos.flush();
+            dos.close();
             System.out.println("A total of " + String.valueOf(cnt) + " SNPs are written to " + outfileS);
         }
         catch (Exception e) {
@@ -127,7 +129,7 @@ public class SNPCounts {
     
     public void sort () {
         chrSCLists.parallelStream().forEach(l -> {
-            Collections.sort(l);
+            Collections.sort(l, new SNP.CompareSNP());
         });
     }
     
