@@ -35,7 +35,7 @@ public class LibGBSGo {
         //this.alignTags();
         //this.callSNP();
         this.callAllele();
-     
+
     }
     
     public void callAllele () {
@@ -48,7 +48,7 @@ public class LibGBSGo {
         SNPCounts sc = new SNPCounts (rawSNPFileS);
         int mapQThresh = 30;
         int maxMappingIntervalThresh = 1000;
-        //tas.callAllele(samFileS, sc, mapQThresh, maxMappingIntervalThresh);
+        tas.callAllele(samFileS, sc, mapQThresh, maxMappingIntervalThresh);
     }
     
     public void callSNP () {

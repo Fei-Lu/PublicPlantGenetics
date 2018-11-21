@@ -117,7 +117,7 @@ public class LibraryInfo {
             List<String> barcodeR2List = new ArrayList<>();
             for (int j = 0; j < t.getRowNumber(); j++) {
                 StringBuilder sb = new StringBuilder();
-                sb.append(t.getCell(i, 1)).append("_").append(t.getCell(i, 2)).append("_").append(t.getCell(i, 3));
+                sb.append(t.getCell(j, 1)).append("_").append(t.getCell(j, 2)).append("_").append(t.getCell(j, 3));
                 if (!sb.toString().equals(libs[i])) continue;
                 sb = new StringBuilder();
                 sb.append(t.getCell(j, 0)).append("_").append(t.getCell(j, 1)).append("_").append(t.getCell(j, 2)).append("_").append(t.getCell(j, 3));
