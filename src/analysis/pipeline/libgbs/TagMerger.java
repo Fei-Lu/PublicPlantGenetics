@@ -34,7 +34,7 @@ class TagMerger {
             TagAnnotations ata = new TagAnnotations(fs[i].getAbsolutePath());
             ta.addTagAnnotations(ata);
             cnt++;
-            if (cnt%100 == 0) System.out.println(String.valueOf(cnt) + "TagAnnotations files have been merged");
+            if (cnt%100 == 0) System.out.println(String.valueOf(cnt) + " TagAnnotations files have been merged");
             if (ta.getMaxTagNumberAcrossGroups() < collapseThreshold) continue;
             ta.collapseCounts();
             ifCollapsed = true;

@@ -116,7 +116,7 @@ public class TagParser {
             while ((temp1 = br1.readLine()) != null) {
                 temp2 = br2.readLine();
                 totalCnt++;
-                if (totalCnt%1000000 == 0) {
+                if (totalCnt%10000000 == 0) {
                     System.out.println("Total read count: "+String.valueOf(totalCnt)+"\tPassed read count: "+processedCnt);
                 }
                 temp1 = br1.readLine(); temp2 = br2.readLine();

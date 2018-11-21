@@ -6,6 +6,7 @@
 package analysis.pipeline.libgbs;
 
 import format.dna.snp.SNP;
+import format.position.ChrPos;
 import gnu.trove.set.hash.TShortHashSet;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -125,6 +126,13 @@ public class SNPCounts {
         catch (Exception e) {
             e.printStackTrace();
         }
+    }
+    
+    public int getSNPIndex (short chr, int pos) {
+        int chrIndex = Arrays.binarySearch(chrs, chr);
+        ChrPos query = new ChrPos (chrs[chrIndex], pos);
+        int snpIndex = Collections.binarySearch(this.chrSCLists.get(chrIndex), query);
+        return snpIndex;
     }
     
     public void sort () {

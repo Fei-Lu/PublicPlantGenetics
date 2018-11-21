@@ -121,6 +121,11 @@ public class TagAnnotation implements Swapper, IntComparator {
         this.SNPList.set(tagIndex, tagSNPList);
     }
     
+    void setAlleleOfTag (int tagIndex, List<ChrPos> tagAllelePosList, TByteArrayList tagAlleleList) {
+        this.allelePosList.set(tagIndex, tagAllelePosList);
+        this.alleleList.set(tagIndex, tagAlleleList);
+    }
+    
     @Override
     public void swap (int index1, int index2) {
         long[] temp = tagList.get(index1);

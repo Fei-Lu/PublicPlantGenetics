@@ -3,7 +3,9 @@
  */
 package format.alignment;
 
+import analysis.pipeline.libgbs.SNPCounts;
 import format.dna.snp.SNP;
+import format.position.ChrPos;
 import gnu.trove.list.array.TByteArrayList;
 import gnu.trove.list.array.TIntArrayList;
 import java.util.ArrayList;
@@ -282,6 +284,19 @@ public class SAMUtils {
     public static List<SNP> getVariants (String inputStr, int mapQThresh) {
         List<String> l = PStringUtils.fastSplit(inputStr);
         return getVariants(l, mapQThresh);
+    }
+    
+    public static Tuple<List<ChrPos>, TByteArrayList> getAlleles (List<String> l, int mapQThresh, SNPCounts sc) {
+        List<ChrPos> allelePosList = new ArrayList();
+        TByteArrayList alleleList = new TByteArrayList();
+        
+        
+        
+        
+        
+        
+        
+        return null;
     }
     
     /**
