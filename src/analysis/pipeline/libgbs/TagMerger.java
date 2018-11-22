@@ -18,10 +18,10 @@ class TagMerger {
     String outputFileS = null;
     int collapseThreshold = (int)(Integer.MAX_VALUE * 0.75);
     public TagMerger (String inputDirS, String outputFileS) {
-        this.mergeTagCounts(inputDirS, outputFileS);
+        this.mergeTagAnnotations(inputDirS, outputFileS);
     }
     
-    public void mergeTagCounts (String inputDirS, String outputFileS) {
+    public void mergeTagAnnotations (String inputDirS, String outputFileS) {
         File[] fs = new File(inputDirS).listFiles();
         fs = IOUtils.listFilesEndsWith(fs, ".tas");
         Arrays.sort(fs);

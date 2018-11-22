@@ -31,7 +31,7 @@ public class LibGBSGo {
     public LibGBSGo (String parameterFileS) {
         this.initializeParameter(parameterFileS);
         //this.mkTagsBySample();
-        //this.mergeTagCounts();
+        //this.mergeTagAnnotations();
         //this.alignTags();
         //this.callSNP();
         this.callAllele();
@@ -74,7 +74,7 @@ public class LibGBSGo {
         new TagAligner(referenceFileS, this.bwaPath, mergedTagAnnotationFileS, alignmentDirS);
     }
     
-    public void mergeTagCounts () {
+    public void mergeTagAnnotations () {
         String tagBySampleDirS = new File (this.workingDirS, this.subDirS[0]).getAbsolutePath();
         String tagLibraryDirS = new File (this.workingDirS, this.subDirS[1]).getAbsolutePath();
         String mergedTagCountFileS = new File(tagLibraryDirS, "tag.tas").getAbsolutePath();
