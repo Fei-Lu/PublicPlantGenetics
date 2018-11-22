@@ -10,7 +10,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
+import java.util.Set;
 import utils.IOUtils;
 
 /**
@@ -26,17 +26,17 @@ public class LibGBSGo {
     String cutter1 = null;
     String cutter2 = null;
     String[] subDirS = {"tagsBySample","tagsLibrary","alignment", "rawGenotype", "filteredGenotype"};
-    LaneInfo li = null;
+    LibraryInfo li = null;
     
     public LibGBSGo (String parameterFileS) {
         this.initializeParameter(parameterFileS);
-        //this.mkTagsBySample();
+        this.mkTagsBySample();
         //this.mergeTagAnnotations();
         //this.alignTags();
         //this.callSNP();
-        this.callAllele();
+        //this.callAllele();
 
-    }
+        }
     
     public void callAllele () {
         String tagLibraryDirS = new File (this.workingDirS, this.subDirS[1]).getAbsolutePath();
@@ -82,7 +82,7 @@ public class LibGBSGo {
     }
     
     public void mkTagsBySample () {
-        li = new LaneInfo(barcodeFileS, libraryFastqMapFileS, this.cutter1, this.cutter2);
+        li = new LibraryInfo(barcodeFileS, libraryFastqMapFileS, this.cutter1, this.cutter2);
         String tagBySampleDirS = new File (this.workingDirS, this.subDirS[0]).getAbsolutePath();
         TagParser tp = new TagParser(li);
         tp.parseFastq(tagBySampleDirS);
