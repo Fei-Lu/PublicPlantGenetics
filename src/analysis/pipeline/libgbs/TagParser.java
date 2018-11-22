@@ -27,26 +27,26 @@ import utils.PArrayUtils;
  * @author feilu
  */
 public class TagParser {
-    LibraryInfo li = null;
+    LaneInfo li = null;
     int tagLengthInLong = 3;
     String polyA = "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA";
     int setReadLength = tagLengthInLong*BaseEncoder.longChunkSize;
-    int paraLevel = 8;
+    int paraLevel = 32;
     int minReadLength = 16;
     
-    public TagParser (LibraryInfo li) {
+    public TagParser (LaneInfo li) {
         this.li = li;
     }
     
     public void parseFastq(String tagBySampleDirS) {
-        String[] libs = li.getLibArray();
-        int[][] indices = PArrayUtils.getSubsetsIndicesBySubsetSize(libs.length, this.paraLevel);
+        String[] lanes = li.getLaneArray();
+        int[][] indices = PArrayUtils.getSubsetsIndicesBySubsetSize(lanes.length, this.paraLevel);
         for (int i = 0; i < indices.length; i++) {
-            Integer[] subLibIndices = new Integer[indices[i][1]-indices[i][0]];
-            for (int j = 0; j < subLibIndices.length; j++) {
-                subLibIndices[j] = indices[i][0]+j;
+            Integer[] subLaneIndices = new Integer[indices[i][1]-indices[i][0]];
+            for (int j = 0; j < subLaneIndices.length; j++) {
+                subLaneIndices[j] = indices[i][0]+j;
             }
-            List<Integer> indexList = Arrays.asList(subLibIndices);
+            List<Integer> indexList = Arrays.asList(subLaneIndices);
             indexList.parallelStream().forEach(index -> {
                 String fastqR1 = li.getFastqFileSR1(index);
                 String fastqR2 = li.getFastqFileSR2(index);

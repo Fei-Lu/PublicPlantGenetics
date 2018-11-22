@@ -28,7 +28,7 @@ import utils.Tuple;
 public class TagAnnotations {
     int tagLengthInLong = Integer.MIN_VALUE;
     int offSet = 8;
-    int groupIdentifierLength = 5;
+    int groupIdentifierLength = 6;
     boolean ifSorted = false;
     int groupCount = -1;
     List<TagAnnotation> taList = null;

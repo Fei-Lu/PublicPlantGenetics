@@ -26,7 +26,7 @@ public class LibGBSGo {
     String cutter1 = null;
     String cutter2 = null;
     String[] subDirS = {"tagsBySample","tagsLibrary","alignment", "rawGenotype", "filteredGenotype"};
-    LibraryInfo li = null;
+    LaneInfo li = null;
     
     public LibGBSGo (String parameterFileS) {
         this.initializeParameter(parameterFileS);
@@ -82,7 +82,7 @@ public class LibGBSGo {
     }
     
     public void mkTagsBySample () {
-        li = new LibraryInfo(barcodeFileS, libraryFastqMapFileS, this.cutter1, this.cutter2);
+        li = new LaneInfo(barcodeFileS, libraryFastqMapFileS, this.cutter1, this.cutter2);
         String tagBySampleDirS = new File (this.workingDirS, this.subDirS[0]).getAbsolutePath();
         TagParser tp = new TagParser(li);
         tp.parseFastq(tagBySampleDirS);
