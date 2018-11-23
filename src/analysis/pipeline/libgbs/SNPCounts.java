@@ -53,15 +53,31 @@ public class SNPCounts {
         return cnt;
     }
     
-    public int getReadNumber (int chrIndex, int snpIndex) {
+    public int getReadNumberOfSNP (int chrIndex, int snpIndex) {
         return chrSCLists.get(chrIndex).get(snpIndex).getReadNumber();
+    }
+    
+    public int getPositionOfSNP (int chrIndex, int snpIndex) {
+        return chrSCLists.get(chrIndex).get(snpIndex).getPosition();
+    }
+    
+    public short getChromosomeOfSNP (int chrIndex, int snpIndex) {
+        return chrSCLists.get(chrIndex).get(snpIndex).getChromosome();
+    }
+    
+    public byte getReferenceAlleleByteOfSNP (int chrIndex, int snpIndex) {
+        return chrSCLists.get(chrIndex).get(snpIndex).getReferenceAlleleByte();
+    }
+    
+    public byte getAlternativeAlleleByteOfSNP (int chrIndex, int snpIndex) {
+        return chrSCLists.get(chrIndex).get(snpIndex).getAlternativeAlleleByte();
     }
     
     public long getTotalReadNumber () {
         long cnt = 0;
         for (int i = 0; i < this.getChromosomeNumber(); i++) {
             for (int j = 0; j < this.getSNPNumberOnChromosome(i); j++) {
-                cnt+=this.getReadNumber(i, j);
+                cnt+=this.getReadNumberOfSNP(i, j);
             }
         }
         return cnt;
@@ -128,8 +144,12 @@ public class SNPCounts {
         }
     }
     
-    public int getSNPIndex (short chr, int pos) {
-        int chrIndex = Arrays.binarySearch(chrs, chr);
+    
+    public int getChrIndex (short chr) {
+        return Arrays.binarySearch(chrs, chr);
+    }
+    
+    public int getSNPIndex (int chrIndex, int pos) {
         ChrPos query = new ChrPos (chrs[chrIndex], pos);
         int snpIndex = Collections.binarySearch(this.chrSCLists.get(chrIndex), query);
         return snpIndex;
