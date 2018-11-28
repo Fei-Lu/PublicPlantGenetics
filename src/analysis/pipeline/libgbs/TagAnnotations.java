@@ -6,6 +6,7 @@
 package analysis.pipeline.libgbs;
 
 import format.alignment.SAMUtils;
+import format.dna.snp.AlleleEncoder;
 import format.dna.snp.SNP;
 import format.position.ChrPos;
 import gnu.trove.list.array.TByteArrayList;
@@ -15,6 +16,7 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import utils.IOUtils;
@@ -143,7 +145,15 @@ public class TagAnnotations {
                     byte snpNumber = dis.readByte();
                     List<SNP> snpList = new ArrayList<>();
                     for (int k = 0; k < snpNumber; k++) {
-                        snpList.add(new SNP(dis.readShort(), dis.readInt(), dis.readByte(), dis.readByte()));
+                        short chr = dis.readShort();
+                        int pos = dis.readInt();
+                        byte ref = dis.readByte();
+                        byte altNumber = dis.readByte();
+                        TByteArrayList alts = new TByteArrayList();
+                        for (int u = 0; u < altNumber; u++) {
+                            alts.add(dis.readByte());
+                        }
+                        snpList.add(new SNP(chr, pos, ref, alts));
                     }
                     byte alleleNumber = dis.readByte();
                     List<ChrPos> posList = new ArrayList<>();
@@ -188,10 +198,14 @@ public class TagAnnotations {
                     dos.writeByte(snpNumber);
                     List<SNP> snpList = this.getSNPOfTag(i, j);
                     for (int k = 0; k < snpNumber; k++) {
-                        dos.writeShort(snpList.get(k).getChromosome());
-                        dos.writeInt(snpList.get(k).getPosition());
-                        dos.writeByte(snpList.get(k).getReferenceAlleleByte());
-                        dos.writeByte(snpList.get(k).getAlternativeAlleleByte());
+                        SNP s = snpList.get(k);
+                        dos.writeShort(s.getChromosome());
+                        dos.writeInt(s.getPosition());
+                        dos.writeByte(s.getRefAlleleByte());  
+                        dos.writeByte(s.getAltAlleleNumber());
+                        for (int u = 0; u < s.getAltAlleleNumber(); u++) {
+                            dos.writeByte(s.getAltAlleleByte(u));
+                        }
                     }
                     byte alleleNumber = this.getAlleleNumberOfTag(i, j);
                     dos.writeByte(alleleNumber);
@@ -239,7 +253,11 @@ public class TagAnnotations {
                     sb.append("\nSNPs:");
                     for (int k = 0; k < snpList.size(); k++) {
                         SNP s = snpList.get(k);
-                        sb.append("\t").append(k).append(":").append(s.getChromosome()).append("\t").append(s.getPosition()).append("\t").append(s.getReferenceAllele()).append("\t").append(s.getAlternativeAllele());
+                        sb.append("\t|").append(k).append("->").append(s.getChromosome()).append("\t").append(s.getPosition()).append("\t").append(s.getRefAllele()).append("\t");
+                        for (int u = 0; u < s.getAltAlleleNumber(); u++) {
+                            sb.append(s.getAltAllele(u)).append("/");
+                        }
+                        sb.deleteCharAt(sb.length()-1);
                     }
                     sb.append("\n");
                     TByteArrayList alleleList = this.getAlleleOfTag(i, j);
@@ -247,7 +265,8 @@ public class TagAnnotations {
                     sb.append("AlleleNumber:\t").append(snpList.size());
                     sb.append("\nAlleles:");
                     for (int k = 0; k < posList.size(); k++) {
-                        sb.append("\t").append(k).append(":").append(posList.get(k).getChromosome()).append("\t").append(posList.get(k).getPosition()).append("\t").append((char)alleleList.get(k));
+                        sb.append("\t|").append(k).append("->").append(posList.get(k).getChromosome()).append("\t").append(posList.get(k).getPosition())
+                                .append("\t").append(AlleleEncoder.alleleByteCharMap.get(alleleList.get(k)));
                     }
                     bw.write(sb.toString());
                     bw.newLine();
@@ -308,8 +327,8 @@ public class TagAnnotations {
                 }
             }
             br.close();
-            System.out.println("A total of "+String.valueOf(cnt) + " tags are properly aligned for SNP calling");
-            System.out.println("A total of "+String.valueOf(snpCnt) + " tags have SNP calls");
+            System.out.println("A total of "+String.valueOf(cnt) + " tags are properly aligned for allele calling");
+            System.out.println("A total of "+String.valueOf(snpCnt) + " tags have allele calls");
         }
         catch (Exception e) {
             e.printStackTrace();
@@ -345,6 +364,7 @@ public class TagAnnotations {
                                 List<String> ll = PStringUtils.fastSplit(l.get(0), "_");                               
                                 int groupIndex = Integer.parseInt(ll.get(0));
                                 int tagIndex = Integer.parseInt(ll.get(1));
+                                Collections.sort(tagSNPList);
                                 setSNPOfTag(groupIndex, tagIndex, tagSNPList);
                                 snpCnt++;
                             }

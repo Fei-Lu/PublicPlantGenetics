@@ -6,6 +6,8 @@
 package format.dna.snp;
 
 import format.position.ChrPos;
+import gnu.trove.list.array.TByteArrayList;
+import gnu.trove.set.hash.TByteHashSet;
 import java.util.Comparator;
 
 /**
@@ -14,52 +16,85 @@ import java.util.Comparator;
  */
 public class SNP extends ChrPos implements SNPInterface {
     byte ref = Byte.MIN_VALUE;
-    byte alt = Byte.MIN_VALUE;
+    TByteArrayList alts = new TByteArrayList();
     
     public SNP (short chr, int pos, char refAllele, char altAllele) {
         super(chr, pos);
         this.ref = AlleleEncoder.alleleCharByteMap.get(refAllele);
-        this.alt = AlleleEncoder.alleleCharByteMap.get(altAllele);
+        this.addAltAllele(altAllele);
     }
     
     public SNP (short chr, int pos, byte ref, byte alt) {
         super(chr, pos);
         this.ref = ref;
-        this.alt = alt;
+        this.addAltAlleleByte(alt);
     }
-
+    
+    public SNP (short chr, int pos, byte ref, TByteArrayList alts) {
+        super(chr, pos);
+        this.ref = ref;
+        this.alts = alts;
+    }
+    
+    public TByteArrayList getAlteAlleleList () {
+        return this.alts;
+    }
+    
     @Override
-    public byte getReferenceAlleleByte() {
+    public void removeDuplicatedAltAlleles () {
+        TByteHashSet s = new TByteHashSet(alts);
+        alts = new TByteArrayList(s);
+        alts.sort();
+    }
+    
+    @Override
+    public void addAltAllele (char altAllele) {
+        this.addAltAlleleByte(AlleleEncoder.alleleCharByteMap.get(altAllele));
+    }
+    
+    @Override
+    public void addAltAlleleByte (byte alt) {
+        this.alts.add(alt);
+        if (alts.size() == Byte.MAX_VALUE) this.removeDuplicatedAltAlleles();
+    }
+    
+    @Override
+    public void sortAltAlleles () {
+        alts.sort();
+    }
+    
+    @Override
+    public int getAltAlleleIndex (byte alt) {
+        return alts.binarySearch(alt);
+    }
+    
+    @Override
+    public byte getAltAlleleNumber () {
+        return (byte)this.alts.size();
+    }
+    
+    @Override
+    public int getAltAlleleIndex (char altAllele) {
+        return this.getAltAlleleIndex(AlleleEncoder.alleleCharByteMap.get(altAllele));
+    }
+    
+    @Override
+    public byte getRefAlleleByte() {
         return this.ref;
     }
 
     @Override
-    public char getReferenceAllele() {
-        return AlleleEncoder.alleleByteCharMap.get(this.getReferenceAlleleByte());
+    public char getRefAllele() {
+        return AlleleEncoder.alleleByteCharMap.get(this.getRefAlleleByte());
     }
 
     @Override
-    public byte getAlternativeAlleleByte() {
-        return this.alt;
+    public byte getAltAlleleByte(int altIndex) {
+        return this.alts.get(altIndex);
     }
 
     @Override
-    public char getAlternativeAllele() {
-        return AlleleEncoder.alleleByteCharMap.get(this.getAlternativeAlleleByte());
-    }
-    
-    public static class CompareSNP implements Comparator<SNP> { 
-        @Override
-        public int compare(SNP a, SNP b) { 
-            if (a.getChromosome() == b.getChromosome()) {
-                if (a.getPosition() == b.getPosition()) {
-                    return a.getAlternativeAlleleByte()-b.getAlternativeAlleleByte();
-                }
-                else if (a.getPosition() < b.getPosition()) return -1;
-                return 1;
-            }
-            else if (a.getChromosome() < b.getChromosome()) return -1;
-            return 1;
-        } 
+    public char getAltAllele(int alleleIndex) {
+        return AlleleEncoder.alleleByteCharMap.get(this.getAltAlleleByte(alleleIndex));
     }
 }

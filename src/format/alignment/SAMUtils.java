@@ -309,9 +309,6 @@ public class SAMUtils {
             if (eIndex == 0) return null;
         }
         else {
-//            //multiple alleles at the same position
-//            int pos = sc.getPositionOfSNP(chrIndex, eIndex);
-//            while ((eIndex+1) < sc.getSNPNumberOnChromosome(chrIndex) && pos == sc.getPositionOfSNP(chrIndex, eIndex)) eIndex++;
             eIndex++;
         }
 //*****copy from getVariants method,  to avoid build cigarOPPosIndex twice******        
@@ -426,11 +423,13 @@ public class SAMUtils {
         Collections.sort(snpList);
 //*****************************************************        
         for (int i = sIndex; i < eIndex; i++) {
-            ChrPos query = new ChrPos (chr, sc.getPositionOfSNP(chrIndex, sIndex));
+            ChrPos query = new ChrPos (chr, sc.getPositionOfSNP(chrIndex, i));
             allelePosList.add(query);
             int index = Collections.binarySearch(snpList, query);
-            if (index < 0) alleleList.add(sc.getReferenceAlleleByteOfSNP(chrIndex, sIndex));
-            else alleleList.add(snpList.get(index).getAlternativeAlleleByte());
+            if (index < 0) alleleList.add(sc.getRefAlleleByteOfSNP(chrIndex, i));
+            else {
+                alleleList.add(snpList.get(index).getAltAlleleByte(0));
+            }
         }
         if (allelePosList.size() == 0) return null;
         return new Tuple(allelePosList, alleleList);

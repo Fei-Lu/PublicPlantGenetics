@@ -7,6 +7,7 @@ package analysis.pipeline.libgbs;
 
 import format.dna.snp.SNP;
 import format.position.ChrPos;
+import gnu.trove.list.array.TByteArrayList;
 import gnu.trove.set.hash.TShortHashSet;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -65,12 +66,20 @@ public class SNPCounts {
         return chrSCLists.get(chrIndex).get(snpIndex).getChromosome();
     }
     
-    public byte getReferenceAlleleByteOfSNP (int chrIndex, int snpIndex) {
-        return chrSCLists.get(chrIndex).get(snpIndex).getReferenceAlleleByte();
+    public byte getRefAlleleByteOfSNP (int chrIndex, int snpIndex) {
+        return chrSCLists.get(chrIndex).get(snpIndex).getRefAlleleByte();
     }
     
-    public byte getAlternativeAlleleByteOfSNP (int chrIndex, int snpIndex) {
-        return chrSCLists.get(chrIndex).get(snpIndex).getAlternativeAlleleByte();
+    public byte getAltAlleleByteOfSNP (int chrIndex, int snpIndex, int altIndex) {
+        return chrSCLists.get(chrIndex).get(snpIndex).getAltAlleleByte(altIndex);
+    }
+    
+    public int getAltAlleleIndex (int chrIndex, int snpIndex, byte alt) {
+        return chrSCLists.get(chrIndex).get(snpIndex).getAltAlleleIndex(alt);
+    }
+    
+    public int getAltAlleleIndex (int chrIndex, int snpIndex, char altAllele) {
+        return chrSCLists.get(chrIndex).get(snpIndex).getAltAlleleIndex(altAllele);
     }
     
     public long getTotalReadNumber () {
@@ -98,7 +107,15 @@ public class SNPCounts {
                 List<SNPCount> cl = new ArrayList<>();
                 int size = dis.readInt();
                 for (int j = 0; j < size; j++) {
-                    SNPCount cs = new SNPCount(dis.readShort(), dis.readInt(), dis.readByte(), dis.readByte(), dis.readInt());
+                    short chr = dis.readShort();
+                    int pos = dis.readInt();
+                    byte ref = dis.readByte();
+                    byte altNumber = dis.readByte();
+                    TByteArrayList alts = new TByteArrayList();
+                    for (int k = 0; k < altNumber; k++) {
+                        alts.add(dis.readByte());
+                    }
+                    SNPCount cs = new SNPCount(chr, pos, ref, alts, dis.readInt());
                     cl.add(cs);
                     cnt++;
                     if (cnt%1000000 == 0) System.out.println(String.valueOf(cnt) + " SNPs are read in");
@@ -126,11 +143,15 @@ public class SNPCounts {
                 List<SNPCount> cl = chrSCLists.get(i);
                 dos.writeInt(cl.size()); 
                 for (int j = 0; j < cl.size(); j++) {
-                    dos.writeShort(cl.get(j).getChromosome());
-                    dos.writeInt(cl.get(j).getPosition());
-                    dos.writeByte(cl.get(j).getReferenceAlleleByte());
-                    dos.writeByte(cl.get(j).getAlternativeAlleleByte());
-                    dos.writeInt(cl.get(j).getReadNumber());
+                    SNPCount s = cl.get(j);
+                    dos.writeShort(s.getChromosome());
+                    dos.writeInt(s.getPosition());
+                    dos.writeByte(s.getRefAlleleByte());
+                    dos.writeByte(s.getAltAlleleNumber());
+                    for (int k = 0; k < s.getAltAlleleNumber(); k++) {
+                        dos.writeByte(s.getAltAlleleByte(k));
+                    }
+                    dos.writeInt(s.getReadNumber());
                     cnt++;
                     if (cnt%1000000 == 0) System.out.println(String.valueOf(cnt) + " SNPs are written out");
                 }
@@ -157,12 +178,12 @@ public class SNPCounts {
     
     public void sort () {
         chrSCLists.parallelStream().forEach(l -> {
-            Collections.sort(l, new SNP.CompareSNP());
+            Collections.sort(l);
         });
     }
     
-    public void collapseCounts () {
-        System.out.println("Collapsing SNPs in SNPCounts");
+    public void mergeSNPs () {
+        System.out.println("Merging identical or multi-allele SNPs in SNPCounts");
         AtomicInteger acnt = new AtomicInteger();
         chrSCLists.parallelStream().forEach(l -> {
             int collapsedRows = 0;     
@@ -174,19 +195,26 @@ public class SNPCounts {
                     else {
                         int sum = l.get(i).getReadNumber()+l.get(j).getReadNumber();
                         l.get(i).setReadNumber(sum);
+                        for (int k = 0; k < l.get(j).getAltAlleleNumber(); k++) {
+                            l.get(i).addAltAlleleByte(l.get(j).getAltAlleleByte(k));
+                        }
                         collapsedRows++;
                         l.get(j).setReadNumber(0);
                     }
                 }
             }
             for (int i = 0; i < l.size(); i++) {
-                if (l.get(i).getReadNumber() != 0) continue;
+                if (l.get(i).getReadNumber() != 0) {
+                    l.get(i).removeDuplicatedAltAlleles();
+                    continue;
+                }
                 l.remove(i);
                 i--;
             }
             acnt.addAndGet(collapsedRows);
         });
-        System.out.println(String.valueOf(acnt) + " redundant SNPs are removed");
+        System.out.println(String.valueOf(acnt) + " SNPs are merged");
+        System.out.println(String.valueOf(this.getTotalSNPNumber()) + " unique SNPs remained in SNPCounts");
     }
     
     private void initilize (TagAnnotations tas) {
@@ -223,20 +251,26 @@ public class SNPCounts {
             }
         }
         this.sort();
-        System.out.println("A total of " + String.valueOf(cnt) + " SNPs are found in SNPCounts");
-        this.collapseCounts();
+        System.out.println("A total of " + String.valueOf(cnt) + " SNPs are found from TagAnnotations");
+        this.mergeSNPs();
     }
 }
 
 class SNPCount extends SNP {
     int readCount = 0;
+    
     public SNPCount(short chr, int pos, byte ref, byte alt, int readCount) {
         super(chr, pos, ref, alt);
         this.readCount = readCount;
     }
     
+    public SNPCount(short chr, int pos, byte ref, TByteArrayList alts, int readCount) {
+        super(chr, pos, ref, alts);
+        this.readCount = readCount;
+    }
+    
     public SNPCount(SNP snp, int readCount) {
-        super(snp.getChromosome(), snp.getPosition(), snp.getReferenceAlleleByte(), snp.getAlternativeAlleleByte());
+        super(snp.getChromosome(), snp.getPosition(), snp.getRefAlleleByte(), snp.getAlteAlleleList());
         this.readCount = readCount;
     }
     

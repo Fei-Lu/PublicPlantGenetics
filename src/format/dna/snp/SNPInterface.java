@@ -10,14 +10,27 @@ package format.dna.snp;
  * @author feilu
  */
 public interface SNPInterface {
-        
-    public byte getReferenceAlleleByte ();
     
-    public char getReferenceAllele ();
+    public void removeDuplicatedAltAlleles ();
     
-    public byte getAlternativeAlleleByte ();
+    public void addAltAllele (char altAllele);
     
-    public char getAlternativeAllele ();
+    public void addAltAlleleByte (byte alt);
     
+    public void sortAltAlleles ();
+    
+    public int getAltAlleleIndex (byte alt);
+    
+    public byte getAltAlleleNumber ();
+    
+    public int getAltAlleleIndex (char altAllele);
+    
+    public byte getRefAlleleByte ();
+    
+    public char getRefAllele ();
+    
+    public byte getAltAlleleByte (int alleleIndex);
+    
+    public char getAltAllele (int alleleIndex);
     
 }
