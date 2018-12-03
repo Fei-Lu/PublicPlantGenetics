@@ -34,7 +34,21 @@ public class LibGBSGo {
         //this.mergeTagAnnotations();
         //this.alignTags();
         //this.callSNP();
-        this.callAllele();
+        //this.callAllele();
+        this.buildVCF();
+    }
+    
+    public void buildVCF () {
+        String tagBySampleDirS = new File (this.workingDirS, this.subDirS[0]).getAbsolutePath();
+        String tagLibraryDirS = new File (this.workingDirS, this.subDirS[1]).getAbsolutePath();
+        String tagAnnotationFileS = new File(tagLibraryDirS, "tag.tas").getAbsolutePath();
+        String rawSNPFileS = new File(tagLibraryDirS, "rawSNP.bin").getAbsolutePath();
+        String genotypeDirS = new File (this.workingDirS, this.subDirS[3]).getAbsolutePath();
+        String genotypeFileS = new File (genotypeDirS, "raw.vcf").getAbsolutePath();
+        TagAnnotations tas = new TagAnnotations(tagAnnotationFileS);
+        SNPCounts sc = new SNPCounts (rawSNPFileS);
+        GBSVCFBuilder builder = new GBSVCFBuilder(tas, sc);
+        builder.callGenotype(tagBySampleDirS, genotypeFileS);
     }
     
     public void callAllele () {
@@ -48,7 +62,8 @@ public class LibGBSGo {
         int mapQThresh = 30;
         int maxMappingIntervalThresh = 1000;
         tas.callAllele(samFileS, sc, mapQThresh, maxMappingIntervalThresh);
-        //tas.writeTextFile(new File(tagLibraryDirS, "tag.tas2.txt").getAbsolutePath());
+        tas.writeBinaryFile(tagAnnotationFileS);
+        tas.writeTextFile(new File(tagLibraryDirS, "tag.tas.txt").getAbsolutePath());
     }
     
     public void callSNP () {
