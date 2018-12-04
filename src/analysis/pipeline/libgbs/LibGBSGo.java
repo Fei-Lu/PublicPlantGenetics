@@ -44,11 +44,10 @@ public class LibGBSGo {
         String tagAnnotationFileS = new File(tagLibraryDirS, "tag.tas").getAbsolutePath();
         String rawSNPFileS = new File(tagLibraryDirS, "rawSNP.bin").getAbsolutePath();
         String genotypeDirS = new File (this.workingDirS, this.subDirS[3]).getAbsolutePath();
-        String genotypeFileS = new File (genotypeDirS, "raw.vcf").getAbsolutePath();
         TagAnnotations tas = new TagAnnotations(tagAnnotationFileS);
         SNPCounts sc = new SNPCounts (rawSNPFileS);
         GBSVCFBuilder builder = new GBSVCFBuilder(tas, sc);
-        builder.callGenotype(tagBySampleDirS, genotypeFileS);
+        builder.callGenotype(tagBySampleDirS, genotypeDirS);
     }
     
     public void callAllele () {

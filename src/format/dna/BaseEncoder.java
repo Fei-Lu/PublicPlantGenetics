@@ -122,6 +122,33 @@ public class BaseEncoder {
     }
     
     /**
+     * Return an int array from a long array
+     * @param val
+     * @return 
+     */
+    public static int[] getIntSeqsFromLongSeqs (long[] val) {
+        int[] v = new int[val.length*2];
+        for (int i = 0; i < val.length; i++) {
+            int[] cv = getIntSeqsFromLongSeq(val[i]);
+            v[i*2] = cv[0];
+            v[i*2+1] = cv[1];
+        }
+        return v;
+    }
+    
+    /**
+     * Return an int array from a long
+     * @param l
+     * @return 
+     */
+    public static int[] getIntSeqsFromLongSeq (long val) {
+        int[] v = new int[2];
+        v[0] = (int)(val>>>longChunkSize);
+        v[1] = (int)val;
+        return v;
+    }
+    
+    /**
      * Return an int from a byte array. It is padded with polyA at the end if the length of this array is less than 16
      * If the length of this array is greater than 16, return -1 (polyT)
      * @param b The byte array must be in 0-3 coding for A, C, G, T
