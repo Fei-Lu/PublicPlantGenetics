@@ -10,6 +10,7 @@ import java.util.Arrays;
 import java.util.List;
 import utils.IOUtils;
 import utils.PArrayUtils;
+import utils.Tuple;
 
 /**
  *
@@ -19,6 +20,7 @@ public class GBSVCFBuilder {
     TagAnnotations tas = null;
     SNPCounts sc = null;
     int paraLevel = 32;
+    int maxDivergence = 5;
     
     public GBSVCFBuilder (TagAnnotations tas, SNPCounts sc) {
         this.tas = tas;
@@ -41,14 +43,18 @@ public class GBSVCFBuilder {
         TagFinder tf = new TagFinder(tas);
         for (int i = 0; i < indices.length; i++) {
             List<File> subFList = sampleFileList.subList(indices[0][0], indices[0][1]);
-            subFList.parallelStream().forEach(f -> {
+            subFList.stream().forEach(f -> {
                 TagAnnotations ata = new TagAnnotations(f.getAbsolutePath());
                 for (int j = 0; j < ata.getGroupNumber(); j++) {
                     for (int k = 0; k < ata.getTagNumber(j); k++) {
                         long[] tag = ata.getTag(j, k);
                         byte r1Length = ata.getR1TagLength(j, k);
                         byte r2Length = ata.getR1TagLength(j, k);
-                        tf.findMostSimilarTag(tag, r1Length, r2Length, j);
+                        Tuple<int[], int[]> result = tf.getMostSimilarTags(tag, r1Length, r2Length, j, maxDivergence);
+                        if (result == null) continue;
+                        int[] divergence = result.getFirstElement();
+                        int[] tagIndex = result.getSecondElement();
+                        
                     }
                 }
             });
