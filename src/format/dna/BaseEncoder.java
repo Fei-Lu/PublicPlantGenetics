@@ -290,6 +290,54 @@ public class BaseEncoder {
     }
     
     /**
+     * Returns the number of bp differences between two 2-bit encoded longs.
+     * Maximum divergence is used to save time when only interested in very similar 
+     * sequences.
+     * @param seq1 2-bit encoded sequence
+     * @param seq2 2-bit encoded sequence
+     * @param maxDivergence threshold for counting divergence upto
+     * @return count of the divergence (above the maxDivergence, chunkSize is returned)
+     */
+    public static byte getSeqDifferences(long seq1, long seq2, int maxDivergence) {
+        long mask = 3;
+        byte cnt = 0;
+        long diff = seq1 ^ seq2;
+        for (int x = 0; x < longChunkSize && cnt <= maxDivergence; x++) {
+            if ((diff & mask) > 0) {
+                cnt++;
+            }
+            diff = diff >> 2;
+            // System.out.println("v = " + v);
+        }
+        if (cnt > maxDivergence) {
+            cnt = (byte) longChunkSize;
+        }
+        // if(x<(chunkSize-1)) cnt=(byte)chunkSize;  //if didn't get to the end of the sequence set to maximum
+        return cnt;
+    }
+
+    
+    /**
+     * Returns the number of bp differences between two 2-bit encoded longs.
+     * @param seq1 2-bit encoded sequence
+     * @param seq2 2-bit encoded sequence
+     * @return count of the divergence 
+     */
+    public static byte getSeqDifferences(long seq1, long seq2) {
+        long mask = 3;
+        byte cnt = 0;
+        long diff = seq1 ^ seq2;
+        for (int x = 0; x < longChunkSize; x++) {
+            if ((diff & mask) > 0) {
+                cnt++;
+            }
+            diff = diff >> 2;
+            // System.out.println("v = " + v);
+        }
+        return cnt;
+    }
+    
+    /**
      * Return DNA sequence from long
      * @param val
      * @return 
