@@ -122,6 +122,17 @@ public class IOUtils {
         return dis;
     }
     
+    public static DataInputStream getBinaryReader (String infileS, int bufferSize) {
+        DataInputStream dis = null;
+        try {
+            dis = new DataInputStream(new BufferedInputStream(new FileInputStream(infileS), bufferSize));
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
+        return dis;
+    }
+    
     public static ObjectOutputStream getObjectWriter (String outfileS) {
         ObjectOutputStream oos = null;
         try {

@@ -10,7 +10,9 @@ package format.dna.snp;
  * @author feilu
  */
 public interface SNPInterface {
-    
+    /**
+     * Remove duplicated alternative allele in alternative allele list and sort the sort the byte list
+     */
     public void removeDuplicatedAltAlleles ();
     
     public void addAltAllele (char altAllele);

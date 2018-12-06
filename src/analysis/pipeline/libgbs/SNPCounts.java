@@ -170,6 +170,11 @@ public class SNPCounts {
         return Arrays.binarySearch(chrs, chr);
     }
     
+    public int getSNPIndex (int chrIndex, ChrPos query) {
+        int snpIndex = Collections.binarySearch(this.chrSCLists.get(chrIndex), query);
+        return snpIndex;
+    }
+    
     public int getSNPIndex (int chrIndex, int pos) {
         ChrPos query = new ChrPos (chrs[chrIndex], pos);
         int snpIndex = Collections.binarySearch(this.chrSCLists.get(chrIndex), query);
