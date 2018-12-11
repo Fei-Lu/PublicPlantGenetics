@@ -121,6 +121,7 @@ public class GBSVCFBuilder {
                 bws[i] = IOUtils.getTextWriter(outfiles[i]);
                 bws[i].write(annotation);
                 bws[i].write(header);
+                bws[i].newLine();
             }
             for (int i = 0; i < sc.getChromosomeNumber(); i++) {
                 for (int j = 0; j < sc.getSNPNumberOnChromosome(i); j++) {

@@ -317,6 +317,7 @@ public class TagAnnotations {
                                 int groupIndex = Integer.parseInt(ll.get(0));
                                 int tagIndex = Integer.parseInt(ll.get(1));
                                 this.setAlleleOfTag(groupIndex, tagIndex, tagAllelePosList, tagAlleleList);
+                                this.sortAlleleListByPosition(groupIndex, tagIndex);
                                 snpCnt++;
                             }
                         }
@@ -364,7 +365,7 @@ public class TagAnnotations {
                                 List<String> ll = PStringUtils.fastSplit(l.get(0), "_");                               
                                 int groupIndex = Integer.parseInt(ll.get(0));
                                 int tagIndex = Integer.parseInt(ll.get(1));
-                                Collections.sort(tagSNPList);
+                                Collections.sort(tagSNPList);        
                                 setSNPOfTag(groupIndex, tagIndex, tagSNPList);
                                 snpCnt++;
                             }
@@ -403,6 +404,14 @@ public class TagAnnotations {
         });
         this.ifSorted = false;
         return true;
+    }
+    
+    public void sortSNPListByPosition (int groupIndex, int tagIndex) {
+        this.taList.get(groupIndex).sortSNPListByPosition(tagIndex);
+    }
+    
+    public void sortAlleleListByPosition (int groupIndex, int tagIndex) {
+        this.taList.get(groupIndex).sortAlleleListByPosition(tagIndex);
     }
     
     public void sort () {

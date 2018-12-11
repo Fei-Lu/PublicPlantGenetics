@@ -77,7 +77,7 @@ public class LibGBSGo {
         TagAnnotations tas = new TagAnnotations(tagAnnotationFileS);
         tas.callSNP(samFileS, mapQThresh, maxMappingIntervalThresh);
         tas.writeBinaryFile(tagAnnotationFileS);
-        //tas.writeTextFile(new File(tagLibraryDirS, "tag.tas.txt").getAbsolutePath());
+//        tas.writeTextFile(new File(tagLibraryDirS, "tag.tas.txt").getAbsolutePath());
         SNPCounts snpSCs = tas.getSNPCounts();
         snpSCs.writeBinaryFile(rawSNPFileS);
     }

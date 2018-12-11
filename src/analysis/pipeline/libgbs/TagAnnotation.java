@@ -163,7 +163,52 @@ public class TagAnnotation implements Swapper, IntComparator {
         }
         return 0;
     }
+    
+    void sortAlleleListByPosition (int tagIndex) {
+        PosAllele pa = new PosAllele(this.allelePosList.get(tagIndex), this.alleleList.get(tagIndex));
+        pa.sort();
+        this.allelePosList.set(tagIndex, pa.pList);
+        this.alleleList.set(tagIndex, pa.aList);
+    }
+    
+    class PosAllele {
+        List<ChrPos> pList = null;
+        TByteArrayList aList = null;
+        
+        public PosAllele (List<ChrPos> pList, TByteArrayList aList) {
+            this.pList = pList;
+            this.aList = aList;
+        }
+        
+        public void sort () {
+            GenericSorting.quickSort(0, pList.size(), posComp, posSwapper);
+        }
+        
+        Swapper posSwapper = new Swapper() {
+            @Override
+            public void swap(int index1, int index2) {
+                ChrPos tempPos = pList.get(index1);
+                pList.set(index1, pList.get(index2));
+                pList.set(index2, tempPos);
+                byte temp = aList.get(index1);
+                aList.set(index1, aList.get(index2));
+                aList.set(index2, temp);
+            }
+        };
 
+        IntComparator posComp = new IntComparator() {
+            @Override
+            public int compare(int index1, int index2) {
+                return pList.get(index1).compareTo(pList.get(index2));
+            }
+        };
+    }
+    
+    
+    void sortSNPListByPosition (int tagIndex) {
+        Collections.sort(this.SNPList.get(tagIndex));
+    }
+    
     void sort () {
         //System.out.println("TagCount sort begins");
         GenericSorting.quickSort(0, this.getTagNumber(), this, this);

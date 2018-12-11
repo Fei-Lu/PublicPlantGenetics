@@ -318,7 +318,6 @@ public class SAMUtils {
         TIntArrayList posIndexList = cigarOPPosIndex.getSecondElement();
         if (opList.get(0) == 83) {//S
             int length = Integer.parseInt(cigar.substring(0, posIndexList.get(0)));
-            startPos = startPos+length-1;
             seq = seq.substring(length);
             cigar = cigar.substring(posIndexList.get(0)+1);
             if (opList.get(opList.size()-1) == 83 || opList.get(opList.size()-1) == 72) {
@@ -328,8 +327,6 @@ public class SAMUtils {
             }
         }
         else if (opList.get(0) == 72) {//H
-            int length = Integer.parseInt(cigar.substring(0, posIndexList.get(0)));
-            startPos = startPos+length-1;
             cigar = cigar.substring(posIndexList.get(0)+1);
             if (opList.get(opList.size()-1) == 83 || opList.get(opList.size()-1) == 72) {
                 cigarOPPosIndex = getCigarOPAndPosIndex(cigar);
@@ -456,7 +453,6 @@ public class SAMUtils {
         TIntArrayList posIndexList = cigarOPPosIndex.getSecondElement();
         if (opList.get(0) == 83) {//S
             int length = Integer.parseInt(cigar.substring(0, posIndexList.get(0)));
-            startPos = startPos+length-1;
             seq = seq.substring(length);
             cigar = cigar.substring(posIndexList.get(0)+1);
             if (opList.get(opList.size()-1) == 83 || opList.get(opList.size()-1) == 72) {
@@ -466,8 +462,6 @@ public class SAMUtils {
             }
         }
         else if (opList.get(0) == 72) {//H
-            int length = Integer.parseInt(cigar.substring(0, posIndexList.get(0)));
-            startPos = startPos+length-1;
             cigar = cigar.substring(posIndexList.get(0)+1);
             if (opList.get(opList.size()-1) == 83 || opList.get(opList.size()-1) == 72) {
                 cigarOPPosIndex = getCigarOPAndPosIndex(cigar);
