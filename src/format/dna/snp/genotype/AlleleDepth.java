@@ -64,6 +64,14 @@ public class AlleleDepth {
         return depth[index];
     }
     
+    public int getTotalDepth () {
+        int cnt = 0;
+        for (int i = 0; i < this.getAlleleNumber(); i++) {
+            cnt+=this.getDepth(i);
+        }
+        return cnt;
+    }
+    
     public int getAlleleNumber () {
         return alleles.length;
     }
@@ -111,7 +119,7 @@ public class AlleleDepth {
     
     public void sortByDepthDesending () {
         GenericSorting.quickSort(0, alleles.length, compByDepthDesending, swapper);
-        sortType = (byte)1;
+        sortType = (byte)2;
     }
     
     Swapper swapper = new Swapper() {

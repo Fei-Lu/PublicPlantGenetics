@@ -38,6 +38,7 @@ public class GBSVCFBuilder {
     int paraLevel = 32;
     int maxDivergence = 5;
     int maxAltNumber = 2;
+    double sequencingErrorRate = 0.05;
     
     public GBSVCFBuilder (TagAnnotations tas, SNPCounts sc) {
         this.tas = tas;
@@ -137,6 +138,7 @@ public class GBSVCFBuilder {
                             sampleAD[k].addDepth(cDepth);
                             depth[cAllele]+=cDepth;
                         }
+                        sampleAD[k].toArray();
                     }
                     TByteArrayList alleleList = new TByteArrayList();
                     TIntArrayList depthList = new TIntArrayList();
@@ -157,11 +159,28 @@ public class GBSVCFBuilder {
                     for (int k = 0; k < altNum; k++) {
                         sb.append(AlleleEncoder.alleleByteCharMap.get(altAD.getAllele(k))).append(",");
                     }
+                    sb.deleteCharAt(sb.length()-1).append("\t.\t.\t");
+                    sb.append("DP=").append(VCFUtils.getTotalDepth(sampleAD)).append(";AD=").append(VCFUtils.getAlleleTotalDepth(sampleAD, sc.getRefAlleleByteOfSNP(i, j))).append(",");
+                    for (int k = 0; k < altNum; k++) {
+                        sb.append(VCFUtils.getAlleleTotalDepth(sampleAD, altAD.getAllele(k))).append(",");
+                    }
+                    sb.deleteCharAt(sb.length()-1).append(";NS=").append(VCFUtils.getNumberOfTaxaWithAlleles(sampleAD)).append(";AP=").append(VCFUtils.getNumberOfTaxaWithAllele(sampleAD, sc.getRefAlleleByteOfSNP(i, j))).append(",");
+                    for (int k = 0; k < altNum; k++) {
+                        sb.append(VCFUtils.getNumberOfTaxaWithAllele(sampleAD, altAD.getAllele(k))).append(",");
+                    }
                     sb.deleteCharAt(sb.length()-1);
-                    
+                    sb.append("\tGT:AD:PL");
+                    for (int k = 0; k < sampleAD.length; k++) {
+                        int n = altNum+1;
+                        int[] readCount = new int[n];
+                        readCount[0] = sampleAD[k].getDepth(sc.getRefAlleleByteOfSNP(i, j));
+                        for (int u = 0; u < altNum; u++) {
+                            readCount[u+1] = sampleAD[k].getDepth(altAD.getAllele(u));
+                        }
+                        sb.append("\t").append(VCFUtils.getGenotype(readCount, sequencingErrorRate));
+                    }
                     bws[i].write(sb.toString());
-                    bws[i].newLine();
-                        
+                    bws[i].newLine();   
                 }
             }
             
