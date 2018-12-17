@@ -28,6 +28,8 @@ public class GRTGo implements CLIInterface {
     String libraryFqMapFileS = null;
     String enzymeCutterF = null;
     String enzymeCutterR = null;
+    String bwaPath = null;
+    String referenceFileS = null;
     int numThreads = 32;
     
     LibraryInfo li = null;
@@ -59,7 +61,8 @@ public class GRTGo implements CLIInterface {
                 if (inputThreads < 0) numThreads = numCores;
             }
             if (numThreads > numCores) numThreads = numCores;
-            
+            this.referenceFileS = line.getOptionValue("g");
+            this.bwaPath = line.getOptionValue("bwa");
         }
         catch(Exception e) {
             e.printStackTrace();
@@ -95,7 +98,20 @@ public class GRTGo implements CLIInterface {
             String tagLibraryDirS = new File (this.workingDirS, this.subDirS[1]).getAbsolutePath();
             String mergedTagCountFileS = new File(tagLibraryDirS, "tag.tas").getAbsolutePath();
             new TagMerger(tagBySampleDirS, mergedTagCountFileS);
-            System.out.println("Merging tags complemeted in " + String.format("%.4f", Benchmark.getTimeSpanHours(start)) + " hours");
+            System.out.println("Merging tags is complemeted in " + String.format("%.4f", Benchmark.getTimeSpanHours(start)) + " hours");
+        }
+        else if (mode.equals("at")) {
+            if (workingDirS == null || this.referenceFileS == null || bwaPath == null) {
+                this.printIntroductionAndUsage();
+                System.exit(1); 
+                return;
+            }
+            String tagLibraryDirS = new File (this.workingDirS, this.subDirS[1]).getAbsolutePath();
+            String mergedTagAnnotationFileS = new File(tagLibraryDirS, "tag.tas").getAbsolutePath();
+            String alignmentDirS = new File (this.workingDirS, this.subDirS[2]).getAbsolutePath();
+            TagAligner ta = new TagAligner(referenceFileS, this.bwaPath, mergedTagAnnotationFileS, alignmentDirS);
+            ta.setThreads(numThreads);
+            System.out.println("Aligning tags is complemeted in " + String.format("%.4f", Benchmark.getTimeSpanHours(start)) + " hours");
         }
         else {
             this.printIntroductionAndUsage();
@@ -123,6 +139,8 @@ public class GRTGo implements CLIInterface {
         options.addOption("ef", true, "Recognition sequence of restriction enzyme in R1, e.g GGATCC");
         options.addOption("er", true, "Recognition sequence of restriction enzyme in R2, e.g CCGG");
         options.addOption("t", true, "Number of threads. The default value is 32. The actual number of running threads is less than the number of cores regardless of the input value, but -1 means the number of all available cores");
+        options.addOption("g", true, "The reference genome of the species. The indexing files should be included in the same directory of the reference genome.");
+        options.addOption("bwa", true, "The path of bwa excutable file, e.g /Users/Software/bwa-0.7.15/bwa");
     }
     
     @Override

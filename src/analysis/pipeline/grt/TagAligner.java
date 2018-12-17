@@ -23,7 +23,7 @@ class TagAligner {
     String r1FastqFileS = null;
     String r2FastqFileS = null;
     String samFileS = null;
-    int paraLevel = 32;
+    int numThreads = 32;
     
     public TagAligner (String referenceFileS, String bwaPath, String mergedTagCountFileS, String alignmentDirS) {
         this.referenceFileS = referenceFileS;
@@ -31,6 +31,10 @@ class TagAligner {
         this.mergedTagCountFileS = mergedTagCountFileS;
         this.alignmentDirS = alignmentDirS;
         this.bwaAlign();
+    }
+    
+    public void setThreads (int numThreads) {
+        this.numThreads = numThreads;
     }
     
     public void bwaAlign () {
@@ -43,7 +47,7 @@ class TagAligner {
         try {
             StringBuilder sb = new StringBuilder();
             int nThreads = Runtime.getRuntime().availableProcessors();
-            if (nThreads > paraLevel) nThreads = paraLevel;
+            if (nThreads > this.numThreads) nThreads = this.numThreads;
             sb.append(bwaPath).append(" mem -t ").append(nThreads).append(" ").append(this.referenceFileS).append(" ")
                     .append(r1FastqFileS).append(" ").append(r2FastqFileS).append(" > ").append(samFileS);      
             String cmd = sb.toString();
