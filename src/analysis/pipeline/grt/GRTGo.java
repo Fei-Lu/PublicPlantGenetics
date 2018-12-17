@@ -5,11 +5,13 @@
  */
 package analysis.pipeline.grt;
 
+import java.io.File;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Options;
+import utils.Benchmark;
 import utils.CLIInterface;
 
 /**
@@ -26,6 +28,10 @@ public class GRTGo implements CLIInterface {
     String libraryFqMapFileS = null;
     String enzymeCutterF = null;
     String enzymeCutterR = null;
+    int numThreads = 32;
+    
+    LibraryInfo li = null;
+    String[] subDirS = {"tagsBySample","tagsLibrary","alignment", "rawGenotype", "filteredGenotype"};
     
     public GRTGo (String[] args) {
         this.createOptions();
@@ -35,6 +41,7 @@ public class GRTGo implements CLIInterface {
     
     @Override
     public void retrieveParameters (String[] args) {
+        long start = System.nanoTime();
         CommandLineParser parser = new DefaultParser();
         try {
             CommandLine line = parser.parse(options, args);
@@ -44,28 +51,69 @@ public class GRTGo implements CLIInterface {
             libraryFqMapFileS = line.getOptionValue("f");
             enzymeCutterF = line.getOptionValue("ef");
             enzymeCutterR = line.getOptionValue("er");
+            String temp = line.getOptionValue("t");
+            int numCores = Runtime.getRuntime().availableProcessors();
+            if (temp != null) {
+                int inputThreads = Integer.parseInt(temp);
+                numThreads = inputThreads;
+                if (inputThreads < 0) numThreads = numCores;
+            }
+            if (numThreads > numCores) numThreads = numCores;
+            
         }
         catch(Exception e) {
             e.printStackTrace();
+            System.exit(1); 
         }
+        this.creatDirectories();
         if (mode == null) {
             this.printIntroductionAndUsage();
+            System.exit(1); 
             return;
         }
         else if (mode.equals("pf")) {
             if (workingDirS == null || barcodeFileS == null || libraryFqMapFileS == null || enzymeCutterF == null || enzymeCutterR == null) {
                 this.printIntroductionAndUsage();
-               
+                System.exit(1); 
                 return;
             }
-            
+            li = new LibraryInfo(barcodeFileS, libraryFqMapFileS, enzymeCutterF, enzymeCutterF);
+            String tagBySampleDirS = new File (this.workingDirS, this.subDirS[0]).getAbsolutePath();
+            TagParser tp = new TagParser(li);
+            tp.setThreads(numThreads);
+            tp.parseFastq(tagBySampleDirS);
+            tp.compressTagsBySample(tagBySampleDirS);
+            System.out.println("Parsing fastq is complemeted in " + String.format("%.4f", Benchmark.getTimeSpanHours(start)) + " hours");
+        }
+        else if (mode.equals("mt")) {
+            if (workingDirS == null) {
+                this.printIntroductionAndUsage();
+                System.exit(1); 
+                return;
+            }
+            String tagBySampleDirS = new File (this.workingDirS, this.subDirS[0]).getAbsolutePath();
+            String tagLibraryDirS = new File (this.workingDirS, this.subDirS[1]).getAbsolutePath();
+            String mergedTagCountFileS = new File(tagLibraryDirS, "tag.tas").getAbsolutePath();
+            new TagMerger(tagBySampleDirS, mergedTagCountFileS);
+            System.out.println("Merging tags complemeted in " + String.format("%.4f", Benchmark.getTimeSpanHours(start)) + " hours");
         }
         else {
             this.printIntroductionAndUsage();
+            System.exit(1); 
             return;
         }
     }
-     @Override
+    
+    private void creatDirectories () {
+        File workingDir = new File(this.workingDirS);
+        workingDir.mkdir();
+        for (int i = 0; i < this.subDirS.length; i++) {
+            File f = new File (this.workingDirS, subDirS[i]);
+            f.mkdir();
+        }
+    }
+    
+    @Override
     public void createOptions () {
         options = new Options();
         options.addOption("m", true, "Analysis mode.");
@@ -74,8 +122,10 @@ public class GRTGo implements CLIInterface {
         options.addOption("f", true, "The libraryFastqMap file, where corresponding fastq files can be found for each flowcell_lane_library-index combination.");
         options.addOption("ef", true, "Recognition sequence of restriction enzyme in R1, e.g GGATCC");
         options.addOption("er", true, "Recognition sequence of restriction enzyme in R2, e.g CCGG");
+        options.addOption("t", true, "Number of threads. The default value is 32. The actual number of running threads is less than the number of cores regardless of the input value, but -1 means the number of all available cores");
     }
     
+    @Override
     public String createIntroduction () {
         StringBuilder sb = new StringBuilder();
         sb.append("\nThe program GRT.jar is designed to genotype seuqecing samples made from two-enzyme GBS systems. ");
@@ -98,7 +148,7 @@ public class GRTGo implements CLIInterface {
 
     @Override
     public void printIntroductionAndUsage() {
-        System.out.println("Incorrect parameter input. Program quits.");
+        System.out.println("Incorrect parameter input. Program stops.");
         System.out.println(introduction);
         optionFormat.printHelp("GRT.jar", options);
     }

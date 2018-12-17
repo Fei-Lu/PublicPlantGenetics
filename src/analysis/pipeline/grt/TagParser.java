@@ -31,16 +31,20 @@ public class TagParser {
     int tagLengthInLong = 3;
     String polyA = "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA";
     int setReadLength = tagLengthInLong*BaseEncoder.longChunkSize;
-    int paraLevel = 32;
+    int numThreads = 32;
     int minReadLength = 16;
     
     public TagParser (LibraryInfo li) {
         this.li = li;
     }
     
+    public void setThreads (int numThreads) {
+        this.numThreads = numThreads;
+    }
+    
     public void parseFastq(String tagBySampleDirS) {
         String[] libs = li.getLibArray();
-        int[][] indices = PArrayUtils.getSubsetsIndicesBySubsetSize(libs.length, this.paraLevel);
+        int[][] indices = PArrayUtils.getSubsetsIndicesBySubsetSize(libs.length, this.numThreads);
         for (int i = 0; i < indices.length; i++) {
             Integer[] subLibIndices = new Integer[indices[i][1]-indices[i][0]];
             for (int j = 0; j < subLibIndices.length; j++) {
@@ -203,7 +207,7 @@ public class TagParser {
         File[] fs = new File(tagBySampleDirS).listFiles();
         fs = IOUtils.listFilesEndsWith(fs, ".tp");
         Arrays.sort(fs);
-        int[][] indices = PArrayUtils.getSubsetsIndicesBySubsetSize(fs.length, this.paraLevel);
+        int[][] indices = PArrayUtils.getSubsetsIndicesBySubsetSize(fs.length, this.numThreads);
         for (int i = 0; i < indices.length; i++) {
             List<File> subFList = new ArrayList();
             for (int j = indices[i][0]; j < indices[i][1]; j++) {
