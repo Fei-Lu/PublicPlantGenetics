@@ -3,7 +3,7 @@
  */
 package format.alignment;
 
-import analysis.pipeline.libgbs.SNPCounts;
+import analysis.pipeline.grt.SNPCounts;
 import format.dna.snp.SNP;
 import format.position.ChrPos;
 import gnu.trove.list.array.TByteArrayList;

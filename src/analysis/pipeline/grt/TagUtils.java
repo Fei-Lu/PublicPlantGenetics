@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package analysis.pipeline.libgbs;
+package analysis.pipeline.grt;
 
 import com.koloboke.collect.map.hash.HashByteByteMap;
 import format.dna.BaseEncoder;
