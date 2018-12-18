@@ -336,8 +336,9 @@ public class TagAnnotations {
         }
     }
     
-    public void callSNP (String samFileS, int mapQThresh, int maxMappingIntervalThresh) {
+    public void callSNP (String samFileS, int mapQThresh, int maxMappingIntervalThresh, int maxDivergence) {
         System.out.println("Start adding raw SNPs to DB");
+        maxDivergence++;
         try {
             BufferedReader br = IOUtils.getTextReader(samFileS);
             String temp = null;
@@ -361,7 +362,7 @@ public class TagAnnotations {
                             if (snpList != null) tagSNPList.addAll(snpList);
                             cnt++;
                             if (cnt%10000000 == 0) System.out.println(String.valueOf(cnt) + " tags are properly aligned for SNP calling");                           
-                            if (tagSNPList.size() != 0) {
+                            if (tagSNPList.size() > 0 && tagSNPList.size() < maxDivergence) {
                                 List<String> ll = PStringUtils.fastSplit(l.get(0), "_");                               
                                 int groupIndex = Integer.parseInt(ll.get(0));
                                 int tagIndex = Integer.parseInt(ll.get(1));
@@ -383,7 +384,6 @@ public class TagAnnotations {
             e.printStackTrace();
         }
     }
-    
     
     public SNPCounts getSNPCounts () {
         return new SNPCounts(this);
@@ -523,12 +523,36 @@ public class TagAnnotations {
         taList.get(groupIndex).setAlleleOfTag(tagIndex, tagAllelePosList, tagAlleleList);
     }
     
-    public void collapseCounts () {
+    public void removeSNPOfTag (int groupIndex, int tagIndex) {
+        taList.get(groupIndex).removeSNPOfTag(tagIndex);
+    }
+    
+    public void removeAlleleOfTag (int groupIndex, int tagIndex) {
+        taList.get(groupIndex).removeAlleleOfTag(tagIndex);
+    }
+    
+    public void removeAllSNP () {
+        for (int i = 0; i < this.getGroupNumber(); i++) {
+            for (int j = 0; j < this.getTagNumber(i); j++) {
+                this.removeSNPOfTag(i, j);
+            }
+        }
+    }
+    
+    public void removeAllAllele () {
+        for (int i = 0; i < this.getGroupNumber(); i++) {
+            for (int j = 0; j < this.getTagNumber(i); j++) {
+                this.removeAlleleOfTag(i, j);
+            }
+        }
+    }
+    
+    public void collapseCounts (int minReadCount) {
         System.out.println("Start collapsing read counts of TagAnnotations");
         AtomicInteger acnt = new AtomicInteger();
         if (this.isSorted() == false) this.sort();
         taList.parallelStream().forEach(ta -> {
-            int cnt = ta.collapseCounts();
+            int cnt = ta.collapseCounts(minReadCount);
             acnt.addAndGet(cnt);
         });     
         System.out.println("Tag rows collapsed after sorting: " + acnt.get());

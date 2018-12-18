@@ -126,6 +126,15 @@ public class TagAnnotation implements Swapper, IntComparator {
         this.alleleList.set(tagIndex, tagAlleleList);
     }
     
+    void removeSNPOfTag (int tagIndex) {
+        this.SNPList.get(tagIndex).clear();
+    }
+    
+    void removeAlleleOfTag (int tagIndex) {
+        this.allelePosList.get(tagIndex).clear();
+        this.alleleList.get(tagIndex).clear();
+    }
+    
     @Override
     public void swap (int index1, int index2) {
         long[] temp = tagList.get(index1);
@@ -215,7 +224,7 @@ public class TagAnnotation implements Swapper, IntComparator {
         //System.out.println("TagCount sort ends");
     }
     
-    protected int collapseCounts () {
+    protected int collapseCounts (int minReadCount) {
         int collapsedRows = 0;
         for (int i = 0; i < this.getTagNumber()-1; i++) {
             if (this.readCountList.get(i) == 0) continue;
@@ -231,7 +240,7 @@ public class TagAnnotation implements Swapper, IntComparator {
             }
         }
         for (int i = 0; i < this.getTagNumber(); i++) {
-            if (readCountList.get(i) != 0) continue;
+            if (!(readCountList.get(i) < minReadCount)) continue;
             tagList.remove(i);
             r1LenList.removeAt(i);
             r2LenList.removeAt(i);

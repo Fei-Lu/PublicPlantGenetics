@@ -31,6 +31,11 @@ public class GRTGo implements CLIInterface {
     String bwaPath = null;
     String referenceFileS = null;
     int numThreads = 32;
+    int minReadCount = 3;
+    int minMappingQ = 30;
+    int maxMappingLength = 1000;
+    int maxDivergence = 5;
+    int tagIdentifyThreshold = 1;
     
     LibraryInfo li = null;
     String[] subDirS = {"tagsBySample","tagsLibrary","alignment", "rawGenotype", "filteredGenotype"};
@@ -61,8 +66,28 @@ public class GRTGo implements CLIInterface {
                 if (inputThreads < 0) numThreads = numCores;
             }
             if (numThreads > numCores) numThreads = numCores;
+            temp = line.getOptionValue("mc");
+            if (temp != null) {
+                this.minReadCount = Integer.parseInt(temp);
+            }
             this.referenceFileS = line.getOptionValue("g");
             this.bwaPath = line.getOptionValue("bwa");
+            temp = line.getOptionValue("mq");
+            if (temp != null) {
+                this.minMappingQ = Integer.parseInt(temp);
+            }
+            temp = line.getOptionValue("ml");
+            if (temp != null) {
+                this.maxMappingLength = Integer.parseInt(temp);
+            }
+            temp = line.getOptionValue("md");
+            if (temp != null) {
+                this.maxDivergence = Integer.parseInt(temp);
+            }
+            temp = line.getOptionValue("it");
+            if (temp != null) {
+                this.tagIdentifyThreshold = Integer.parseInt(temp);
+            }
         }
         catch(Exception e) {
             e.printStackTrace();
@@ -80,7 +105,8 @@ public class GRTGo implements CLIInterface {
                 System.exit(1); 
                 return;
             }
-            li = new LibraryInfo(barcodeFileS, libraryFqMapFileS, enzymeCutterF, enzymeCutterF);
+            System.out.println("Start parsing fastq files based on barcodes...");
+            li = new LibraryInfo(barcodeFileS, libraryFqMapFileS, enzymeCutterF, enzymeCutterR);
             String tagBySampleDirS = new File (this.workingDirS, this.subDirS[0]).getAbsolutePath();
             TagParser tp = new TagParser(li);
             tp.setThreads(numThreads);
@@ -94,10 +120,11 @@ public class GRTGo implements CLIInterface {
                 System.exit(1); 
                 return;
             }
+            System.out.println("Start merging tags in each individual TagAnnotations file...");
             String tagBySampleDirS = new File (this.workingDirS, this.subDirS[0]).getAbsolutePath();
             String tagLibraryDirS = new File (this.workingDirS, this.subDirS[1]).getAbsolutePath();
             String mergedTagCountFileS = new File(tagLibraryDirS, "tag.tas").getAbsolutePath();
-            new TagMerger(tagBySampleDirS, mergedTagCountFileS);
+            TagMerger tm = new TagMerger(tagBySampleDirS, mergedTagCountFileS, minReadCount);
             System.out.println("Merging tags is complemeted in " + String.format("%.4f", Benchmark.getTimeSpanHours(start)) + " hours");
         }
         else if (mode.equals("at")) {
@@ -106,12 +133,72 @@ public class GRTGo implements CLIInterface {
                 System.exit(1); 
                 return;
             }
+            System.out.println("Start aligning tags using bwa...");
             String tagLibraryDirS = new File (this.workingDirS, this.subDirS[1]).getAbsolutePath();
             String mergedTagAnnotationFileS = new File(tagLibraryDirS, "tag.tas").getAbsolutePath();
             String alignmentDirS = new File (this.workingDirS, this.subDirS[2]).getAbsolutePath();
             TagAligner ta = new TagAligner(referenceFileS, this.bwaPath, mergedTagAnnotationFileS, alignmentDirS);
             ta.setThreads(numThreads);
             System.out.println("Aligning tags is complemeted in " + String.format("%.4f", Benchmark.getTimeSpanHours(start)) + " hours");
+        }
+        else if (mode.equals("cs")) {
+            if (workingDirS == null) {
+                this.printIntroductionAndUsage();
+                System.exit(1); 
+                return;
+            }
+            System.out.println("Start calling SNPs...");
+            String tagLibraryDirS = new File (this.workingDirS, this.subDirS[1]).getAbsolutePath();
+            String tagAnnotationFileS = new File(tagLibraryDirS, "tag.tas").getAbsolutePath();
+            String alignmentDirS = new File (this.workingDirS, this.subDirS[2]).getAbsolutePath();
+            String rawSNPFileS = new File(tagLibraryDirS, "rawSNP.bin").getAbsolutePath();
+            String samFileS = new File (alignmentDirS, "tag.sam").getAbsolutePath();
+            TagAnnotations tas = new TagAnnotations(tagAnnotationFileS);
+            tas.removeAllSNP();
+            tas.callSNP(samFileS, this.minMappingQ, this.maxMappingLength, this.maxDivergence);
+            tas.writeBinaryFile(tagAnnotationFileS);
+            SNPCounts snpSCs = tas.getSNPCounts();
+            snpSCs.writeBinaryFile(rawSNPFileS);
+            System.out.println("Calling SNPs is complemeted in " + String.format("%.4f", Benchmark.getTimeSpanHours(start)) + " hours");
+        }
+        else if (mode.equals("ca")) {
+            if (workingDirS == null) {
+                this.printIntroductionAndUsage();
+                System.exit(1); 
+                return;
+            }
+            System.out.println("Start calling alleles...");
+            String tagLibraryDirS = new File (this.workingDirS, this.subDirS[1]).getAbsolutePath();
+            String tagAnnotationFileS = new File(tagLibraryDirS, "tag.tas").getAbsolutePath();
+            String alignmentDirS = new File (this.workingDirS, this.subDirS[2]).getAbsolutePath();
+            String rawSNPFileS = new File(tagLibraryDirS, "rawSNP.bin").getAbsolutePath();
+            String samFileS = new File (alignmentDirS, "tag.sam").getAbsolutePath();
+            TagAnnotations tas = new TagAnnotations(tagAnnotationFileS);
+            tas.removeAllAllele();
+            SNPCounts sc = new SNPCounts (rawSNPFileS);
+            tas.callAllele(samFileS, sc, this.minMappingQ, this.maxMappingLength);
+            tas.writeBinaryFile(tagAnnotationFileS);
+            System.out.println("Calling alleles is complemeted in " + String.format("%.4f", Benchmark.getTimeSpanHours(start)) + " hours");
+        }
+        else if (mode.equals("cg")) {
+            if (workingDirS == null) {
+                this.printIntroductionAndUsage();
+                System.exit(1); 
+                return;
+            }
+            System.out.println("Start calling genotypes...");
+            String tagBySampleDirS = new File (this.workingDirS, this.subDirS[0]).getAbsolutePath();
+            String tagLibraryDirS = new File (this.workingDirS, this.subDirS[1]).getAbsolutePath();
+            String tagAnnotationFileS = new File(tagLibraryDirS, "tag.tas").getAbsolutePath();
+            String rawSNPFileS = new File(tagLibraryDirS, "rawSNP.bin").getAbsolutePath();
+            String genotypeDirS = new File (this.workingDirS, this.subDirS[3]).getAbsolutePath();
+            TagAnnotations tas = new TagAnnotations(tagAnnotationFileS);
+            SNPCounts sc = new SNPCounts (rawSNPFileS);
+            GBSVCFBuilder builder = new GBSVCFBuilder(tas, sc);
+            builder.setThreads(numThreads);
+            builder.setTagIdentifyThreshold(tagIdentifyThreshold);
+            builder.callGenotype(tagBySampleDirS, genotypeDirS);
+            System.out.println("Calling alleles is complemeted in " + String.format("%.4f", Benchmark.getTimeSpanHours(start)) + " hours");
         }
         else {
             this.printIntroductionAndUsage();
@@ -141,6 +228,11 @@ public class GRTGo implements CLIInterface {
         options.addOption("t", true, "Number of threads. The default value is 32. The actual number of running threads is less than the number of cores regardless of the input value, but -1 means the number of all available cores");
         options.addOption("g", true, "The reference genome of the species. The indexing files should be included in the same directory of the reference genome.");
         options.addOption("bwa", true, "The path of bwa excutable file, e.g /Users/Software/bwa-0.7.15/bwa");
+        options.addOption("mc", true, "The minimum read count of tag in database. The default value is 3.");
+        options.addOption("mq", true, "The minimum read mapping quality for SNP calling and allele calling. The default value is 30.");
+        options.addOption("ml", true, "The maximum range of paired-end read mapping. The default value is 1000.");
+        options.addOption("md", true, "The maximum divergenece between a tag and the reference genome, which is a quality control in SNP calling. The default value is 5.");
+        options.addOption("it", true, "The tag identify threshold. While searching the tag DB, query tag having more mismatch than the value is not considered as a match. The default value is 1.");
     }
     
     @Override

@@ -124,7 +124,7 @@ public class TagFinder {
             for (int j = 0; j < size; j++) {
                 subIndexList.add(j+indices[i][0]);
             }
-            subIndexList.stream().forEach(currentIndex -> {
+            subIndexList.parallelStream().forEach(currentIndex -> {
                 TagAnnotation ta = taList.get(currentIndex);
                 TIntArrayList intSeqList = new TIntArrayList();
                 TIntArrayList indexList = new TIntArrayList();

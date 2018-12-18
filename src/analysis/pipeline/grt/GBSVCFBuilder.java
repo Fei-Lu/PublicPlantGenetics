@@ -35,14 +35,22 @@ import utils.Tuple;
 public class GBSVCFBuilder {
     TagAnnotations tas = null;
     SNPCounts sc = null;
-    int paraLevel = 32;
-    int maxDivergence = 5;
+    int numThreads = 32;
+    int identityThreshold = 1;
     int maxAltNumber = 2;
     double sequencingErrorRate = 0.05;
     
     public GBSVCFBuilder (TagAnnotations tas, SNPCounts sc) {
         this.tas = tas;
         this.sc = sc;
+    }
+    
+    public void setThreads (int numThreads) {
+        this.numThreads = numThreads;
+    }
+    
+    public void setTagIdentifyThreshold (int identityThreshold) {
+        this.identityThreshold = identityThreshold;
     }
     
     public void callGenotype (String tagBySampleDirS, String genotypeDirS) {
@@ -54,14 +62,14 @@ public class GBSVCFBuilder {
         String[] sampleNames = new String[sampleFiles.length];       
         for (int i = 0; i < sampleNames.length; i++) {
             sampleNames[i] = sampleFiles[i].getName().replaceAll(".tas$", "");
-            System.out.println(sampleNames[i]);
         }
-        int[][] indices = PArrayUtils.getSubsetsIndicesBySubsetSize(sampleFiles.length, this.paraLevel);
+        int[][] indices = PArrayUtils.getSubsetsIndicesBySubsetSize(sampleFiles.length, this.numThreads);
         List<File> sampleFileList = Arrays.asList(sampleFiles);
         TagFinder tf = new TagFinder(tas);
+        System.out.println("\nStart calling genotype of each individual sample...");
         for (int i = 0; i < indices.length; i++) {
             List<File> subFList = sampleFileList.subList(indices[i][0], indices[i][1]);
-            subFList.stream().forEach(f -> {
+            subFList.parallelStream().forEach(f -> {
                 String tempFileS = new File(tempDir, f.getName().replaceAll(".tas", ".gen")).getAbsolutePath();
                 AlleleDepth[][] adt = this.initializeADTable();
                 TagAnnotations ata = new TagAnnotations(f.getAbsolutePath());
@@ -71,7 +79,7 @@ public class GBSVCFBuilder {
                         int readDepth = ata.getReadNumber(j, k);
                         byte r1Length = ata.getR1TagLength(j, k);
                         byte r2Length = ata.getR1TagLength(j, k);
-                        Tuple<int[], int[]> result = tf.getMostSimilarTags(tag, r1Length, r2Length, j, maxDivergence);
+                        Tuple<int[], int[]> result = tf.getMostSimilarTags(tag, r1Length, r2Length, j, identityThreshold);
                         if (result == null) continue;
                         int[] divergence = result.getFirstElement();
                         int[] tagIndices = result.getSecondElement();
@@ -96,10 +104,15 @@ public class GBSVCFBuilder {
                 this.writeTempGenotype(tempFileS, adt);
             });
         }
+        System.out.println();
         this.writeGenotype(tempDir, sampleNames, genotypeDirS);
+        File[] tempfs = tempDir.listFiles();
+        for (int i = 0; i < tempfs.length; i++) tempfs[i].delete();
+        tempDir.delete();
     }
-    
+
     private void writeGenotype (File tempDir, String[] sampleNames, String genotypeDirS) {
+        System.out.println("Start merging individual genotype into VCF by chromosomes");
         File genoDir = new File(genotypeDirS, "genotype");
         genoDir.mkdir();
         Arrays.sort(sampleNames);
@@ -195,6 +208,7 @@ public class GBSVCFBuilder {
         catch (Exception e) {
             e.printStackTrace();
         }
+        System.out.println("VCF genotype is output to " + genotypeDirS);
     }
     
     private void writeTempGenotype (String tempFileS, AlleleDepth[][] adt) {

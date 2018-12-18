@@ -217,7 +217,7 @@ public class TagParser {
                 String taxonName = f.getName().replaceFirst(".tp", "");
                 String oufileS = new File (tagBySampleDirS, taxonName+".tas").getAbsolutePath();
                 TagAnnotations ta = new TagAnnotations (f.getAbsolutePath());
-                ta.collapseCounts();
+                ta.collapseCounts(1);
                 ta.writeBinaryFile(oufileS);
                 //ta.writeTextFile(oufileS);
                 f.delete();

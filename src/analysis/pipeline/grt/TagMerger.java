@@ -17,7 +17,14 @@ class TagMerger {
     String inputDirS = null;
     String outputFileS = null;
     int collapseThreshold = (int)(Integer.MAX_VALUE * 0.75);
+    int minReadCount = 3;
+    
     public TagMerger (String inputDirS, String outputFileS) {
+        this.mergeTagAnnotations(inputDirS, outputFileS);
+    }
+    
+    public TagMerger (String inputDirS, String outputFileS, int minReadCount) {
+        this.minReadCount = minReadCount;
         this.mergeTagAnnotations(inputDirS, outputFileS);
     }
     
@@ -36,11 +43,11 @@ class TagMerger {
             cnt++;
             if (cnt%100 == 0) System.out.println(String.valueOf(cnt) + " TagAnnotations files have been merged");
             if (ta.getMaxTagNumberAcrossGroups() < collapseThreshold) continue;
-            ta.collapseCounts();
+            ta.collapseCounts(minReadCount);
             ifCollapsed = true;
         }
         if (!ifCollapsed) {
-            ta.collapseCounts();
+            ta.collapseCounts(minReadCount);
         }
         System.out.println("A total of " + String.valueOf(fs.length) + " TagAnnotations files are merged");
         System.out.println(String.valueOf(ta.getTagNumber()) + " tags are devided into " + String.valueOf(ta.getGroupNumber()) + " tag groups");

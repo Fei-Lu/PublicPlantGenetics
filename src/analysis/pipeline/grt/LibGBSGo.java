@@ -30,7 +30,7 @@ public class LibGBSGo {
     
     public LibGBSGo (String parameterFileS) {
         this.initializeParameter(parameterFileS);
-        this.mkTagsBySample();
+        //this.mkTagsBySample();
         //this.mergeTagAnnotations();
         //this.alignTags();
         //this.callSNP();
@@ -47,6 +47,7 @@ public class LibGBSGo {
         TagAnnotations tas = new TagAnnotations(tagAnnotationFileS);
         SNPCounts sc = new SNPCounts (rawSNPFileS);
         GBSVCFBuilder builder = new GBSVCFBuilder(tas, sc);
+        builder.setTagIdentifyThreshold(1);
         builder.callGenotype(tagBySampleDirS, genotypeDirS);
     }
     
@@ -74,8 +75,9 @@ public class LibGBSGo {
         
         int mapQThresh = 30;
         int maxMappingIntervalThresh = 1000;
+        int maxDivergence = 5;
         TagAnnotations tas = new TagAnnotations(tagAnnotationFileS);
-        tas.callSNP(samFileS, mapQThresh, maxMappingIntervalThresh);
+        tas.callSNP(samFileS, mapQThresh, maxMappingIntervalThresh, maxDivergence);
         tas.writeBinaryFile(tagAnnotationFileS);
 //        tas.writeTextFile(new File(tagLibraryDirS, "tag.tas.txt").getAbsolutePath());
         SNPCounts snpSCs = tas.getSNPCounts();
@@ -93,7 +95,7 @@ public class LibGBSGo {
         String tagBySampleDirS = new File (this.workingDirS, this.subDirS[0]).getAbsolutePath();
         String tagLibraryDirS = new File (this.workingDirS, this.subDirS[1]).getAbsolutePath();
         String mergedTagCountFileS = new File(tagLibraryDirS, "tag.tas").getAbsolutePath();
-        new TagMerger(tagBySampleDirS, mergedTagCountFileS);
+        new TagMerger(tagBySampleDirS, mergedTagCountFileS, 1);
     }
     
     public void mkTagsBySample () {
