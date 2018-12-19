@@ -114,6 +114,8 @@ public class GBSVCFBuilder {
     private void writeGenotype (File tempDir, String[] sampleNames, String genotypeDirS) {
         System.out.println("Start merging individual genotype into VCF by chromosomes");
         File genoDir = new File(genotypeDirS, "genotype");
+        File[] fs = genoDir.listFiles();
+        for (int i = 0; i < fs.length; i++) fs[i].delete();
         genoDir.mkdir();
         Arrays.sort(sampleNames);
         int chrNumber = sc.getChromosomeNumber();

@@ -297,6 +297,7 @@ public class SAMUtils {
         Tuple<TByteArrayList, TIntArrayList> cigarOPPosIndex = getCigarOPAndPosIndex(cigar);
         int endPos = getEndPos (cigar, cigarOPPosIndex, startPos);
         int chrIndex = sc.getChrIndex(chr);
+        if (chrIndex < 0) return null;
         int sIndex = sc.getSNPIndex(chrIndex, startPos);
         int eIndex = sc.getSNPIndex(chrIndex, endPos);
         if (sIndex == eIndex) return null;

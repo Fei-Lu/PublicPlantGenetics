@@ -35,7 +35,7 @@ public class LibGBSGo {
         //this.alignTags();
         //this.callSNP();
         //this.callAllele();
-        //this.buildVCF();
+        this.buildVCF();
     }
     
     public void buildVCF () {
@@ -95,7 +95,7 @@ public class LibGBSGo {
         String tagBySampleDirS = new File (this.workingDirS, this.subDirS[0]).getAbsolutePath();
         String tagLibraryDirS = new File (this.workingDirS, this.subDirS[1]).getAbsolutePath();
         String mergedTagCountFileS = new File(tagLibraryDirS, "tag.tas").getAbsolutePath();
-        new TagMerger(tagBySampleDirS, mergedTagCountFileS, 1);
+        new TagMerger(tagBySampleDirS, mergedTagCountFileS, 3);
     }
     
     public void mkTagsBySample () {

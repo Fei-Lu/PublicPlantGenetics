@@ -23,8 +23,9 @@ import utils.Tuple;
 public class TagFinder {
     int paraLevel = 32;
     TagAnnotations tas = null;
-    GroupIntSeqFinder[] gsfs = null;
+    GroupTagFinder[] gtfs = null;
     int ceaseSearchingSize = 3;
+    int maxQueryExistance = 1000;
     
     public TagFinder (TagAnnotations tas) {
         this.tas = tas;
@@ -38,7 +39,7 @@ public class TagFinder {
         int minSize = Integer.MAX_VALUE;
         boolean ifCease = false;
         for (int i = 0; i < r1IntSeqList.size(); i++) {
-            int[] currentSE = gsfs[groupIndex].getStartEndIndex(r1IntSeqList.get(i));
+            int[] currentSE = gtfs[groupIndex].getStartEndIndex(r1IntSeqList.get(i));
             if (currentSE == null) continue;
             else {
                 int currentSize = currentSE[1] - currentSE[0];
@@ -54,7 +55,7 @@ public class TagFinder {
         }
         if (!ifCease) {
             for (int i = 0; i < r2IntSeqList.size(); i++) {
-                int[] currentSE = gsfs[groupIndex].getStartEndIndex(r2IntSeqList.get(i));
+                int[] currentSE = gtfs[groupIndex].getStartEndIndex(r2IntSeqList.get(i));
                 if (currentSE == null) continue;
                 else {
                     int currentSize = currentSE[1] - currentSE[0];
@@ -69,10 +70,11 @@ public class TagFinder {
                 }
             }
         }
+        if (startEndIndex == null) return null;
         TIntArrayList mismatchList = new TIntArrayList();
         TIntArrayList tagIndicesList = new TIntArrayList();
         for (int i = startEndIndex[0]; i < startEndIndex[1]; i++) {
-            int dbTagIndex = gsfs[groupIndex].getTagIndex(i);
+            int dbTagIndex = gtfs[groupIndex].getTagIndex(i);
             long[] dbTag = tas.getTag(groupIndex, dbTagIndex);
             int currentMismatch = 0;
             boolean toContinue = false;
@@ -89,6 +91,7 @@ public class TagFinder {
             mismatchList.add(currentMismatch);
             tagIndicesList.add(dbTagIndex);
         }
+        if (mismatchList.isEmpty()) return null;
         int[] mismatch = mismatchList.toArray();
         int[] tagIndices = tagIndicesList.toArray();
         Tuple<int[], int[]> t = new Tuple<>(mismatch, tagIndices);
@@ -115,7 +118,7 @@ public class TagFinder {
     private void initialize (TagAnnotations tas) {
         System.out.println("Start building TagFinder from TagAnnotations");
         int groupNumber  = tas.getGroupNumber();
-        gsfs = new GroupIntSeqFinder[groupNumber];
+        gtfs = new GroupTagFinder[groupNumber];
         List<TagAnnotation> taList = tas.taList;
         int[][] indices = PArrayUtils.getSubsetsIndicesBySubsetSize(taList.size(), this.paraLevel);
         for (int i = 0; i < indices.length; i++) {
@@ -126,7 +129,7 @@ public class TagFinder {
             }
             subIndexList.parallelStream().forEach(currentIndex -> {
                 TagAnnotation ta = taList.get(currentIndex);
-                TIntArrayList intSeqList = new TIntArrayList();
+                TIntArrayList intQueryList = new TIntArrayList();
                 TIntArrayList indexList = new TIntArrayList();
                 int tagNumber  = ta.getTagNumber();
                 for (int j = 0; j < tagNumber; j++) {
@@ -134,11 +137,11 @@ public class TagFinder {
                     byte r1Length = ta.getR1TagLength(j);
                     byte r2Length = ta.getR2TagLength(j);
                     TIntArrayList tagInt = this.getIntSeq(tag, r1Length, r2Length);                    
-                    intSeqList.addAll(tagInt);
+                    intQueryList.addAll(tagInt);
                     for (int k = 0; k < tagInt.size(); k++) indexList.add(j);
                 }
-                GroupIntSeqFinder gsf = new GroupIntSeqFinder(intSeqList, indexList);
-                gsfs[currentIndex] = gsf;
+                GroupTagFinder gsf = new GroupTagFinder(intQueryList, indexList, this.maxQueryExistance);
+                gtfs[currentIndex] = gsf;
             });
         }
         System.out.println("Finish building TagFinder");
@@ -179,14 +182,47 @@ public class TagFinder {
     }
 }
 
-class GroupIntSeqFinder {
-    int[] intSeq;
+class GroupTagFinder {
+    int[] intQuery;
     int[] tagIndices;
     
-    public GroupIntSeqFinder (TIntArrayList intSeqList, TIntArrayList indexList) {
-        this.intSeq = intSeqList.toArray();
+    public GroupTagFinder (TIntArrayList intQueryList, TIntArrayList indexList, int maxQueryExistence) {
+        this.intQuery = intQueryList.toArray();
         this.tagIndices = indexList.toArray();
         this.sort();
+        this.removeDuplicatedQuery(maxQueryExistence);
+    }
+    
+    public void removeDuplicatedQuery (int maxQueryExistence) {
+        if (intQuery.length == 0) return;
+        TIntArrayList intQueryList = new TIntArrayList(intQuery);
+        TIntArrayList indexList = new TIntArrayList(tagIndices);
+        int cnt = 0;
+        int currentIndex = 0;
+        int query = intQueryList.get(0);
+        for (int i = 0; i < intQueryList.size(); i++) {
+            if (intQueryList.get(i) == query) {
+                cnt++;
+            }
+            else {
+                query = intQueryList.get(i);
+                cnt = 1;
+                if (cnt > maxQueryExistence) {
+                    intQueryList.remove(currentIndex, cnt);
+                    indexList.remove(currentIndex, cnt);
+                    i = currentIndex-1;
+                }
+                else {
+                    currentIndex = i;
+                }
+            }
+        }
+        if (cnt > maxQueryExistence) {
+            intQueryList.remove(currentIndex, cnt);
+            indexList.remove(currentIndex, cnt);
+        }
+        intQuery = intQueryList.toArray();
+        tagIndices = indexList.toArray();
     }
     
     public int getTagIndex (int intSeqIndex) {
@@ -200,37 +236,37 @@ class GroupIntSeqFinder {
         startEnd[0] = index;//inclusive
         startEnd[1] = index+1;//exclusive
         for (int i = index-1; i > -1; i--) {
-            if (intSeq[i] == seq) {
+            if (intQuery[i] == seq) {
                 startEnd[0] = i;
             }
             else break;
         }
-        for (int i = index+1; i < intSeq.length; i++) {
+        for (int i = index+1; i < intQuery.length; i++) {
             startEnd[1] = i;
-            if (intSeq[i] != seq) {
+            if (intQuery[i] != seq) {
                 break;
             }
             else {
-                if (i == intSeq.length-1) startEnd[1] = intSeq.length;
+                if (i == intQuery.length-1) startEnd[1] = intQuery.length;
             }
         }
         return startEnd;
     }
     
     public int binarySearch (int seq) {
-        return Arrays.binarySearch(intSeq, seq);
+        return Arrays.binarySearch(intQuery, seq);
     }
     
     public void sort () {
-        GenericSorting.quickSort(0, intSeq.length, comp, swapper);
+        GenericSorting.quickSort(0, intQuery.length, comp, swapper);
     }
     
     Swapper swapper = new Swapper() {
         @Override
         public void swap(int index1, int index2) {
-            int temp = intSeq[index1];
-            intSeq[index1] = intSeq[index2];
-            intSeq[index2] = temp;
+            int temp = intQuery[index1];
+            intQuery[index1] = intQuery[index2];
+            intQuery[index2] = temp;
             temp = tagIndices[index1];
             tagIndices[index1] = tagIndices[index2];
             tagIndices[index2] = temp;
@@ -240,8 +276,8 @@ class GroupIntSeqFinder {
     IntComparator comp = new IntComparator() {
         @Override
         public int compare(int index1, int index2) {
-            if (intSeq[index1] < intSeq[index2]) return -1;
-            else if (intSeq[index1] > intSeq[index2]) return 1;
+            if (intQuery[index1] < intQuery[index2]) return -1;
+            else if (intQuery[index1] > intQuery[index2]) return 1;
             else {
                 if (tagIndices[index1] < tagIndices[index2]) return -1;
                 else if (tagIndices[index1] > tagIndices[index2]) return 1;
