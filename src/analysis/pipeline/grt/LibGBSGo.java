@@ -33,8 +33,8 @@ public class LibGBSGo {
         //this.mkTagsBySample();
         //this.mergeTagAnnotations();
         //this.alignTags();
-        //this.callSNP();
-        //this.callAllele();
+        this.callSNP();
+        this.callAllele();
         this.buildVCF();
     }
     
@@ -56,7 +56,7 @@ public class LibGBSGo {
         String tagAnnotationFileS = new File(tagLibraryDirS, "tag.tas").getAbsolutePath();
         String alignmentDirS = new File (this.workingDirS, this.subDirS[2]).getAbsolutePath();
         String rawSNPFileS = new File(tagLibraryDirS, "rawSNP.bin").getAbsolutePath();
-        String samFileS = new File (alignmentDirS, "tag.sam").getAbsolutePath();
+        String samFileS = new File (alignmentDirS, "tag.sam.gz").getAbsolutePath();
         TagAnnotations tas = new TagAnnotations(tagAnnotationFileS);
         SNPCounts sc = new SNPCounts (rawSNPFileS);
         int mapQThresh = 30;
@@ -71,7 +71,7 @@ public class LibGBSGo {
         String tagAnnotationFileS = new File(tagLibraryDirS, "tag.tas").getAbsolutePath();
         String alignmentDirS = new File (this.workingDirS, this.subDirS[2]).getAbsolutePath();
         String rawSNPFileS = new File(tagLibraryDirS, "rawSNP.bin").getAbsolutePath();
-        String samFileS = new File (alignmentDirS, "tag.sam").getAbsolutePath();
+        String samFileS = new File (alignmentDirS, "tag.sam.gz").getAbsolutePath();
         
         int mapQThresh = 30;
         int maxMappingIntervalThresh = 1000;

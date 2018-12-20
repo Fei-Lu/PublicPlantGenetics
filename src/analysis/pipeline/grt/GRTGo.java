@@ -152,7 +152,7 @@ public class GRTGo implements CLIInterface {
             String tagAnnotationFileS = new File(tagLibraryDirS, "tag.tas").getAbsolutePath();
             String alignmentDirS = new File (this.workingDirS, this.subDirS[2]).getAbsolutePath();
             String rawSNPFileS = new File(tagLibraryDirS, "rawSNP.bin").getAbsolutePath();
-            String samFileS = new File (alignmentDirS, "tag.sam").getAbsolutePath();
+            String samFileS = new File (alignmentDirS, "tag.sam.gz").getAbsolutePath();
             TagAnnotations tas = new TagAnnotations(tagAnnotationFileS);
             tas.removeAllSNP();
             tas.callSNP(samFileS, this.minMappingQ, this.maxMappingLength, this.maxDivergence);
@@ -172,7 +172,7 @@ public class GRTGo implements CLIInterface {
             String tagAnnotationFileS = new File(tagLibraryDirS, "tag.tas").getAbsolutePath();
             String alignmentDirS = new File (this.workingDirS, this.subDirS[2]).getAbsolutePath();
             String rawSNPFileS = new File(tagLibraryDirS, "rawSNP.bin").getAbsolutePath();
-            String samFileS = new File (alignmentDirS, "tag.sam").getAbsolutePath();
+            String samFileS = new File (alignmentDirS, "tag.sam.gz").getAbsolutePath();
             TagAnnotations tas = new TagAnnotations(tagAnnotationFileS);
             tas.removeAllAllele();
             SNPCounts sc = new SNPCounts (rawSNPFileS);

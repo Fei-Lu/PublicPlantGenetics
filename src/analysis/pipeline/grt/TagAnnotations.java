@@ -283,7 +283,7 @@ public class TagAnnotations {
     public void callAllele (String samFileS, SNPCounts sc, int mapQThresh, int maxMappingIntervalThresh) {
         System.out.println("Start adding alleles to DB");
         try {
-            BufferedReader br = IOUtils.getTextReader(samFileS);
+            BufferedReader br = IOUtils.getTextGzipReader(samFileS);
             String temp = null;
             while ((temp = br.readLine()).startsWith("@SQ")){}
             int queryCount = 0;
@@ -340,7 +340,7 @@ public class TagAnnotations {
         System.out.println("Start adding raw SNPs to DB");
         maxDivergence++;
         try {
-            BufferedReader br = IOUtils.getTextReader(samFileS);
+            BufferedReader br = IOUtils.getTextGzipReader(samFileS);
             String temp = null;
             while ((temp = br.readLine()).startsWith("@SQ")){}
             int queryCount = 0;

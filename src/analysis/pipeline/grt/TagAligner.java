@@ -38,9 +38,9 @@ class TagAligner {
     }
     
     public void bwaAlign () {
-        r1FastqFileS = new File (alignmentDirS, "tag_r1.fq").getAbsolutePath();
-        r2FastqFileS = new File (alignmentDirS, "tag_r2.fq").getAbsolutePath();
-        samFileS = new File (alignmentDirS, "tag.sam").getAbsolutePath();
+        r1FastqFileS = new File (alignmentDirS, "tag_r1.fq.gz").getAbsolutePath();
+        r2FastqFileS = new File (alignmentDirS, "tag_r2.fq.gz").getAbsolutePath();
+        samFileS = new File (alignmentDirS, "tag.sam.gz").getAbsolutePath();
         String perlFileS = new File (alignmentDirS, "runBWA.pl").getAbsolutePath();
         TagAnnotations tc = new TagAnnotations(mergedTagCountFileS);
         tc.writeFastqFile(r1FastqFileS, r2FastqFileS);
@@ -49,7 +49,7 @@ class TagAligner {
             int nThreads = Runtime.getRuntime().availableProcessors();
             if (nThreads > this.numThreads) nThreads = this.numThreads;
             sb.append(bwaPath).append(" mem -t ").append(nThreads).append(" ").append(this.referenceFileS).append(" ")
-                    .append(r1FastqFileS).append(" ").append(r2FastqFileS).append(" > ").append(samFileS);      
+                    .append(r1FastqFileS).append(" ").append(r2FastqFileS).append(" | gzip > ").append(samFileS);      
             String cmd = sb.toString();
             System.out.println(cmd);
             try {
