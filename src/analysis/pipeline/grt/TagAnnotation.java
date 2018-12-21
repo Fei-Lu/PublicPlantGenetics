@@ -239,17 +239,37 @@ public class TagAnnotation implements Swapper, IntComparator {
                 }
             }
         }
+        List<long[]> aTagList = new ArrayList<>();
+        TByteArrayList aR1LenList = new TByteArrayList();
+        TByteArrayList aR2LenList = new TByteArrayList();
+        TIntArrayList aReadCountList = new TIntArrayList();
+        List<List<SNP>> aSNPList = new ArrayList<>();
+        List<List<ChrPos>> aAllelePosList = new ArrayList<>();
+        List<TByteArrayList> aAlleleList = new ArrayList<>();
         for (int i = 0; i < this.getTagNumber(); i++) {
-            if (!(readCountList.get(i) < minReadCount)) continue;
-            tagList.remove(i);
-            r1LenList.removeAt(i);
-            r2LenList.removeAt(i);
-            readCountList.removeAt(i);
-            this.SNPList.remove(i);
-            this.allelePosList.remove(i);
-            this.alleleList.remove(i);
-            i--;
+            if (readCountList.get(i) < minReadCount) continue;
+            aTagList.add(tagList.get(i));
+            aR1LenList.add(r1LenList.get(i));
+            aR2LenList.add(r2LenList.get(i));
+            aReadCountList.add(readCountList.get(i));
+            aSNPList.add(SNPList.get(i));
+            aAllelePosList.add(allelePosList.get(i));
+            aAlleleList.add(alleleList.get(i));
         }
+        tagList = aTagList;
+        r1LenList = aR1LenList;
+        r2LenList = aR2LenList;
+        readCountList = aReadCountList;
+        SNPList = aSNPList;
+        allelePosList = aAllelePosList;
+        alleleList = aAlleleList;
+        aTagList = null;
+        aR1LenList = null;
+        aR2LenList = null;
+        aReadCountList = null;
+        aSNPList = null;
+        aAllelePosList = null;
+        aAlleleList = null;
         return collapsedRows;
     }
 }

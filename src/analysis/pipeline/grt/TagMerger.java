@@ -7,6 +7,7 @@ package analysis.pipeline.grt;
 
 import java.io.File;
 import java.util.Arrays;
+import utils.Benchmark;
 import utils.IOUtils;
 
 /**
@@ -41,7 +42,11 @@ class TagMerger {
             TagAnnotations ata = new TagAnnotations(fs[i].getAbsolutePath());
             ta.addTagAnnotations(ata);
             cnt++;
-            if (cnt%100 == 0) System.out.println(String.valueOf(cnt) + " TagAnnotations files have been merged");
+            if (cnt%100 == 0) {
+                ta.collapseCounts(1);
+                System.out.println(String.valueOf(cnt) + " TagAnnotations files have been merged");
+                System.out.println("Memory used: " + String.format("%.4f", Benchmark.getUsedMemoryGb()) + " Gb\n");
+            }
             if (ta.getMaxTagNumberAcrossGroups() < collapseThreshold) continue;
             ta.collapseCounts(minReadCount);
             ifCollapsed = true;

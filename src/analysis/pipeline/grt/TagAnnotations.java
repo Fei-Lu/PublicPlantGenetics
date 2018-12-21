@@ -15,6 +15,7 @@ import java.io.BufferedWriter;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
+import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -548,13 +549,22 @@ public class TagAnnotations {
     }
     
     public void collapseCounts (int minReadCount) {
-        System.out.println("Start collapsing read counts of TagAnnotations");
+        System.out.println("Start collapsing read counts of TagAnnotations with "+this.getTagNumber()+" tags.");
         AtomicInteger acnt = new AtomicInteger();
+        AtomicInteger gcnt = new AtomicInteger();
+        AtomicInteger pcnt = new AtomicInteger();
         if (this.isSorted() == false) this.sort();
+        NumberFormat defaultFormat = NumberFormat.getPercentInstance();
+        defaultFormat.setMinimumFractionDigits(1);
+	int step = (int)(this.getGroupNumber()*0.2);
         taList.parallelStream().forEach(ta -> {
             int cnt = ta.collapseCounts(minReadCount);
             acnt.addAndGet(cnt);
+            int count = gcnt.addAndGet(1);            
+            if (count%step == 0) {
+                System.out.println("Colapsed " + defaultFormat.format(0.1*pcnt.addAndGet(2)));
+            }
         });     
-        System.out.println("Tag rows collapsed after sorting: " + acnt.get());
+        System.out.println("Collapsing tags complected. Tag rows collapsed after sorting: " + acnt.get());
     }
 }
