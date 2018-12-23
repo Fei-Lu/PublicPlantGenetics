@@ -200,6 +200,14 @@ public class GRTGo implements CLIInterface {
             builder.callGenotype(tagBySampleDirS, genotypeDirS);
             System.out.println("Calling alleles is complemeted in " + String.format("%.4f", Benchmark.getTimeSpanHours(start)) + " hours");
         }
+        else if (mode.equals("ud")) {
+            System.out.println("Start calling genotypes...");
+            String tagBySampleDirS = new File (this.workingDirS, this.subDirS[0]).getAbsolutePath();
+            String tagLibraryDirS = new File (this.workingDirS, this.subDirS[1]).getAbsolutePath();
+            String tagAnnotationFileS = new File(tagLibraryDirS, "tag.tas").getAbsolutePath();
+            String rawSNPFileS = new File(tagLibraryDirS, "rawSNP.bin").getAbsolutePath();
+            String genotypeDirS = new File (this.workingDirS, this.subDirS[3]).getAbsolutePath();
+        }
         else {
             this.printIntroductionAndUsage();
             System.exit(1); 
