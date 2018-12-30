@@ -201,12 +201,12 @@ public class GRTGo implements CLIInterface {
             System.out.println("Calling alleles is complemeted in " + String.format("%.4f", Benchmark.getTimeSpanHours(start)) + " hours");
         }
         else if (mode.equals("ud")) {
-            System.out.println("Start calling genotypes...");
-            String tagBySampleDirS = new File (this.workingDirS, this.subDirS[0]).getAbsolutePath();
+            System.out.println("Start updating database with filtered genotype");
             String tagLibraryDirS = new File (this.workingDirS, this.subDirS[1]).getAbsolutePath();
-            String tagAnnotationFileS = new File(tagLibraryDirS, "tag.tas").getAbsolutePath();
-            String rawSNPFileS = new File(tagLibraryDirS, "rawSNP.bin").getAbsolutePath();
-            String genotypeDirS = new File (this.workingDirS, this.subDirS[3]).getAbsolutePath();
+            String oldAnnotationFileS = new File(tagLibraryDirS, "tag.tas").getAbsolutePath();
+            String filteredGenotypeDirS = new File (this.workingDirS, this.subDirS[4]).getAbsolutePath();
+            String newAnnotationFileS = new File(tagLibraryDirS, "tag.filtered.tas").getAbsolutePath();
+            TagAnnotations tas = new TagAnnotations(oldAnnotationFileS);
         }
         else {
             this.printIntroductionAndUsage();

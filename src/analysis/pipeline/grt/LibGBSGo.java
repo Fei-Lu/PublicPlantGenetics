@@ -30,12 +30,12 @@ public class LibGBSGo {
     
     public LibGBSGo (String parameterFileS) {
         this.initializeParameter(parameterFileS);
-        //this.mkTagsBySample();
-        //this.mergeTagAnnotations();
-        //this.alignTags();
-        this.callSNP();
+//        this.mkTagsBySample();
+//        this.mergeTagAnnotations();
+//        this.alignTags();
+        //this.callSNP();
         this.callAllele();
-        this.buildVCF();
+        //this.buildVCF();
     }
     
     public void buildVCF () {
@@ -95,7 +95,7 @@ public class LibGBSGo {
         String tagBySampleDirS = new File (this.workingDirS, this.subDirS[0]).getAbsolutePath();
         String tagLibraryDirS = new File (this.workingDirS, this.subDirS[1]).getAbsolutePath();
         String mergedTagCountFileS = new File(tagLibraryDirS, "tag.tas").getAbsolutePath();
-        new TagMerger(tagBySampleDirS, mergedTagCountFileS, 3);
+        new TagMerger(tagBySampleDirS, mergedTagCountFileS, 1);
     }
     
     public void mkTagsBySample () {

@@ -12,6 +12,8 @@ import cern.colt.function.IntComparator;
 /**
  *
  * @author feilu
+ * @param <T>
+ * @param <S>
  */
 public class Tuple<T, S> {
     T first = null;

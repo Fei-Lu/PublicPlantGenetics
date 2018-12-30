@@ -14,6 +14,7 @@ import java.util.Collections;
 import java.util.List;
 import utils.PStringUtils;
 import utils.Tuple;
+import utils.Tuple3;
 
 /**
  *
@@ -284,6 +285,207 @@ public class SAMUtils {
     public static List<SNP> getVariants (String inputStr, int mapQThresh) {
         List<String> l = PStringUtils.fastSplit(inputStr);
         return getVariants(l, mapQThresh);
+    }
+    
+    public static Tuple3 <List<ChrPos>, TByteArrayList, TByteArrayList> getAllelesWithSubstitutionPos (List<String> l, int mapQThresh, SNPCounts sc) {
+        List<ChrPos> allelePosList = new ArrayList();
+        TByteArrayList alleleList = new TByteArrayList();
+        TByteArrayList alleleRelaPosList = new TByteArrayList();
+        String cigar = l.get(5);
+        if (cigar.startsWith("*")) return null;
+        if (Integer.parseInt(l.get(4)) < mapQThresh) return null;
+        short chr = (short)Integer.parseInt(l.get(2));
+        int startPos = Integer.parseInt(l.get(3));
+        Tuple<TByteArrayList, TIntArrayList> cigarOPPosIndex = getCigarOPAndPosIndex(cigar);
+        int endPos = getEndPos (cigar, cigarOPPosIndex, startPos);
+        int chrIndex = sc.getChrIndex(chr);
+        if (chrIndex < 0) return null;
+        int sIndex = sc.getSNPIndex(chrIndex, startPos);
+        int eIndex = sc.getSNPIndex(chrIndex, endPos);
+        if (sIndex == eIndex) return null;
+        if (sIndex < 0) {
+            sIndex = -sIndex-1;
+            if (sIndex == sc.getSNPNumberOnChromosome(chrIndex)) return null;
+        }
+        if (eIndex < 0) {
+            eIndex = -eIndex-1;
+            if (eIndex == 0) return null;
+        }
+        else {
+            eIndex++;
+        }
+//*****copy from getVariants method,  to avoid build cigarOPPosIndex twice, with some changes******        
+        String seq = l.get(9);
+        String md = l.get(12).split(":")[2];
+        int seqLength = seq.length();
+        boolean ifMinus = SAMUtils.isReverseAligned(Integer.parseInt(l.get(1)));
+        TByteArrayList opList = cigarOPPosIndex.getFirstElement();
+        TIntArrayList posIndexList = cigarOPPosIndex.getSecondElement();
+        int frontLength = 0;
+        int backLength = 0;
+        if (opList.get(0) == 83) {//S
+            int length = Integer.parseInt(cigar.substring(0, posIndexList.get(0)));
+            frontLength = length;
+            seq = seq.substring(length);
+            cigar = cigar.substring(posIndexList.get(0)+1);
+            if (opList.get(opList.size()-1) == 83 || opList.get(opList.size()-1) == 72) {
+                cigarOPPosIndex = getCigarOPAndPosIndex(cigar);
+                opList = cigarOPPosIndex.getFirstElement();
+                posIndexList = cigarOPPosIndex.getSecondElement();
+            }
+        }
+        else if (opList.get(0) == 72) {//H
+            int length = Integer.parseInt(cigar.substring(0, posIndexList.get(0)));
+            frontLength = length;
+            cigar = cigar.substring(posIndexList.get(0)+1);
+            if (opList.get(opList.size()-1) == 83 || opList.get(opList.size()-1) == 72) {
+                cigarOPPosIndex = getCigarOPAndPosIndex(cigar);
+                opList = cigarOPPosIndex.getFirstElement();
+                posIndexList = cigarOPPosIndex.getSecondElement();
+            }
+        }
+        if (opList.get(opList.size()-1) == 83) {//S
+            int length = Integer.parseInt(cigar.substring(posIndexList.get(opList.size()-2)+1, posIndexList.get(opList.size()-1)));
+            backLength = length;
+            seq = seq.substring(0, seq.length()-length);
+            cigar = cigar.substring(0, posIndexList.get(opList.size()-2)+1);
+        }
+        else if (opList.get(opList.size()-1) == 72) {//H
+            int length = Integer.parseInt(cigar.substring(posIndexList.get(opList.size()-2)+1, posIndexList.get(opList.size()-1)));
+            backLength = length;
+            cigar = cigar.substring(0, posIndexList.get(opList.size()-2)+1);
+        }
+        List<SNP> snpList = new ArrayList();
+        int currentPos = startPos-1;
+        int currentAltPos = 0;
+        
+        TIntArrayList insertionPosList = new TIntArrayList();
+        TIntArrayList insertionLengthList = new TIntArrayList();
+        
+        if (opList.contains((byte)73)) {//I 18M1I31M1D46M
+            for (int i = 0; i < cigar.length(); i++) {
+                char c = cigar.charAt(i);
+                if (Character.isDigit(c)) {
+                    int j;
+                    for (j = i + 1; j < cigar.length(); j++) {
+                        if (!Character.isDigit(cigar.charAt(j))) {
+                            break;
+                        }
+                    }
+                    int length = Integer.parseInt(cigar.substring(i, j));
+                    char cop = cigar.charAt(j);
+                    if (cop == 'I') {
+                        char alt = 'I';
+                        char ref = seq.charAt(currentAltPos-1);
+                        alleleRelaPosList.add((byte)(currentAltPos+frontLength)); 
+                        snpList.add(new SNP(chr, currentPos, ref, alt));
+                        StringBuilder sb = new StringBuilder(seq);
+                        sb.delete(currentAltPos, currentAltPos+length);
+                        seq = sb.toString();
+                        insertionPosList.add(currentAltPos);
+                        insertionLengthList.add(length);
+                    }
+                    else if (cop == 'D' || cop == 'N') {
+                        currentPos += length;
+                    }
+                    else { //M,=,X
+                        currentPos += length;
+                        currentAltPos+=length;
+                    }
+                    i = j-1;
+                }
+                else  {
+                    //do nothing
+                }
+            }
+        }
+        currentPos = startPos-1;
+        currentAltPos = 0;
+        for (int i = 0; i < md.length(); i++) {
+            char c = md.charAt(i);
+            if (Character.isDigit(c)) {
+                int j;
+                for (j = i + 1; j < md.length(); j++) {
+                    if (!Character.isDigit(md.charAt(j))) {
+                        break;
+                    }
+                }
+                int length = Integer.parseInt(md.substring(i, j));
+                currentPos += length;
+                currentAltPos += length;
+                i = j-1;
+            }
+            else if (Character.isLetter(c)){
+                currentPos++;
+                currentAltPos++;
+                char alt = seq.charAt(currentAltPos-1);
+                snpList.add(new SNP(chr, currentPos, c, alt));
+                int index = insertionPosList.binarySearch(currentAltPos);
+                if (index > -2) {
+                    alleleRelaPosList.add((byte)(currentAltPos+frontLength));
+                }
+                else {
+                    int length = 0;
+                    index = -index-1;
+                    for (int j = 0; j < insertionLengthList.size(); j++) {
+                        length+=insertionLengthList.get(j);
+                    }
+                    alleleRelaPosList.add((byte)(currentAltPos+frontLength+length));
+                }
+            }
+            else if (c == '^'){
+                int j;
+                for (j = i + 1; j < md.length(); j++) {
+                    if (!Character.isLetter(md.charAt(j))) break;
+                }
+                String deletionS = md.substring(i+1, j);
+                char alt = 'D';
+                char ref = md.charAt(i+1);
+                snpList.add(new SNP(chr, currentPos+1, ref, alt));
+                int index = insertionPosList.binarySearch(currentAltPos);
+                if (index > -2) {
+                    alleleRelaPosList.add((byte)(currentAltPos+frontLength));
+                }
+                else {
+                    int length = 0;
+                    index = -index-1;
+                    for (int k = 0; k < insertionLengthList.size(); k++) {
+                        length+=insertionLengthList.get(k);
+                    }
+                    alleleRelaPosList.add((byte)(currentAltPos+frontLength+length));
+                }
+                currentPos += deletionS.length();
+                i = j -1;
+            }
+            else {
+                System.out.println(c);
+            }
+        }
+        alleleRelaPosList.sort();
+        if (ifMinus) {
+            int length = seqLength+frontLength+backLength;
+            for (int i = 0; i < alleleRelaPosList.size(); i++) {
+                int value = length-alleleRelaPosList.get(i)+1;
+                alleleRelaPosList.set(i, (byte)value);
+            }
+        }
+        Collections.sort(snpList);
+//*****************************************************        
+        for (int i = sIndex; i < eIndex; i++) {
+            ChrPos query = new ChrPos (chr, sc.getPositionOfSNP(chrIndex, i));
+            allelePosList.add(query);
+            int index = Collections.binarySearch(snpList, query);
+            if (index < 0) {
+                alleleList.add(sc.getRefAlleleByteOfSNP(chrIndex, i));
+            }
+            else {
+                alleleList.add(snpList.get(index).getAltAlleleByte(0));
+            }
+        }
+        if (allelePosList.size() == 0) return null;
+        
+        Tuple3<List<ChrPos>, TByteArrayList, TByteArrayList> result = new Tuple3 <> (allelePosList, alleleList, alleleRelaPosList);
+        return result;
     }
     
     public static Tuple<List<ChrPos>, TByteArrayList> getAlleles (List<String> l, int mapQThresh, SNPCounts sc) {

@@ -76,6 +76,7 @@ public class TagFinder {
         for (int i = startEndIndex[0]; i < startEndIndex[1]; i++) {
             int dbTagIndex = gtfs[groupIndex].getTagIndex(i);
             long[] dbTag = tas.getTag(groupIndex, dbTagIndex);
+            
             int currentMismatch = 0;
             boolean toContinue = false;
             for (int j = 0; j < dbTag.length; j++) {

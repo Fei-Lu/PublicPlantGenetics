@@ -23,6 +23,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import utils.IOUtils;
 import utils.PStringUtils;
 import utils.Tuple;
+import utils.Tuple3;
 
 /**
  *
@@ -290,17 +291,22 @@ public class TagAnnotations {
             int queryCount = 0;
             List<ChrPos> tagAllelePosList = new ArrayList<>();
             TByteArrayList tagAlleleList = new TByteArrayList();
+            TByteArrayList[] alleleRelativePos = new TByteArrayList[2];
+            for (int i = 0; i < alleleRelativePos.length; i++) {
+                alleleRelativePos[i] = new TByteArrayList();
+            }
             long cnt = 0;
             long snpCnt = 0;
             while ((temp = br.readLine()) != null) {
                 List<String> l = SAMUtils.getAlignElements(temp);
                 if (Integer.parseInt(l.get(1)) > 2000) continue; //remove supplement alignment to have a pair of alignments for PE reads
                 queryCount++;
-                Tuple<List<ChrPos>, TByteArrayList> alleles = SAMUtils.getAlleles(l, mapQThresh, sc);
+                Tuple3 <List<ChrPos>, TByteArrayList, TByteArrayList> alleles = SAMUtils.getAllelesWithSubstitutionPos(l, mapQThresh, sc);
                 if (queryCount == 1) {
                     if (alleles != null) {
                         tagAllelePosList.addAll(alleles.getFirstElement());
                         tagAlleleList.addAll(alleles.getSecondElement());
+                        alleleRelativePos[0] = alleles.getThirdElement();
                     }
                 }
                 else if (queryCount == 2) {
@@ -310,6 +316,7 @@ public class TagAnnotations {
                             if (alleles != null) {
                                 tagAllelePosList.addAll(alleles.getFirstElement());
                                 tagAlleleList.addAll(alleles.getSecondElement());
+                                alleleRelativePos[1] = alleles.getThirdElement();
                             }
                             cnt++;
                             if (cnt%10000000 == 0) System.out.println(String.valueOf(cnt) + " tags are properly aligned for SNP calling");                           
@@ -317,7 +324,7 @@ public class TagAnnotations {
                                 List<String> ll = PStringUtils.fastSplit(l.get(0), "_");                               
                                 int groupIndex = Integer.parseInt(ll.get(0));
                                 int tagIndex = Integer.parseInt(ll.get(1));
-                                this.setAlleleOfTag(groupIndex, tagIndex, tagAllelePosList, tagAlleleList);
+                                this.setAlleleOfTag(groupIndex, tagIndex, tagAllelePosList, tagAlleleList, alleleRelativePos);
                                 this.sortAlleleListByPosition(groupIndex, tagIndex);
                                 snpCnt++;
                             }
@@ -326,6 +333,9 @@ public class TagAnnotations {
                     queryCount = 0;
                     tagAllelePosList = new ArrayList<>();
                     tagAlleleList = new TByteArrayList();
+                    for (int i = 0; i < alleleRelativePos.length; i++) {
+                        alleleRelativePos[i] = new TByteArrayList();
+                    }
                 }
             }
             br.close();
@@ -520,8 +530,8 @@ public class TagAnnotations {
         taList.get(groupIndex).setSNPOfTag(tagIndex, tagSNPList);
     }
     
-    public void setAlleleOfTag (int groupIndex, int tagIndex, List<ChrPos> tagAllelePosList, TByteArrayList tagAlleleList) {
-        taList.get(groupIndex).setAlleleOfTag(tagIndex, tagAllelePosList, tagAlleleList);
+    public void setAlleleOfTag (int groupIndex, int tagIndex, List<ChrPos> tagAllelePosList, TByteArrayList tagAlleleList, TByteArrayList[] alleleRelativePos) {
+        taList.get(groupIndex).setAlleleOfTag(tagIndex, tagAllelePosList, tagAlleleList, alleleRelativePos);
     }
     
     public void removeSNPOfTag (int groupIndex, int tagIndex) {
