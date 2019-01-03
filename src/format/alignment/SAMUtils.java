@@ -3,6 +3,7 @@
  */
 package format.alignment;
 
+import analysis.pipeline.grt.AlleleInfo;
 import analysis.pipeline.grt.SNPCounts;
 import format.dna.snp.SNP;
 import format.position.ChrPos;
@@ -287,7 +288,8 @@ public class SAMUtils {
         return getVariants(l, mapQThresh);
     }
     
-    public static Tuple3 <List<ChrPos>, TByteArrayList, TByteArrayList> getAllelesWithSubstitutionPos (List<String> l, int mapQThresh, SNPCounts sc) {
+    public static List<AlleleInfo> getAlleles2 (List<String> l, int mapQThresh, SNPCounts sc, int end) {
+        List<AlleleInfo> tagAlleleList = new ArrayList();
         List<ChrPos> allelePosList = new ArrayList();
         TByteArrayList alleleList = new TByteArrayList();
         TByteArrayList alleleRelaPosList = new TByteArrayList();
@@ -461,7 +463,7 @@ public class SAMUtils {
                 System.out.println(c);
             }
         }
-        alleleRelaPosList.sort();
+        //alleleRelaPosList.sort();
         if (ifMinus) {
             int length = seqLength+frontLength+backLength;
             for (int i = 0; i < alleleRelaPosList.size(); i++) {
@@ -469,23 +471,46 @@ public class SAMUtils {
                 alleleRelaPosList.set(i, (byte)value);
             }
         }
-        Collections.sort(snpList);
+        
+        class SNPWithRelativePos  extends SNP {
+            byte relaPos = -1;
+            public SNPWithRelativePos(short chr, int pos, byte ref, byte alt) {
+                super(chr, pos, ref, alt);
+            }
+            
+            public SNPWithRelativePos(short chr, int pos, byte ref, TByteArrayList alts, byte relaPos) {
+                super(chr, pos, ref, alts);
+                this.relaPos = relaPos;
+            }
+            
+        }
+        
+        List<SNPWithRelativePos> srList = new ArrayList();
+        for (int i = 0; i < snpList.size(); i++) {
+            SNPWithRelativePos sr = new SNPWithRelativePos (snpList.get(i).getChromosome(), snpList.get(i).getPosition(),
+                snpList.get(i).getRefAlleleByte(), snpList.get(i).getAlteAlleleList(), alleleRelaPosList.get(i));
+            srList.add(sr);
+        }
+        Collections.sort(srList);
 //*****************************************************        
         for (int i = sIndex; i < eIndex; i++) {
             ChrPos query = new ChrPos (chr, sc.getPositionOfSNP(chrIndex, i));
-            allelePosList.add(query);
-            int index = Collections.binarySearch(snpList, query);
+            //allelePosList.add(query);
+            int index = Collections.binarySearch(srList, query);
+            byte allele;
+            byte relaPos = -1;
             if (index < 0) {
-                alleleList.add(sc.getRefAlleleByteOfSNP(chrIndex, i));
+                allele = sc.getRefAlleleByteOfSNP(chrIndex, i);
             }
             else {
-                alleleList.add(snpList.get(index).getAltAlleleByte(0));
+                allele = srList.get(index).getAltAlleleByte(0);
+                relaPos = srList.get(index).relaPos;
             }
+            AlleleInfo ai = new AlleleInfo(query.getChromosome(), query.getPosition(), allele, (byte)end, relaPos);
+            tagAlleleList.add(ai);
         }
-        if (allelePosList.size() == 0) return null;
-        
-        Tuple3<List<ChrPos>, TByteArrayList, TByteArrayList> result = new Tuple3 <> (allelePosList, alleleList, alleleRelaPosList);
-        return result;
+        if (tagAlleleList.size() == 0) return null;
+        return tagAlleleList;
     }
     
     public static Tuple<List<ChrPos>, TByteArrayList> getAlleles (List<String> l, int mapQThresh, SNPCounts sc) {

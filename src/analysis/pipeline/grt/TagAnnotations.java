@@ -145,7 +145,7 @@ public class TagAnnotations {
                     byte r2Len = dis.readByte();
                     int readNumber = dis.readInt();
                     byte snpNumber = dis.readByte();
-                    List<SNP> snpList = new ArrayList<>();
+                    List<SNP> tagSNPList = new ArrayList<>();
                     for (int k = 0; k < snpNumber; k++) {
                         short chr = dis.readShort();
                         int pos = dis.readInt();
@@ -155,16 +155,20 @@ public class TagAnnotations {
                         for (int u = 0; u < altNumber; u++) {
                             alts.add(dis.readByte());
                         }
-                        snpList.add(new SNP(chr, pos, ref, alts));
+                        tagSNPList.add(new SNP(chr, pos, ref, alts));
                     }
+                    List<AlleleInfo> tagAlleleList = new ArrayList();
                     byte alleleNumber = dis.readByte();
-                    List<ChrPos> posList = new ArrayList<>();
-                    TByteArrayList tagAlleleList = new TByteArrayList();
                     for (int k = 0; k < alleleNumber; k++) {
-                        posList.add(new ChrPos(dis.readShort(), dis.readInt()));
-                        tagAlleleList.add(dis.readByte());
+                        short chr = dis.readShort();
+                        int pos = dis.readInt();
+                        byte allele = dis.readByte();
+                        byte end = dis.readByte();
+                        byte relativePosition = dis.readByte();
+                        AlleleInfo ai = new AlleleInfo (chr, pos, allele, end, relativePosition);
+                        tagAlleleList.add(ai);
                     }
-                    ta.appendTag(tag, r1Len, r2Len, readNumber, snpList, posList, tagAlleleList);
+                    ta.appendTag(tag, r1Len, r2Len, readNumber, tagSNPList, tagAlleleList);
                     if (cnt%10000000 == 0) System.out.println("Reading in "+String.valueOf(cnt)+" tags");
                 }
                 taList.add(ta);
@@ -209,15 +213,16 @@ public class TagAnnotations {
                             dos.writeByte(s.getAltAlleleByte(u));
                         }
                     }
-                    byte alleleNumber = this.getAlleleNumberOfTag(i, j);
+                    List<AlleleInfo> alleleList = this.getAlleleOfTag(i, j);
+                    byte alleleNumber = (byte)alleleList.size();
                     dos.writeByte(alleleNumber);
-                    List<ChrPos> posList = this.getAllelePosOfTag(i, j);
-                    TByteArrayList tagAlleleList = this.getAlleleOfTag(i, j);
-                    for (int k = 0; k < alleleNumber; k++) {
-                        dos.writeShort(posList.get(k).getChromosome());
-                        dos.writeInt(posList.get(k).getPosition());
-                        dos.writeByte(tagAlleleList.get(k));
-                    }                  
+                    for (int k = 0; i < alleleNumber; k++) {
+                        dos.writeShort(alleleList.get(k).getChromosome());
+                        dos.writeInt(alleleList.get(k).getPosition());
+                        dos.writeByte(alleleList.get(k).getAllele());
+                        dos.writeByte(alleleList.get(k).getEnd());
+                        dos.writeByte(alleleList.get(k).getRelativePosition());
+                    }
                     cnt++;
                     if (cnt%10000000 == 0) System.out.println(String.valueOf(cnt) + " tags ouput to " + outfileS);
                 }
@@ -262,16 +267,16 @@ public class TagAnnotations {
                         sb.deleteCharAt(sb.length()-1);
                     }
                     sb.append("\n");
-                    TByteArrayList alleleList = this.getAlleleOfTag(i, j);
-                    List<ChrPos> posList = this.getAllelePosOfTag(i, j);
-                    sb.append("AlleleNumber:\t").append(snpList.size());
-                    sb.append("\nAlleles:");
-                    for (int k = 0; k < posList.size(); k++) {
-                        sb.append("\t|").append(k).append("->").append(posList.get(k).getChromosome()).append("\t").append(posList.get(k).getPosition())
-                                .append("\t").append(AlleleEncoder.alleleByteCharMap.get(alleleList.get(k)));
-                    }
-                    bw.write(sb.toString());
-                    bw.newLine();
+                    List<AlleleInfo> alleleList = this.getAlleleOfTag(i, j);
+//                    List<ChrPos> posList = this.getAllelePosOfTag(i, j);
+//                    sb.append("AlleleNumber:\t").append(alleleList.size());
+//                    sb.append("\nAlleles:");
+//                    for (int k = 0; k < posList.size(); k++) {
+//                        sb.append("\t|").append(k).append("->").append(posList.get(k).getChromosome()).append("\t").append(posList.get(k).getPosition())
+//                                .append("\t").append(AlleleEncoder.alleleByteCharMap.get(alleleList.get(k)));
+//                    }
+//                    bw.write(sb.toString());
+//                    bw.newLine();
                 } 
             }
             bw.flush();
@@ -289,24 +294,17 @@ public class TagAnnotations {
             String temp = null;
             while ((temp = br.readLine()).startsWith("@SQ")){}
             int queryCount = 0;
-            List<ChrPos> tagAllelePosList = new ArrayList<>();
-            TByteArrayList tagAlleleList = new TByteArrayList();
-            TByteArrayList[] alleleRelativePos = new TByteArrayList[2];
-            for (int i = 0; i < alleleRelativePos.length; i++) {
-                alleleRelativePos[i] = new TByteArrayList();
-            }
+            List<AlleleInfo> tagAlleleList = new ArrayList();
             long cnt = 0;
             long snpCnt = 0;
             while ((temp = br.readLine()) != null) {
                 List<String> l = SAMUtils.getAlignElements(temp);
                 if (Integer.parseInt(l.get(1)) > 2000) continue; //remove supplement alignment to have a pair of alignments for PE reads
                 queryCount++;
-                Tuple3 <List<ChrPos>, TByteArrayList, TByteArrayList> alleles = SAMUtils.getAllelesWithSubstitutionPos(l, mapQThresh, sc);
+                List<AlleleInfo> alleles = SAMUtils.getAlleles2(l, mapQThresh, sc, queryCount);
                 if (queryCount == 1) {
                     if (alleles != null) {
-                        tagAllelePosList.addAll(alleles.getFirstElement());
-                        tagAlleleList.addAll(alleles.getSecondElement());
-                        alleleRelativePos[0] = alleles.getThirdElement();
+                        tagAlleleList.addAll(alleles);
                     }
                 }
                 else if (queryCount == 2) {
@@ -314,28 +312,22 @@ public class TagAnnotations {
                         double len = Math.abs(Double.valueOf(l.get(8)));
                         if (len < maxMappingIntervalThresh) {
                             if (alleles != null) {
-                                tagAllelePosList.addAll(alleles.getFirstElement());
-                                tagAlleleList.addAll(alleles.getSecondElement());
-                                alleleRelativePos[1] = alleles.getThirdElement();
+                                tagAlleleList.addAll(alleles);
                             }
                             cnt++;
                             if (cnt%10000000 == 0) System.out.println(String.valueOf(cnt) + " tags are properly aligned for SNP calling");                           
-                            if (tagAllelePosList.size() != 0) {
+                            if (tagAlleleList.size() != 0) {
                                 List<String> ll = PStringUtils.fastSplit(l.get(0), "_");                               
                                 int groupIndex = Integer.parseInt(ll.get(0));
                                 int tagIndex = Integer.parseInt(ll.get(1));
-                                this.setAlleleOfTag(groupIndex, tagIndex, tagAllelePosList, tagAlleleList, alleleRelativePos);
+                                this.setAlleleOfTag(groupIndex, tagIndex, tagAlleleList);
                                 this.sortAlleleListByPosition(groupIndex, tagIndex);
                                 snpCnt++;
                             }
                         }
                     }
                     queryCount = 0;
-                    tagAllelePosList = new ArrayList<>();
-                    tagAlleleList = new TByteArrayList();
-                    for (int i = 0; i < alleleRelativePos.length; i++) {
-                        alleleRelativePos[i] = new TByteArrayList();
-                    }
+                    tagAlleleList = new ArrayList();
                 }
             }
             br.close();
@@ -410,7 +402,6 @@ public class TagAnnotations {
             ta.readCountList.addAll(ata.taList.get(ta.groupIndex).readCountList);
             ta.tagList.addAll(ata.taList.get(ta.groupIndex).tagList);
             ta.SNPList.addAll(ata.taList.get(ta.groupIndex).SNPList);
-            ta.allelePosList.addAll(ata.taList.get(ta.groupIndex).allelePosList);
             ta.alleleList.addAll(ata.taList.get(ta.groupIndex).alleleList);
         });
         this.ifSorted = false;
@@ -518,20 +509,18 @@ public class TagAnnotations {
         return (byte)this.getAlleleOfTag(groupIndex, tagIndex).size();
     }
     
-    public TByteArrayList getAlleleOfTag (int groupIndex, int tagIndex) {
+    
+    public List<AlleleInfo> getAlleleOfTag (int groupIndex, int tagIndex) {
         return this.taList.get(groupIndex).getAlleleOfTag(tagIndex);
     }
     
-    public List<ChrPos> getAllelePosOfTag (int groupIndex, int tagIndex) {
-        return this.taList.get(groupIndex).getAllelePosOfTag(tagIndex);
-    }
     
     public void setSNPOfTag (int groupIndex, int tagIndex, List<SNP> tagSNPList) {
         taList.get(groupIndex).setSNPOfTag(tagIndex, tagSNPList);
     }
     
-    public void setAlleleOfTag (int groupIndex, int tagIndex, List<ChrPos> tagAllelePosList, TByteArrayList tagAlleleList, TByteArrayList[] alleleRelativePos) {
-        taList.get(groupIndex).setAlleleOfTag(tagIndex, tagAllelePosList, tagAlleleList, alleleRelativePos);
+    public void setAlleleOfTag (int groupIndex, int tagIndex, List<AlleleInfo> tagAlleleList) {
+        taList.get(groupIndex).setAlleleOfTag(tagIndex, tagAlleleList);
     }
     
     public void removeSNPOfTag (int groupIndex, int tagIndex) {

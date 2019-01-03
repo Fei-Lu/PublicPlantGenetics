@@ -27,9 +27,10 @@ public class TagAnnotation implements Swapper, IntComparator {
     protected TByteArrayList r2LenList = null;
     protected TIntArrayList readCountList = null;
     protected List<List<SNP>> SNPList = null;
-    protected List<List<ChrPos>> allelePosList = null;
-    protected List<TByteArrayList> alleleList = null;
-    protected List<TByteArrayList[]> alleleRelativePosList = null;
+    protected List<List<AlleleInfo>> alleleList = null;
+//    protected List<List<ChrPos>> allelePosList = null;
+//    protected List<TByteArrayList> alleleList = null;
+//    protected List<TByteArrayList[]> alleleRelativePosList = null;
     
 
     TagAnnotation (int groupIndex) {
@@ -39,9 +40,7 @@ public class TagAnnotation implements Swapper, IntComparator {
         r2LenList = new TByteArrayList();
         readCountList = new TIntArrayList();
         SNPList = new ArrayList<>();
-        allelePosList = new ArrayList<>();
         alleleList = new ArrayList<>();
-        alleleRelativePosList = new ArrayList<>();
     }
     
     TagAnnotation (int tagLengthInLong, int groupIndex, int tagNumber, boolean ifSorted) {
@@ -51,9 +50,7 @@ public class TagAnnotation implements Swapper, IntComparator {
         r2LenList = new TByteArrayList(tagNumber);
         readCountList = new TIntArrayList(tagNumber);
         SNPList = new ArrayList<>();
-        allelePosList = new ArrayList<>();
         alleleList = new ArrayList<>();
-        alleleRelativePosList = new ArrayList<>();
     }
     
     void appendTag (long[] tag, byte r1Len, byte r2Len, int readNumber) {
@@ -62,21 +59,15 @@ public class TagAnnotation implements Swapper, IntComparator {
         r2LenList.add(r2Len);
         readCountList.add(readNumber);
         SNPList.add(new ArrayList<SNP>());
-        allelePosList.add(new ArrayList<ChrPos>());
-        alleleList.add(new TByteArrayList());
-        TByteArrayList[] alleleRelativePos = new TByteArrayList[2];
-        alleleRelativePos[0] = new TByteArrayList();
-        alleleRelativePos[1] = new TByteArrayList();
-        alleleRelativePosList.add(alleleRelativePos);
+        alleleList.add(new ArrayList<AlleleInfo>());
     }
     
-    void appendTag (long[] tag, byte r1Len, byte r2Len, int readNumber, List<SNP> tagSNPList, List<ChrPos> tagAllelePosList, TByteArrayList tagAlleleList) {
+    void appendTag (long[] tag, byte r1Len, byte r2Len, int readNumber, List<SNP> tagSNPList, List<AlleleInfo> tagAlleleList) {
         tagList.add(tag);
         r1LenList.add(r1Len);
         r2LenList.add(r2Len);
         readCountList.add(readNumber);
         SNPList.add(tagSNPList);
-        allelePosList.add(tagAllelePosList);
         alleleList.add(tagAlleleList);
     }
     
@@ -96,11 +87,8 @@ public class TagAnnotation implements Swapper, IntComparator {
         return this.SNPList.get(tagIndex);
     }
     
-    List<ChrPos> getAllelePosOfTag (int tagIndex) {
-        return this.allelePosList.get(tagIndex);
-    }
     
-    TByteArrayList getAlleleOfTag (int tagIndex) {
+    List<AlleleInfo> getAlleleOfTag (int tagIndex) {
         return this.alleleList.get(tagIndex);
     }
     
@@ -128,10 +116,8 @@ public class TagAnnotation implements Swapper, IntComparator {
         this.SNPList.set(tagIndex, tagSNPList);
     }
     
-    void setAlleleOfTag (int tagIndex, List<ChrPos> tagAllelePosList, TByteArrayList tagAlleleList, TByteArrayList[] alleleRelativePos) {
-        this.allelePosList.set(tagIndex, tagAllelePosList);
+    void setAlleleOfTag (int tagIndex, List<AlleleInfo> tagAlleleList) {
         this.alleleList.set(tagIndex, tagAlleleList);
-        this.alleleRelativePosList.set(tagIndex, alleleRelativePos);
     }
     
     void removeSNPOfTag (int tagIndex) {
@@ -139,7 +125,6 @@ public class TagAnnotation implements Swapper, IntComparator {
     }
     
     void removeAlleleOfTag (int tagIndex) {
-        this.allelePosList.get(tagIndex).clear();
         this.alleleList.get(tagIndex).clear();
     }
     
@@ -160,15 +145,9 @@ public class TagAnnotation implements Swapper, IntComparator {
         List<SNP> tempSNP = SNPList.get(index1);
         SNPList.set(index1, SNPList.get(index2));
         SNPList.set(index2, tempSNP);
-        List<ChrPos> tempPos = allelePosList.get(index1);
-        allelePosList.set(index1, allelePosList.get(index2));
-        allelePosList.set(index2, tempPos);
-        TByteArrayList tb = alleleList.get(index1);
+        List<AlleleInfo> tempAllele = alleleList.get(index1);
         alleleList.set(index1, alleleList.get(index2));
-        alleleList.set(index2, tb);
-        TByteArrayList[] tp = alleleRelativePosList.get(index1);
-        alleleRelativePosList.set(index1, alleleRelativePosList.get(index2));
-        alleleRelativePosList.set(index2, tp);
+        alleleList.set(index2, tempAllele);
     }
 
     @Override
@@ -185,10 +164,7 @@ public class TagAnnotation implements Swapper, IntComparator {
     }
     
     void sortAlleleListByPosition (int tagIndex) {
-        PosAllele pa = new PosAllele(this.allelePosList.get(tagIndex), this.alleleList.get(tagIndex));
-        pa.sort();
-        this.allelePosList.set(tagIndex, pa.pList);
-        this.alleleList.set(tagIndex, pa.aList);
+        Collections.sort(this.alleleList.get(tagIndex));
     }
     
     class PosAllele {
@@ -255,8 +231,7 @@ public class TagAnnotation implements Swapper, IntComparator {
         TByteArrayList aR2LenList = new TByteArrayList();
         TIntArrayList aReadCountList = new TIntArrayList();
         List<List<SNP>> aSNPList = new ArrayList<>();
-        List<List<ChrPos>> aAllelePosList = new ArrayList<>();
-        List<TByteArrayList> aAlleleList = new ArrayList<>();
+        List<List<AlleleInfo>> aAlleleList = new ArrayList<>();
         for (int i = 0; i < this.getTagNumber(); i++) {
             if (readCountList.get(i) < minReadCount) continue;
             aTagList.add(tagList.get(i));
@@ -264,7 +239,6 @@ public class TagAnnotation implements Swapper, IntComparator {
             aR2LenList.add(r2LenList.get(i));
             aReadCountList.add(readCountList.get(i));
             aSNPList.add(SNPList.get(i));
-            aAllelePosList.add(allelePosList.get(i));
             aAlleleList.add(alleleList.get(i));
         }
         tagList = aTagList;
@@ -272,14 +246,12 @@ public class TagAnnotation implements Swapper, IntComparator {
         r2LenList = aR2LenList;
         readCountList = aReadCountList;
         SNPList = aSNPList;
-        allelePosList = aAllelePosList;
         alleleList = aAlleleList;
         aTagList = null;
         aR1LenList = null;
         aR2LenList = null;
         aReadCountList = null;
         aSNPList = null;
-        aAllelePosList = null;
         aAlleleList = null;
         return collapsedRows;
     }

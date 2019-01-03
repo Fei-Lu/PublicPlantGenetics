@@ -84,16 +84,16 @@ public class GBSVCFBuilder {
                         int[] divergence = result.getFirstElement();
                         int[] tagIndices = result.getSecondElement();
                         int tagIndex = this.getTagIndex(divergence, tagIndices);
-                        TByteArrayList alleleList = tas.getAlleleOfTag(j, tagIndex);
-                        if (alleleList.size() == 0) continue;
-                        List<ChrPos> chrPosList = tas.getAllelePosOfTag(j, tagIndex);
-                        short chr = chrPosList.get(0).getChromosome();
-                        int chrIndex = sc.getChrIndex(chr);
-                        for (int u = 0; u < chrPosList.size(); u++) {
-                            int snpIndex = sc.getSNPIndex(chrIndex, chrPosList.get(u));
-                            adt[chrIndex][snpIndex].addAllele(alleleList.get(u));
-                            adt[chrIndex][snpIndex].addDepth(readDepth);
-                        }
+//                        TByteArrayList alleleList = tas.getAlleleOfTag(j, tagIndex);
+//                        if (alleleList.size() == 0) continue;
+//                        List<ChrPos> chrPosList = tas.getAllelePosOfTag(j, tagIndex);
+//                        short chr = chrPosList.get(0).getChromosome();
+//                        int chrIndex = sc.getChrIndex(chr);
+//                        for (int u = 0; u < chrPosList.size(); u++) {
+//                            int snpIndex = sc.getSNPIndex(chrIndex, chrPosList.get(u));
+//                            adt[chrIndex][snpIndex].addAllele(alleleList.get(u));
+//                            adt[chrIndex][snpIndex].addDepth(readDepth);
+//                        }
                     }
                 }
                 for (int j = 0; j < adt.length; j++) {
