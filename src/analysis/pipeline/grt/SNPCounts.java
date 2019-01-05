@@ -275,7 +275,7 @@ class SNPCount extends SNP {
     }
     
     public SNPCount(SNP snp, int readCount) {
-        super(snp.getChromosome(), snp.getPosition(), snp.getRefAlleleByte(), snp.getAlteAlleleList());
+        super(snp.getChromosome(), snp.getPosition(), snp.getRefAlleleByte(), snp.getAltAlleleList());
         this.readCount = readCount;
     }
     

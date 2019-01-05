@@ -36,7 +36,7 @@ public class SNP extends ChrPos implements SNPInterface {
         this.alts = alts;
     }
     
-    public TByteArrayList getAlteAlleleList () {
+    public TByteArrayList getAltAlleleList () {
         return this.alts;
     }
     

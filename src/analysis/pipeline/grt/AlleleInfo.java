@@ -13,6 +13,7 @@ import format.position.ChrPos;
  */
 public class AlleleInfo extends ChrPos {
     byte allele = -1;
+    byte base = -1;
     byte end = -1; // paired-end, 1 or 2
     byte relaPos = -1;
     
@@ -20,9 +21,15 @@ public class AlleleInfo extends ChrPos {
         super(chr, pos);
     }
     
-    public AlleleInfo (short chr, int pos, byte allele, byte end, byte relaPos) {
+    public AlleleInfo (short chr, int pos, byte end) {
+        super(chr, pos);
+        this.end = end;
+    }
+    
+    public AlleleInfo (short chr, int pos, byte allele, byte base, byte end, byte relaPos) {
         super(chr, pos);
         this.allele = allele;
+        this.base = base;
         this.end = end;
         this.relaPos = relaPos;
     }
@@ -31,11 +38,27 @@ public class AlleleInfo extends ChrPos {
         return allele;
     }
     
+    public byte getBase () {
+        return base;
+    }
+    
     public byte getEnd () {
         return end;
     }
     
     public byte getRelativePosition () {
         return relaPos;
+    }
+    
+    public void setRelativePosition (byte relaPos) {
+        this.relaPos = relaPos;
+    }
+    
+    public void setAllele (byte allele) {
+        this.allele = allele;
+    }
+    
+    public void setBase (byte base) {
+        this.base = base;
     }
 }

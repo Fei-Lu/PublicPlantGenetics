@@ -12,6 +12,7 @@ import format.dna.snp.SNP;
 import format.position.ChrPos;
 import gnu.trove.list.array.TByteArrayList;
 import gnu.trove.list.array.TIntArrayList;
+import gnu.trove.list.array.TShortArrayList;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -26,6 +27,14 @@ public class TagAnnotation implements Swapper, IntComparator {
     protected TByteArrayList r1LenList = null;
     protected TByteArrayList r2LenList = null;
     protected TIntArrayList readCountList = null;
+    protected TShortArrayList r1ChrList = null;
+    protected TShortArrayList r2ChrList = null;
+    protected TIntArrayList r1StartPosList = null;
+    protected TIntArrayList r2StartPosList = null;
+    protected TByteArrayList r1StrandList = null;
+    protected TByteArrayList r2StrandList = null;
+    protected TByteArrayList r1MapQList = null;
+    protected TByteArrayList r2MapQList = null;
     protected List<List<SNP>> SNPList = null;
     protected List<List<AlleleInfo>> alleleList = null;
 //    protected List<List<ChrPos>> allelePosList = null;
@@ -39,6 +48,14 @@ public class TagAnnotation implements Swapper, IntComparator {
         r1LenList = new TByteArrayList();
         r2LenList = new TByteArrayList();
         readCountList = new TIntArrayList();
+        r1ChrList = new TShortArrayList();
+        r2ChrList = new TShortArrayList();
+        r1StartPosList = new TIntArrayList();
+        r2StartPosList = new TIntArrayList();
+        r1StrandList = new TByteArrayList();
+        r2StrandList = new TByteArrayList();
+        r1MapQList = new TByteArrayList();
+        r2MapQList = new TByteArrayList();
         SNPList = new ArrayList<>();
         alleleList = new ArrayList<>();
     }
@@ -49,6 +66,14 @@ public class TagAnnotation implements Swapper, IntComparator {
         r1LenList = new TByteArrayList(tagNumber);
         r2LenList = new TByteArrayList(tagNumber);
         readCountList = new TIntArrayList(tagNumber);
+        r1ChrList = new TShortArrayList();
+        r2ChrList = new TShortArrayList();
+        r1StartPosList = new TIntArrayList();
+        r2StartPosList = new TIntArrayList();
+        r1StrandList = new TByteArrayList();
+        r2StrandList = new TByteArrayList();
+        r1MapQList = new TByteArrayList();
+        r2MapQList = new TByteArrayList();
         SNPList = new ArrayList<>();
         alleleList = new ArrayList<>();
     }
@@ -58,15 +83,31 @@ public class TagAnnotation implements Swapper, IntComparator {
         r1LenList.add(r1Len);
         r2LenList.add(r2Len);
         readCountList.add(readNumber);
+        r1ChrList.add(Short.MIN_VALUE);
+        r2ChrList.add(Short.MIN_VALUE);
+        r1StartPosList.add(Integer.MIN_VALUE);
+        r2StartPosList.add(Integer.MIN_VALUE);
+        r1StrandList.add(Byte.MIN_VALUE);
+        r2StrandList.add(Byte.MIN_VALUE);
+        r1MapQList.add(Byte.MIN_VALUE);
+        r2MapQList.add(Byte.MIN_VALUE);
         SNPList.add(new ArrayList<SNP>());
         alleleList.add(new ArrayList<AlleleInfo>());
     }
     
-    void appendTag (long[] tag, byte r1Len, byte r2Len, int readNumber, List<SNP> tagSNPList, List<AlleleInfo> tagAlleleList) {
+    void appendTag (long[] tag, byte r1Len, byte r2Len, int readNumber, short r1Chr, int r1Pos, byte r1Strand, byte r1MapQ, short r2Chr, int r2Pos, byte r2Strand, byte r2MapQ, List<SNP> tagSNPList, List<AlleleInfo> tagAlleleList) {
         tagList.add(tag);
         r1LenList.add(r1Len);
         r2LenList.add(r2Len);
         readCountList.add(readNumber);
+        r1ChrList.add(r1Chr);
+        r1StartPosList.add(r1Pos);
+        r1StrandList.add(r1Strand);
+        r1MapQList.add(r1MapQ);
+        r2ChrList.add(r2Chr);
+        r2StartPosList.add(r2Pos);
+        r2StrandList.add(r2Strand);
+        r2MapQList.add(r2MapQ);
         SNPList.add(tagSNPList);
         alleleList.add(tagAlleleList);
     }
@@ -81,6 +122,38 @@ public class TagAnnotation implements Swapper, IntComparator {
     
     byte getR2TagLength (int tagIndex) {
         return this.r2LenList.get(tagIndex);
+    }
+    
+    short getR1Chromosome (int tagIndex) {
+        return this.r1ChrList.get(tagIndex);
+    }
+    
+    short getR2Chromosome (int tagIndex) {
+        return this.r2ChrList.get(tagIndex);
+    }
+    
+    int getR1StartPosition (int tagIndex) {
+        return this.r1StartPosList.get(tagIndex);
+    }
+    
+    int getR2StartPosition (int tagIndex) {
+        return this.r2StartPosList.get(tagIndex);
+    }
+    
+    byte getR1Strand (int tagIndex) {
+        return this.r1StrandList.get(tagIndex);
+    }
+    
+    byte getR2Strand (int tagIndex) {
+        return this.r2StrandList.get(tagIndex);
+    }
+    
+    byte getR1MapQ (int tagIndex) {
+        return this.r1MapQList.get(tagIndex);
+    }
+    
+    byte getR2MapQ (int tagIndex) {
+        return this.r2MapQList.get(tagIndex);
     }
     
     List<SNP> getSNPOfTag (int tagIndex) {
@@ -112,6 +185,38 @@ public class TagAnnotation implements Swapper, IntComparator {
         return Collections.binarySearch(tagList, tag, TagUtils.tagCom);
     }  
     
+    void setR1Chromosome (int tagIndex, short chr) {
+        this.r1ChrList.set(tagIndex, chr);
+    }
+    
+    void setR2Chromosome (int tagIndex, short chr) {
+        this.r2ChrList.set(tagIndex, chr);
+    }
+    
+    void setR1StartPosition (int tagIndex, int position) {
+        this.r1StartPosList.set(tagIndex, position);
+    }
+    
+    void setR2StartPosition (int tagIndex, int position) {
+        this.r2StartPosList.set(tagIndex, position);
+    }
+    
+    void setR1Strand (int tagIndex, byte strand) {
+        this.r1StrandList.set(tagIndex, strand);
+    }
+    
+    void setR2Strand (int tagIndex, byte strand) {
+        this.r2StrandList.set(tagIndex, strand);
+    }
+    
+    void setR1MapQ (int tagIndex, byte mapQ) {
+        this.r1MapQList.set(tagIndex, mapQ);
+    }
+    
+    void setR2MapQ (int tagIndex, byte mapQ) {
+        this.r2MapQList.set(tagIndex, mapQ);
+    }
+    
     void setSNPOfTag (int tagIndex, List<SNP> tagSNPList) {
         this.SNPList.set(tagIndex, tagSNPList);
     }
@@ -133,15 +238,39 @@ public class TagAnnotation implements Swapper, IntComparator {
         long[] temp = tagList.get(index1);
         tagList.set(index1, tagList.get(index2));
         tagList.set(index2, temp);
-        byte tl = r1LenList.get(index1);
+        byte tb = r1LenList.get(index1);
         r1LenList.set(index1, r1LenList.get(index2));
-        r1LenList.set(index2, tl);
-        tl = r2LenList.get(index1);
+        r1LenList.set(index2, tb);
+        tb = r2LenList.get(index1);
         r2LenList.set(index1, r2LenList.get(index2));
-        r2LenList.set(index2, tl);
+        r2LenList.set(index2, tb);
         int tc = readCountList.get(index1);
         readCountList.set(index1, readCountList.get(index2));
         readCountList.set(index2, tc);
+        short ts = r1ChrList.get(index1);
+        r1ChrList.set(index1, r1ChrList.get(index2));
+        r1ChrList.set(index2, ts);
+        ts = r2ChrList.get(index1);
+        r2ChrList.set(index1, r2ChrList.get(index2));
+        r2ChrList.set(index2, ts);
+        tc = r1StartPosList.get(index1);
+        r1StartPosList.set(index1, r1StartPosList.get(index2));
+        r1StartPosList.set(index2, tc);
+        tc = r2StartPosList.get(index1);
+        r2StartPosList.set(index1, r2StartPosList.get(index2));
+        r2StartPosList.set(index2, tc);
+        tb = r1StrandList.get(index1);
+        r1StrandList.set(index1, r1StrandList.get(index2));
+        r1StrandList.set(index2, tb);
+        tb = r2StrandList.get(index1);
+        r2StrandList.set(index1, r2StrandList.get(index2));
+        r2StrandList.set(index2, tb);
+        tb = r1MapQList.get(index1);
+        r1MapQList.set(index1, r1MapQList.get(index2));
+        r1MapQList.set(index2, tb);
+        tb = r2MapQList.get(index1);
+        r2MapQList.set(index1, r2MapQList.get(index2));
+        r2MapQList.set(index2, tb);
         List<SNP> tempSNP = SNPList.get(index1);
         SNPList.set(index1, SNPList.get(index2));
         SNPList.set(index2, tempSNP);
@@ -166,41 +295,7 @@ public class TagAnnotation implements Swapper, IntComparator {
     void sortAlleleListByPosition (int tagIndex) {
         Collections.sort(this.alleleList.get(tagIndex));
     }
-    
-    class PosAllele {
-        List<ChrPos> pList = null;
-        TByteArrayList aList = null;
-        
-        public PosAllele (List<ChrPos> pList, TByteArrayList aList) {
-            this.pList = pList;
-            this.aList = aList;
-        }
-        
-        public void sort () {
-            GenericSorting.quickSort(0, pList.size(), posComp, posSwapper);
-        }
-        
-        Swapper posSwapper = new Swapper() {
-            @Override
-            public void swap(int index1, int index2) {
-                ChrPos tempPos = pList.get(index1);
-                pList.set(index1, pList.get(index2));
-                pList.set(index2, tempPos);
-                byte temp = aList.get(index1);
-                aList.set(index1, aList.get(index2));
-                aList.set(index2, temp);
-            }
-        };
-
-        IntComparator posComp = new IntComparator() {
-            @Override
-            public int compare(int index1, int index2) {
-                return pList.get(index1).compareTo(pList.get(index2));
-            }
-        };
-    }
-    
-    
+  
     void sortSNPListByPosition (int tagIndex) {
         Collections.sort(this.SNPList.get(tagIndex));
     }
@@ -230,6 +325,14 @@ public class TagAnnotation implements Swapper, IntComparator {
         TByteArrayList aR1LenList = new TByteArrayList();
         TByteArrayList aR2LenList = new TByteArrayList();
         TIntArrayList aReadCountList = new TIntArrayList();
+        TShortArrayList aR1ChrList = new TShortArrayList();
+        TShortArrayList aR2ChrList = new TShortArrayList();
+        TIntArrayList aR1StartPosList = new TIntArrayList();
+        TIntArrayList aR2StartPosList = new TIntArrayList();
+        TByteArrayList aR1StrandList = new TByteArrayList();
+        TByteArrayList aR2StrandList = new TByteArrayList();
+        TByteArrayList aR1MapQList = new TByteArrayList();
+        TByteArrayList aR2MapQList = new TByteArrayList();
         List<List<SNP>> aSNPList = new ArrayList<>();
         List<List<AlleleInfo>> aAlleleList = new ArrayList<>();
         for (int i = 0; i < this.getTagNumber(); i++) {
@@ -238,6 +341,14 @@ public class TagAnnotation implements Swapper, IntComparator {
             aR1LenList.add(r1LenList.get(i));
             aR2LenList.add(r2LenList.get(i));
             aReadCountList.add(readCountList.get(i));
+            aR1ChrList.add(r1ChrList.get(i));
+            aR2ChrList.add(r2ChrList.get(i));
+            aR1StartPosList.add(r1StartPosList.get(i));
+            aR2StartPosList.add(r2StartPosList.get(i));
+            aR1StrandList.add(r1StrandList.get(i));
+            aR2StrandList.add(r2StrandList.get(i));
+            aR1MapQList.add(r1MapQList.get(i));
+            aR2MapQList.add(r2MapQList.get(i));
             aSNPList.add(SNPList.get(i));
             aAlleleList.add(alleleList.get(i));
         }
@@ -245,12 +356,28 @@ public class TagAnnotation implements Swapper, IntComparator {
         r1LenList = aR1LenList;
         r2LenList = aR2LenList;
         readCountList = aReadCountList;
+        r1ChrList = aR1ChrList;
+        r2ChrList = aR2ChrList;
+        r1StartPosList = aR1StartPosList;
+        r2StartPosList = aR2StartPosList;
+        r1StrandList = aR1StrandList;
+        r2StrandList = aR2StrandList;
+        r1MapQList = aR1MapQList;
+        r2MapQList = aR2MapQList;
         SNPList = aSNPList;
         alleleList = aAlleleList;
         aTagList = null;
         aR1LenList = null;
         aR2LenList = null;
         aReadCountList = null;
+        aR1ChrList = null;
+        aR2ChrList = null;
+        aR1StartPosList = null;
+        aR2StartPosList = null;
+        aR1StrandList = null;
+        aR2StrandList = null;
+        aR1MapQList = null;
+        aR2MapQList = null;
         aSNPList = null;
         aAlleleList = null;
         return collapsedRows;
