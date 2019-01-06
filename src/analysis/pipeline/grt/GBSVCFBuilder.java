@@ -36,9 +36,9 @@ public class GBSVCFBuilder {
     TagAnnotations tas = null;
     SNPCounts sc = null;
     int numThreads = 32;
-    int identityThreshold = 1;
+    int identityThreshold = 3;
     int maxAltNumber = 2;
-    double sequencingErrorRate = 0.05;
+    double sequencingAlignErrorRate = 0.05;
     
     public GBSVCFBuilder (TagAnnotations tas, SNPCounts sc) {
         this.tas = tas;
@@ -69,7 +69,7 @@ public class GBSVCFBuilder {
         System.out.println("\nStart calling genotype of each individual sample...");
         for (int i = 0; i < indices.length; i++) {
             List<File> subFList = sampleFileList.subList(indices[i][0], indices[i][1]);
-            subFList.parallelStream().forEach(f -> {
+            subFList.stream().forEach(f -> {
                 String tempFileS = new File(tempDir, f.getName().replaceAll(".tas", ".gen")).getAbsolutePath();
                 AlleleDepth[][] adt = this.initializeADTable();
                 TagAnnotations ata = new TagAnnotations(f.getAbsolutePath());
@@ -84,16 +84,20 @@ public class GBSVCFBuilder {
                         int[] divergence = result.getFirstElement();
                         int[] tagIndices = result.getSecondElement();
                         int tagIndex = this.getTagIndex(divergence, tagIndices);
-//                        TByteArrayList alleleList = tas.getAlleleOfTag(j, tagIndex);
-//                        if (alleleList.size() == 0) continue;
-//                        List<ChrPos> chrPosList = tas.getAllelePosOfTag(j, tagIndex);
-//                        short chr = chrPosList.get(0).getChromosome();
-//                        int chrIndex = sc.getChrIndex(chr);
-//                        for (int u = 0; u < chrPosList.size(); u++) {
-//                            int snpIndex = sc.getSNPIndex(chrIndex, chrPosList.get(u));
-//                            adt[chrIndex][snpIndex].addAllele(alleleList.get(u));
-//                            adt[chrIndex][snpIndex].addDepth(readDepth);
-//                        }
+                        
+                        int alleleNumber = tas.getAlleleNumberOfTag(j, tagIndex);
+                        if (alleleNumber == 0) continue;
+                        short chr = tas.getAlleleOfTag(j, tagIndex).get(0).getChromosome();
+                        int chrIndex = sc.getChrIndex(chr);
+                        for (int u = 0; u < alleleNumber; u++) {
+                            AlleleInfo ai = tas.getAlleleOfTag(j, tagIndex).get(u);
+                            int snpIndex = sc.getSNPIndex(chrIndex, new ChrPos(ai.getChromosome(), ai.getPosition()));
+                            if (ai.getAllele() == Byte.MIN_VALUE) {
+                                int a = 3;
+                            }
+                            adt[chrIndex][snpIndex].addAllele(ai.getAllele());
+                            adt[chrIndex][snpIndex].addDepth(readDepth);
+                        }
                     }
                 }
                 for (int j = 0; j < adt.length; j++) {
@@ -102,6 +106,7 @@ public class GBSVCFBuilder {
                     }
                 }
                 this.writeTempGenotype(tempFileS, adt);
+//              this.wirteTextTempGenotype(tempFileS, adt);
             });
         }
         System.out.println();
@@ -192,7 +197,7 @@ public class GBSVCFBuilder {
                         for (int u = 0; u < altNum; u++) {
                             readCount[u+1] = sampleAD[k].getDepth(altAD.getAllele(u));
                         }
-                        sb.append("\t").append(VCFUtils.getGenotype(readCount, sequencingErrorRate));
+                        sb.append("\t").append(VCFUtils.getGenotype(readCount, sequencingAlignErrorRate));
                     }
                     bws[i].write(sb.toString());
                     bws[i].newLine();   
@@ -211,6 +216,31 @@ public class GBSVCFBuilder {
             e.printStackTrace();
         }
         System.out.println("VCF genotype is output to " + genotypeDirS);
+    }
+    
+    private void wirteTextTempGenotype (String tempFileS, AlleleDepth[][] adt) {
+        try {
+            BufferedWriter bw = IOUtils.getTextWriter(tempFileS);
+            bw.write("ChrIndex\tSNPIndex\tAlleleIndex\tAllele\tDepth");
+            bw.newLine();
+            StringBuilder sb = new StringBuilder();
+            for (int i = 0; i < adt.length; i++) {
+                for (int j = 0; j < adt[i].length; j++) {
+                    int alleleNumber  = adt[i][j].getAlleleNumber();
+                    for (int k = 0; k < alleleNumber; k++) {
+                        sb = new StringBuilder();
+                        sb.append(i).append("\t").append(j).append("\t").append(k).append("\t").append(adt[i][j].getAllele(k)).append("\t").append(adt[i][j].getDepth(k));
+                        bw.write(sb.toString());
+                        bw.newLine();
+                    }
+                }
+            }
+            bw.flush();
+            bw.close();
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
     }
     
     private void writeTempGenotype (String tempFileS, AlleleDepth[][] adt) {

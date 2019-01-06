@@ -291,9 +291,6 @@ public class SAMUtils {
     
     public static List<AlleleInfo> getAlleles3 (List<String> l, int mapQThresh, SNPCounts sc, int end) {
         List<AlleleInfo> tagAlleleList = new ArrayList();
-        List<ChrPos> allelePosList = new ArrayList();
-        TByteArrayList alleleList = new TByteArrayList();
-        TByteArrayList alleleRelaPosList = new TByteArrayList();
         String cigar = l.get(5);
         if (cigar.startsWith("*")) return null;
         if (Integer.parseInt(l.get(4)) < mapQThresh) return null;
@@ -323,11 +320,6 @@ public class SAMUtils {
             AlleleInfo ai = new AlleleInfo (sc.getChromosome(chrIndex), sc.getPositionOfSNP(chrIndex, i+sIndex), (byte)end);
             tagAlleleList.add(ai);
         }
-        
-        if (cigar.equals("18M1I31M1D46M")) {
-            int a = 3;
-        }
-        
         String seq = l.get(9);
         String md = l.get(12).split(":")[2];
         int seqLength = seq.length();
@@ -422,9 +414,17 @@ public class SAMUtils {
                     }
                     byte seqAllele = AlleleEncoder.alleleCharByteMap.get(seq.charAt(currentAltPos-1));
                     byte refAllele = sc.getRefAlleleByteOfSNP(chrIndex, index+sIndex);
-                    int alleleIndex = sc.getAltAlleleIndex(chrIndex, index+sIndex, seqAllele);
+                    int insertionAlleleIndex = sc.getAltAlleleIndex(chrIndex, index+sIndex, (byte)5);
                     if (seqAllele == refAllele) {
-                        if (alleleIndex < 0) continue;
+                        if (insertionAlleleIndex < 0) {
+                            
+                        }
+                        else {
+                            tagAlleleList.get(index).setRelativePosition((byte)(currentAltPos+frontLength));
+                            tagAlleleList.get(index).setAllele((byte)5);
+                            tagAlleleList.get(index).setBase(seqAllele);
+                            continue;
+                        }
                     }    
                     tagAlleleList.get(index).setRelativePosition((byte)(currentAltPos+frontLength));
                     tagAlleleList.get(index).setAllele(seqAllele);

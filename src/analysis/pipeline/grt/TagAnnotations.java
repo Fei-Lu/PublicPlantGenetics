@@ -270,6 +270,7 @@ public class TagAnnotations {
                 bw.newLine();
                 for (int j = 0; j < this.getTagNumber(i); j++) {
                     sb = new StringBuilder();
+                    sb.append("Tag_ID\t:").append(i).append("_").append(j).append("\n");
                     sb.append(this.getR1TagLength(i, j)).append("\t").append(this.getR2TagLength(i, j)).append("\t").append(this.getReadNumber(i, j)).append("\n");
                     String[] reads = TagUtils.getReadsFromTag(this.getTag(i, j), this.getR1TagLength(i, j), this.getR2TagLength(i, j));
                     sb.append(reads[0]).append("\t").append(reads[1]).append("\n");

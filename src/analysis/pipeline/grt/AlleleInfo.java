@@ -12,10 +12,10 @@ import format.position.ChrPos;
  * @author feilu
  */
 public class AlleleInfo extends ChrPos {
-    byte allele = -1;
-    byte base = -1;
-    byte end = -1; // paired-end, 1 or 2
-    byte relaPos = -1;
+    byte allele = Byte.MIN_VALUE;
+    byte base = Byte.MIN_VALUE;
+    byte end = Byte.MIN_VALUE; // paired-end, 1 or 2
+    byte relaPos = Byte.MIN_VALUE;
     
     public AlleleInfo(short chr, int pos) {
         super(chr, pos);

@@ -30,10 +30,10 @@ public class LibGBSGo {
     
     public LibGBSGo (String parameterFileS) {
         this.initializeParameter(parameterFileS);
-        //this.mkTagsBySample();
-        //this.mergeTagAnnotations();
-        //this.alignTags();
-        //this.callSNP();
+//        this.mkTagsBySample();
+//        this.mergeTagAnnotations();
+//        this.alignTags();
+//        this.callSNP();
         //this.callAllele();
         this.buildVCF();
     }
@@ -47,7 +47,7 @@ public class LibGBSGo {
         TagAnnotations tas = new TagAnnotations(tagAnnotationFileS);
         SNPCounts sc = new SNPCounts (rawSNPFileS);
         GBSVCFBuilder builder = new GBSVCFBuilder(tas, sc);
-        builder.setTagIdentifyThreshold(1);
+        builder.setTagIdentifyThreshold(3);
         builder.callGenotype(tagBySampleDirS, genotypeDirS);
     }
     

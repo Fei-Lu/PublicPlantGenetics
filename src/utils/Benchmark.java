@@ -16,7 +16,7 @@ public class Benchmark {
     }
     
     public static double getTimeSpanMilliseconds (long timeStart) {
-        return (double)getTimeSpanNanoseconds(timeStart)/1000;
+        return (double)getTimeSpanNanoseconds(timeStart)/1000000;
     }
     
     public static double getTimeSpanSeconds (long timeStart) {
