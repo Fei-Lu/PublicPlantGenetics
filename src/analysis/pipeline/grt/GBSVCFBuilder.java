@@ -8,6 +8,7 @@ package analysis.pipeline.grt;
 import cern.colt.GenericSorting;
 import cern.colt.Swapper;
 import cern.colt.function.IntComparator;
+import format.dna.BaseEncoder;
 import format.dna.snp.AlleleEncoder;
 import format.dna.snp.genotype.AlleleDepth;
 import format.dna.snp.genotype.VCFUtils;
@@ -83,8 +84,8 @@ public class GBSVCFBuilder {
                         if (result == null) continue;
                         int[] divergence = result.getFirstElement();
                         int[] tagIndices = result.getSecondElement();
-                        int tagIndex = this.getTagIndex(divergence, tagIndices);
-                        
+                        int tagIndex = this.getTagIndex(divergence, tagIndices, j, tag);     
+                        if (tagIndex < 0) continue;
                         int alleleNumber = tas.getAlleleNumberOfTag(j, tagIndex);
                         if (alleleNumber == 0) continue;
                         short chr = tas.getAlleleOfTag(j, tagIndex).get(0).getChromosome();
@@ -92,9 +93,6 @@ public class GBSVCFBuilder {
                         for (int u = 0; u < alleleNumber; u++) {
                             AlleleInfo ai = tas.getAlleleOfTag(j, tagIndex).get(u);
                             int snpIndex = sc.getSNPIndex(chrIndex, new ChrPos(ai.getChromosome(), ai.getPosition()));
-                            if (ai.getAllele() == Byte.MIN_VALUE) {
-                                int a = 3;
-                            }
                             adt[chrIndex][snpIndex].addAllele(ai.getAllele());
                             adt[chrIndex][snpIndex].addDepth(readDepth);
                         }
@@ -275,8 +273,29 @@ public class GBSVCFBuilder {
         return adt;
     }
     
-    private int getTagIndex (int[] divergence, int[] tagIndices) {
-        return tagIndices[0];
+    private int getTagIndex (int[] divergence, int[] tagIndices, int groupIndex, long[] queryTag) {
+        byte[][] query = new byte[2][];
+        for (int i = 0; i < 2; i++) {
+            query[i] = BaseEncoder.getByteArrayFromLongs(Arrays.copyOfRange(queryTag, i*tas.getTagLengthInLong(), (i+1)*tas.getTagLengthInLong()));
+            //System.out.println(BaseEncoder.getSequenceFromLongs(Arrays.copyOfRange(queryTag, i*tas.getTagLengthInLong(), (i+1)*tas.getTagLengthInLong())));
+        }
+        for (int i = 0; i < tagIndices.length; i++) {
+            int cnt = 0;
+            List<AlleleInfo> ai = tas.getAlleleOfTag(groupIndex, tagIndices[i]);
+            byte[][] dbTag = new byte[2][];
+            for (int j = 0; j < dbTag.length; j++) {
+                dbTag[j] = BaseEncoder.getByteArrayFromLongs(Arrays.copyOfRange(tas.getTag(groupIndex, tagIndices[i]), j*tas.getTagLengthInLong(), (j+1)*tas.getTagLengthInLong()));
+                //System.out.println(BaseEncoder.getSequenceFromLongs(Arrays.copyOfRange(tas.getTag(groupIndex, tagIndices[i]), j*tas.getTagLengthInLong(), (j+1)*tas.getTagLengthInLong())));
+            }
+            for (int j = 0; j < ai.size(); j++) {
+                byte end = ai.get(j).getEnd();
+                byte base = ai.get(j).getBase();
+                byte pos = ai.get(j).getRelativePosition();
+                if (query[end-1][pos-1] == base) cnt++;
+            }
+            if (cnt == ai.size()) return i;
+        }
+        return Integer.MIN_VALUE;
     }
 }
 

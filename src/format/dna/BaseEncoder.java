@@ -7,8 +7,7 @@ package format.dna;
 
 import com.koloboke.collect.map.hash.HashByteByteMap;
 import com.koloboke.collect.map.hash.HashByteByteMaps;
-import com.koloboke.collect.map.hash.HashCharByteMap;
-import com.koloboke.collect.map.hash.HashCharByteMaps;
+import gnu.trove.list.array.TByteArrayList;
 
 
 
@@ -337,6 +336,14 @@ public class BaseEncoder {
         return cnt;
     }
     
+    public static String getSequenceFromLongs (long[] val) {
+        StringBuilder sb = new StringBuilder(val.length*longChunkSize+1);
+        for (int i = 0; i < val.length; i++) {
+            sb.append(getSequenceFromLong(val[i]));
+        }
+        return sb.toString();
+    }
+    
     /**
      * Return DNA sequence from long
      * @param val
@@ -383,5 +390,24 @@ public class BaseEncoder {
     		val = val << 2;
     	}
     	return seq.toString();
+    }
+    
+    public static byte[] getByteArrayFromLong (long val) {
+        byte[] array = new byte[longChunkSize];
+        long mask = 3L << 62;
+    	for (int i = 0; i < longChunkSize; i++) {
+            byte base = (byte) (((val & mask) >>> 62));
+            array[i] = baseBytes[base];          
+            val = val << 2;
+    	}
+        return array;
+    }
+    
+    public static byte[] getByteArrayFromLongs (long[] val) {
+        TByteArrayList byteList = new TByteArrayList();
+        for (int i = 0; i < val.length; i++) {
+            byteList.addAll(getByteArrayFromLong(val[i]));
+        }
+        return byteList.toArray();
     }
 }
