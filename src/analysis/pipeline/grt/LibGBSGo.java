@@ -32,14 +32,14 @@ public class LibGBSGo {
     
     public LibGBSGo (String parameterFileS) {
         this.initializeParameter(parameterFileS);
-//        this.mkTagsBySample();
-//        this.mergeTagAnnotations();
-//        this.alignTags();
-//        this.callSNP();
-//        this.callAllele();
-//        this.buildVCF();
+        this.mkTagsBySample();
+        this.mergeTagAnnotations();
+        this.alignTags();
+        this.callSNP();
+        this.callAllele();
+        this.buildVCF();
 //        this.filterDatabase();
-        this.retrieveGenotype();
+//        this.retrieveGenotype();
     }
     
     public void retrieveGenotype () {
@@ -95,7 +95,7 @@ public class LibGBSGo {
         int maxMappingIntervalThresh = 1000;
         tas.callAllele(samFileS, sc, mapQThresh, maxMappingIntervalThresh);
         tas.writeBinaryFile(tagAnnotationFileS);
-        tas.writeTextFile(new File(tagLibraryDirS, "tag.tas.txt").getAbsolutePath());
+        //tas.writeTextFile(new File(tagLibraryDirS, "tag.tas.txt").getAbsolutePath());
     }
     
     public void callSNP () {
@@ -107,7 +107,7 @@ public class LibGBSGo {
         
         int mapQThresh = 30;
         int maxMappingIntervalThresh = 1000;
-        int maxDivergence = 5;
+        int maxDivergence = 7;
         TagAnnotations tas = new TagAnnotations(tagAnnotationFileS);
         tas.callSNP(samFileS, mapQThresh, maxMappingIntervalThresh, maxDivergence);
         tas.writeBinaryFile(tagAnnotationFileS);

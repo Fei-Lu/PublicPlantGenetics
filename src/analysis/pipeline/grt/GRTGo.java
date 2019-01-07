@@ -5,7 +5,9 @@
  */
 package analysis.pipeline.grt;
 
+import format.position.ChrPos;
 import java.io.File;
+import java.util.List;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.DefaultParser;
@@ -34,11 +36,11 @@ public class GRTGo implements CLIInterface {
     int minReadCount = 3;
     int minMappingQ = 30;
     int maxMappingLength = 1000;
-    int maxDivergence = 5;
+    int maxDivergence = 7;
     int tagIdentifyThreshold = 1;
     
     LibraryInfo li = null;
-    String[] subDirS = {"tagsBySample","tagsLibrary","alignment", "rawGenotype", "filteredGenotype"};
+    String[] subDirS = {"tagsBySample","tagsLibrary","alignment", "rawGenotype", "filteredGenotype", "queryGenotype"};
     
     public GRTGo (String[] args) {
         this.createOptions();
@@ -200,13 +202,35 @@ public class GRTGo implements CLIInterface {
             builder.callGenotype(tagBySampleDirS, genotypeDirS);
             System.out.println("Calling alleles is complemeted in " + String.format("%.4f", Benchmark.getTimeSpanHours(start)) + " hours");
         }
-        else if (mode.equals("ud")) {
-            System.out.println("Start updating database with filtered genotype");
+        else if (mode.equals("fd")) {
+            System.out.println("Start filtering database with validated genotype");  
             String tagLibraryDirS = new File (this.workingDirS, this.subDirS[1]).getAbsolutePath();
-            String oldAnnotationFileS = new File(tagLibraryDirS, "tag.tas").getAbsolutePath();
+            String tagAnnotationFileS = new File(tagLibraryDirS, "tag.tas").getAbsolutePath();
+            String rawSNPFileS = new File(tagLibraryDirS, "rawSNP.bin").getAbsolutePath();
             String filteredGenotypeDirS = new File (this.workingDirS, this.subDirS[4]).getAbsolutePath();
-            String newAnnotationFileS = new File(tagLibraryDirS, "tag.filtered.tas").getAbsolutePath();
-            TagAnnotations tas = new TagAnnotations(oldAnnotationFileS);
+            String filteredTagAnnotationFileS = new File(tagLibraryDirS, "tag.filtered.tas").getAbsolutePath();
+            String filteredSNPFileS = new File(tagLibraryDirS, "SNP.filtered.bin").getAbsolutePath();
+            TagAnnotations tas = new TagAnnotations(tagAnnotationFileS);
+            SNPCounts sc = new SNPCounts (rawSNPFileS);
+            List<ChrPos> validatedSNPPosList = tas.filterTagAnnotationsWithValidatedGenotype(filteredGenotypeDirS);
+            tas.writeBinaryFile(filteredTagAnnotationFileS);
+            sc.selectSNPs(validatedSNPPosList);
+            sc.writeBinaryFile(filteredSNPFileS);
+            System.out.println("Filering database is complemeted in " + String.format("%.4f", Benchmark.getTimeSpanHours(start)) + " hours");
+        }
+        else if (mode.equals("rg")) {
+            System.out.println("Start retrieving genotype from database");  
+            String tagBySampleDirS = new File (this.workingDirS, this.subDirS[0]).getAbsolutePath();
+            String tagLibraryDirS = new File (this.workingDirS, this.subDirS[1]).getAbsolutePath();
+            String filteredTagAnnotationFileS = new File(tagLibraryDirS, "tag.filtered.tas").getAbsolutePath();
+            String filteredSNPFileS = new File(tagLibraryDirS, "SNP.filtered.bin").getAbsolutePath();
+            String genotypeDirS = new File (this.workingDirS, this.subDirS[5]).getAbsolutePath();
+            TagAnnotations tas = new TagAnnotations(filteredTagAnnotationFileS);
+            SNPCounts sc = new SNPCounts (filteredSNPFileS);
+            GBSVCFBuilder builder = new GBSVCFBuilder(tas, sc);
+            builder.setTagIdentifyThreshold(3);
+            builder.callGenotype(tagBySampleDirS, genotypeDirS);
+            System.out.println("Retrieving genotype is complemeted in " + String.format("%.4f", Benchmark.getTimeSpanHours(start)) + " hours");
         }
         else {
             this.printIntroductionAndUsage();
@@ -239,8 +263,8 @@ public class GRTGo implements CLIInterface {
         options.addOption("mc", true, "The minimum read count of tag in database. The default value is 3.");
         options.addOption("mq", true, "The minimum read mapping quality for SNP calling and allele calling. The default value is 30.");
         options.addOption("ml", true, "The maximum range of paired-end read mapping. The default value is 1000.");
-        options.addOption("md", true, "The maximum divergenece between a tag and the reference genome, which is a quality control in SNP calling. The default value is 5.");
-        options.addOption("it", true, "The tag identify threshold. While searching the tag DB, query tag having more mismatch than the value is not considered as a match. The default value is 1.");
+        options.addOption("md", true, "The maximum divergenece between a tag and the reference genome, which is a quality control in SNP calling. The default value is 7.");
+        options.addOption("it", true, "The tag identify threshold. While searching the tag DB, query tag having more mismatch than the value is not considered as a match. The default value is 3.");
     }
     
     @Override
