@@ -34,6 +34,29 @@ public class SNPCounts {
         this.readBinaryFile(infileS);
     }
     
+    public void selectSNPs (List<ChrPos> posList) {
+        List<List<SNPCount>> nChrSCLists = new ArrayList<>();
+        for (int i = 0; i < chrSCLists.size(); i++) {
+            List<SNPCount> oList = chrSCLists.get(i);
+            List<SNPCount> nList = new ArrayList<>();
+            for (int j = 0; j < oList.size(); j++) {
+                int index = Collections.binarySearch(posList, oList.get(j).getChrPos());
+                if (index < 0) continue;
+                nList.add(oList.get(j));
+            }
+            if (nList.size() == 0) continue;
+            nChrSCLists.add(nList);
+        }
+        short[] nchrs = new short[nChrSCLists.size()];
+        for (int i = 0; i <  nchrs.length; i++) {
+            nchrs[i] = nChrSCLists.get(i).get(0).getChromosome();
+        }
+        chrSCLists = nChrSCLists;
+        chrs = nchrs;
+        nChrSCLists = null;
+        nchrs = null;
+    }
+    
     public int getChromosomeNumber () {
         return chrs.length;
     }

@@ -17,13 +17,12 @@ import java.io.DataOutputStream;
 import java.io.File;
 import java.text.NumberFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import utils.IOUtils;
 import utils.PStringUtils;
-import utils.Tuple;
-import utils.Tuple3;
 
 /**
  *
@@ -306,6 +305,61 @@ public class TagAnnotations {
         catch (Exception e) {
             e.printStackTrace();
         }
+    }
+    
+    public List<ChrPos> filterTagAnnotationsWithValidatedGenotype (String genotypeDirS) {
+        File[] fs = new File(genotypeDirS).listFiles();
+        File[] gzfs = IOUtils.listFilesEndsWith(fs, ".gz");
+        File[] vcffs = IOUtils.listFilesEndsWith(fs, ".vcf");
+        List<File> fList = new ArrayList();
+        fList.addAll(Arrays.asList(gzfs));
+        fList.addAll(Arrays.asList(vcffs));
+        List<ChrPos> validatedSNPPosList = new ArrayList<>();
+        for (int i = 0; i < fList.size(); i++) {
+            try {
+                BufferedReader br = null;
+                if (fList.get(i).getName().endsWith(".gz")) {
+                    br = IOUtils.getTextGzipReader(fList.get(i).getAbsolutePath());
+                }
+                else {
+                    br = IOUtils.getTextReader(fList.get(i).getAbsolutePath());
+                }
+                String temp = null;
+                while ((temp = br.readLine()).startsWith("##")) {}
+                while ((temp = br.readLine()) != null) {
+                    List<String> l = PStringUtils.fastSplit(temp.substring(0, 50));
+                    validatedSNPPosList.add(new ChrPos(Short.parseShort(l.get(0)), Integer.parseInt(l.get(1))));
+                }
+                br.close();
+            }
+            catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        Collections.sort(validatedSNPPosList);
+        for (int i = 0; i < this.getGroupNumber(); i++) {
+            for (int j = 0; j < this.getTagNumber(i); j++) {
+                List<SNP> snpList = new ArrayList<>();
+                List<SNP> currentSNPList = this.getSNPOfTag(i, j);
+                for (int k = 0; k < currentSNPList.size(); k++) {
+                    ChrPos query = currentSNPList.get(k).getChrPos();
+                    int index = Collections.binarySearch(validatedSNPPosList, query);
+                    if (index < 0) continue;
+                    snpList.add(currentSNPList.get(k));
+                }
+                this.setSNPOfTag(i, j, snpList);
+                List<AlleleInfo> alleleList = new ArrayList<>();
+                List<AlleleInfo> currentAlleleList = this.getAlleleOfTag(i, j);
+                for (int k = 0; k < currentAlleleList.size(); k++) {
+                    ChrPos query = currentAlleleList.get(k).getChrPos();
+                    int index = Collections.binarySearch(validatedSNPPosList, query);
+                    if (index < 0) continue;
+                    alleleList.add(currentAlleleList.get(k));
+                }
+                this.setAlleleOfTag(i, j, alleleList);
+            }
+        }
+        return validatedSNPPosList;
     }
     
     public void callAllele (String samFileS, SNPCounts sc, int mapQThresh, int maxMappingIntervalThresh) {
@@ -593,8 +647,7 @@ public class TagAnnotations {
     public byte getAlleleNumberOfTag (int groupIndex, int tagIndex) {
         return (byte)this.getAlleleOfTag(groupIndex, tagIndex).size();
     }
-    
-    
+        
     public List<AlleleInfo> getAlleleOfTag (int groupIndex, int tagIndex) {
         return this.taList.get(groupIndex).getAlleleOfTag(tagIndex);
     }

@@ -19,6 +19,10 @@ public class ChrPos implements Comparable<ChrPos> {
         this.pos = pos;
     }
     
+    public ChrPos getChrPos () {
+        return this;
+    }
+    
     public short getChromosome () {
         return chr;
     }

@@ -57,6 +57,8 @@ public class GBSVCFBuilder {
     public void callGenotype (String tagBySampleDirS, String genotypeDirS) {
         File tempDir = new File(genotypeDirS, "temp");
         tempDir.mkdir();
+        File genoDir = new File(genotypeDirS, "genotype");
+        genoDir.mkdir();
         File[] sampleFiles = new File (tagBySampleDirS).listFiles();
         sampleFiles = IOUtils.listFilesEndsWith(sampleFiles, ".tas");
         Arrays.sort(sampleFiles);
@@ -70,7 +72,7 @@ public class GBSVCFBuilder {
         System.out.println("\nStart calling genotype of each individual sample...");
         for (int i = 0; i < indices.length; i++) {
             List<File> subFList = sampleFileList.subList(indices[i][0], indices[i][1]);
-            subFList.stream().forEach(f -> {
+            subFList.parallelStream().forEach(f -> {
                 String tempFileS = new File(tempDir, f.getName().replaceAll(".tas", ".gen")).getAbsolutePath();
                 AlleleDepth[][] adt = this.initializeADTable();
                 TagAnnotations ata = new TagAnnotations(f.getAbsolutePath());
@@ -84,12 +86,13 @@ public class GBSVCFBuilder {
                         if (result == null) continue;
                         int[] divergence = result.getFirstElement();
                         int[] tagIndices = result.getSecondElement();
-                        int tagIndex = this.getTagIndex(divergence, tagIndices, j, tag);     
+                        int tagIndex = this.getTagIndex(divergence, tagIndices, j, tag);
                         if (tagIndex < 0) continue;
                         int alleleNumber = tas.getAlleleNumberOfTag(j, tagIndex);
                         if (alleleNumber == 0) continue;
                         short chr = tas.getAlleleOfTag(j, tagIndex).get(0).getChromosome();
                         int chrIndex = sc.getChrIndex(chr);
+                        if (chrIndex < 0) continue;
                         for (int u = 0; u < alleleNumber; u++) {
                             AlleleInfo ai = tas.getAlleleOfTag(j, tagIndex).get(u);
                             int snpIndex = sc.getSNPIndex(chrIndex, new ChrPos(ai.getChromosome(), ai.getPosition()));
@@ -125,7 +128,7 @@ public class GBSVCFBuilder {
         String[] outfiles = new String[chrNumber];
         for (int i = 0; i < outfiles.length; i++) {
             short chr = sc.getChromosome(i);
-            outfiles[i] = new File (genoDir, PStringUtils.getNDigitNumber(3, chr)+".vcf").getAbsolutePath();
+            outfiles[i] = new File (genoDir, "chr"+PStringUtils.getNDigitNumber(3, chr)+".vcf").getAbsolutePath();
         }
         try {
             DataInputStream[] dis = new DataInputStream[sampleNames.length];
@@ -293,7 +296,7 @@ public class GBSVCFBuilder {
                 byte pos = ai.get(j).getRelativePosition();
                 if (query[end-1][pos-1] == base) cnt++;
             }
-            if (cnt == ai.size()) return i;
+            if (cnt == ai.size()) return tagIndices[i];
         }
         return Integer.MIN_VALUE;
     }

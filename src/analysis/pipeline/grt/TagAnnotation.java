@@ -37,9 +37,6 @@ public class TagAnnotation implements Swapper, IntComparator {
     protected TByteArrayList r2MapQList = null;
     protected List<List<SNP>> SNPList = null;
     protected List<List<AlleleInfo>> alleleList = null;
-//    protected List<List<ChrPos>> allelePosList = null;
-//    protected List<TByteArrayList> alleleList = null;
-//    protected List<TByteArrayList[]> alleleRelativePosList = null;
     
 
     TagAnnotation (int groupIndex) {

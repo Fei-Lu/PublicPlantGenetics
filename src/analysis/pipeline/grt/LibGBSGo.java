@@ -5,11 +5,13 @@
  */
 package analysis.pipeline.grt;
 
+import format.position.ChrPos;
 import format.table.RowTable;
 import java.io.BufferedReader;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import utils.IOUtils;
 
@@ -25,7 +27,7 @@ public class LibGBSGo {
     String bwaPath = null;
     String cutter1 = null;
     String cutter2 = null;
-    String[] subDirS = {"tagsBySample","tagsLibrary","alignment", "rawGenotype", "filteredGenotype"};
+    String[] subDirS = {"tagsBySample","tagsLibrary","alignment", "rawGenotype", "filteredGenotype", "queryGenotype"};
     LibraryInfo li = null;
     
     public LibGBSGo (String parameterFileS) {
@@ -34,8 +36,38 @@ public class LibGBSGo {
 //        this.mergeTagAnnotations();
 //        this.alignTags();
 //        this.callSNP();
-        //this.callAllele();
-        this.buildVCF();
+//        this.callAllele();
+//        this.buildVCF();
+//        this.filterDatabase();
+        this.retrieveGenotype();
+    }
+    
+    public void retrieveGenotype () {
+        String tagBySampleDirS = new File (this.workingDirS, this.subDirS[0]).getAbsolutePath();
+        String tagLibraryDirS = new File (this.workingDirS, this.subDirS[1]).getAbsolutePath();
+        String filteredTagAnnotationFileS = new File(tagLibraryDirS, "tag.filtered.tas").getAbsolutePath();
+        String filteredSNPFileS = new File(tagLibraryDirS, "SNP.filtered.bin").getAbsolutePath();
+        String genotypeDirS = new File (this.workingDirS, this.subDirS[5]).getAbsolutePath();
+        TagAnnotations tas = new TagAnnotations(filteredTagAnnotationFileS);
+        SNPCounts sc = new SNPCounts (filteredSNPFileS);
+        GBSVCFBuilder builder = new GBSVCFBuilder(tas, sc);
+        builder.setTagIdentifyThreshold(3);
+        builder.callGenotype(tagBySampleDirS, genotypeDirS);
+    }
+    
+    public void filterDatabase () {
+        String tagLibraryDirS = new File (this.workingDirS, this.subDirS[1]).getAbsolutePath();
+        String tagAnnotationFileS = new File(tagLibraryDirS, "tag.tas").getAbsolutePath();
+        String rawSNPFileS = new File(tagLibraryDirS, "rawSNP.bin").getAbsolutePath();
+        String filteredGenotypeDirS = new File (this.workingDirS, this.subDirS[4]).getAbsolutePath();
+        String filteredTagAnnotationFileS = new File(tagLibraryDirS, "tag.filtered.tas").getAbsolutePath();
+        String filteredSNPFileS = new File(tagLibraryDirS, "SNP.filtered.bin").getAbsolutePath();
+        TagAnnotations tas = new TagAnnotations(tagAnnotationFileS);
+        SNPCounts sc = new SNPCounts (rawSNPFileS);
+        List<ChrPos> validatedSNPPosList = tas.filterTagAnnotationsWithValidatedGenotype(filteredGenotypeDirS);
+        tas.writeBinaryFile(filteredTagAnnotationFileS);
+        sc.selectSNPs(validatedSNPPosList);
+        sc.writeBinaryFile(filteredSNPFileS);
     }
     
     public void buildVCF () {
