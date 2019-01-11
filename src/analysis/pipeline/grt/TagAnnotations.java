@@ -364,9 +364,9 @@ public class TagAnnotations {
     
     public void callAllele (String samFileS, SNPCounts sc, int mapQThresh, int maxMappingIntervalThresh) {
         System.out.println("Start adding alleles to DB");
+        String temp = null;
         try {
             BufferedReader br = IOUtils.getTextGzipReader(samFileS);
-            String temp = null;
             while ((temp = br.readLine()).startsWith("@SQ")){}
             int queryCount = 0;
             List<AlleleInfo> tagAlleleList = new ArrayList();
@@ -410,6 +410,7 @@ public class TagAnnotations {
             System.out.println("A total of "+String.valueOf(snpCnt) + " tags have allele calls");
         }
         catch (Exception e) {
+            System.out.println(temp);
             e.printStackTrace();
         }
     }

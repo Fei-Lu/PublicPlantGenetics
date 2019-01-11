@@ -398,7 +398,7 @@ public class SAMUtils {
                 }
                 currentRefPos+=length;
             }
-            else {//M, =, X
+            else {//M,77; =, X
                 for (int j = 0; j < length; j++) {
                     currentRefPos++;
                     currentAltPos++;
@@ -407,6 +407,12 @@ public class SAMUtils {
                         index = -index-1;
                         if (index == snpRefPos.length) break;
                         int cha = snpRefPos[index]-currentRefPos-1;
+                        if (cha + j> length) {
+                            cha = length - j-1;
+                            currentRefPos+=cha;
+                            currentAltPos+=cha;
+                            break;
+                        }
                         currentRefPos+=cha;
                         currentAltPos+=cha;
                         j+=cha;

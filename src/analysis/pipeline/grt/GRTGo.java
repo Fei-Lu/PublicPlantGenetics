@@ -259,11 +259,11 @@ public class GRTGo implements CLIInterface {
         options.addOption("er", true, "Recognition sequence of restriction enzyme in R2, e.g CCGG");
         options.addOption("t", true, "Number of threads. The default value is 32. The actual number of running threads is less than the number of cores regardless of the input value, but -1 means the number of all available cores");
         options.addOption("g", true, "The reference genome of the species. The indexing files should be included in the same directory of the reference genome.");
-        options.addOption("bwa", true, "The path of bwa excutable file, e.g /Users/Software/bwa-0.7.15/bwa");
+        options.addOption("bwa", true, "The path of bwa executable file, e.g /Users/Software/bwa-0.7.15/bwa");
         options.addOption("mc", true, "The minimum read count of tag in database. The default value is 3.");
         options.addOption("mq", true, "The minimum read mapping quality for SNP calling and allele calling. The default value is 30.");
         options.addOption("ml", true, "The maximum range of paired-end read mapping. The default value is 1000.");
-        options.addOption("md", true, "The maximum divergenece between a tag and the reference genome, which is a quality control in SNP calling. The default value is 7.");
+        options.addOption("md", true, "The maximum divergence between a tag and the reference genome, which is a quality control in SNP calling. The default value is 7.");
         options.addOption("it", true, "The tag identify threshold. While searching the tag DB, query tag having more mismatch than the value is not considered as a match. The default value is 3.");
     }
     

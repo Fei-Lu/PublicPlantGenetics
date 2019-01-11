@@ -32,12 +32,12 @@ public class LibGBSGo {
     
     public LibGBSGo (String parameterFileS) {
         this.initializeParameter(parameterFileS);
-        this.mkTagsBySample();
-        this.mergeTagAnnotations();
-        this.alignTags();
-        this.callSNP();
+        //this.mkTagsBySample();
+        //this.mergeTagAnnotations();
+        //this.alignTags();
+        //this.callSNP();
         this.callAllele();
-        this.buildVCF();
+        //this.buildVCF();
 //        this.filterDatabase();
 //        this.retrieveGenotype();
     }
