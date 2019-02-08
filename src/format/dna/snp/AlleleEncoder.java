@@ -25,6 +25,6 @@ public class AlleleEncoder {
             HashCharByteMaps.getDefaultFactory().withDefaultValue((byte)-1).newImmutableMap(alleles, alleleBytes);
     
     public static final HashByteCharMap alleleByteCharMap = 
-            HashByteCharMaps.getDefaultFactory().withDefaultValue('0').newImmutableMap(alleleBytes, alleles);
+            HashByteCharMaps.getDefaultFactory().withDefaultValue('!').newImmutableMap(alleleBytes, alleles);
     
 }

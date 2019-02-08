@@ -448,6 +448,12 @@ public class SAMUtils {
                 tagAlleleList.get(i).setBase(base);
             }
         }
+        for (int i = 0; i < tagAlleleList.size(); i++) {
+            if (tagAlleleList.get(i).getAllele() == Byte.MIN_VALUE) {
+                tagAlleleList.remove(i);
+                i--;
+            }
+        }
         return tagAlleleList;
     }
     

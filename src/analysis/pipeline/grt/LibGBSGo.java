@@ -36,8 +36,8 @@ public class LibGBSGo {
         //this.mergeTagAnnotations();
         //this.alignTags();
         //this.callSNP();
-        this.callAllele();
-        //this.buildVCF();
+        //this.callAllele();
+        this.buildVCF();
 //        this.filterDatabase();
 //        this.retrieveGenotype();
     }
@@ -77,9 +77,11 @@ public class LibGBSGo {
         String rawSNPFileS = new File(tagLibraryDirS, "rawSNP.bin").getAbsolutePath();
         String genotypeDirS = new File (this.workingDirS, this.subDirS[3]).getAbsolutePath();
         TagAnnotations tas = new TagAnnotations(tagAnnotationFileS);
+        tas.writeTextFileOfGroup(new File(tagLibraryDirS, "tag.tas.txt").getAbsolutePath(), 799);
         SNPCounts sc = new SNPCounts (rawSNPFileS);
         GBSVCFBuilder builder = new GBSVCFBuilder(tas, sc);
         builder.setTagIdentifyThreshold(3);
+        builder.setThreads(8);
         builder.callGenotype(tagBySampleDirS, genotypeDirS);
     }
     
@@ -90,6 +92,7 @@ public class LibGBSGo {
         String rawSNPFileS = new File(tagLibraryDirS, "rawSNP.bin").getAbsolutePath();
         String samFileS = new File (alignmentDirS, "tag.sam.gz").getAbsolutePath();
         TagAnnotations tas = new TagAnnotations(tagAnnotationFileS);
+        tas.removeAllAllele();
         SNPCounts sc = new SNPCounts (rawSNPFileS);
         int mapQThresh = 30;
         int maxMappingIntervalThresh = 1000;
@@ -109,6 +112,7 @@ public class LibGBSGo {
         int maxMappingIntervalThresh = 1000;
         int maxDivergence = 7;
         TagAnnotations tas = new TagAnnotations(tagAnnotationFileS);
+        tas.removeAllSNP();
         tas.callSNP(samFileS, mapQThresh, maxMappingIntervalThresh, maxDivergence);
         tas.writeBinaryFile(tagAnnotationFileS);
 //        tas.writeTextFile(new File(tagLibraryDirS, "tag.tas.txt").getAbsolutePath());

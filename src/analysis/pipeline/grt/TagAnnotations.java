@@ -82,7 +82,6 @@ public class TagAnnotations {
     }
     
     public void writeFastqFile (String r1FastqFileS, String r2FastqFileS) {
-        System.out.println("Writing fastq file from TagAnnotations");
         String polyQ = "????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????";
         try {
             System.out.println("Writing fastq file from TagAnnotations");
@@ -253,6 +252,61 @@ public class TagAnnotations {
         }
     }
     
+    public void writeTextFileOfGroup (String outfileS, int groupIndex) {
+        try {
+            BufferedWriter bw = IOUtils.getTextWriter(outfileS);
+            bw.write("TagLengthInLong:\t" + String.valueOf(this.getTagLengthInLong()));
+            bw.newLine();
+            bw.write("GroupIdentifierOffset:\t" + String.valueOf(this.getGroupIdentiferOffset()));
+            bw.newLine();
+            bw.write("GroupIdentifierLength:\t" + String.valueOf(this.getGroupIdentiferLength()));
+            bw.newLine();
+            for (int i = 0; i < this.getGroupNumber(); i++) {
+                if (i != groupIndex) continue;
+                StringBuilder sb = new StringBuilder();
+                sb.append("GroupIndex:\t").append(i).append("\nTagNumber:\t").append(this.getTagNumber(i));
+                bw.write(sb.toString());
+                bw.newLine();
+                for (int j = 0; j < this.getTagNumber(i); j++) {
+                    sb = new StringBuilder();
+                    sb.append("Tag_ID\t:").append(i).append("_").append(j).append("\n");
+                    sb.append(this.getR1TagLength(i, j)).append("\t").append(this.getR2TagLength(i, j)).append("\t").append(this.getReadNumber(i, j)).append("\n");
+                    String[] reads = TagUtils.getReadsFromTag(this.getTag(i, j), this.getR1TagLength(i, j), this.getR2TagLength(i, j));
+                    sb.append(reads[0]).append("\t").append(reads[1]).append("\n");
+                    sb.append("R1 alignment:\t").append(this.getR1Chromosome(i, j)).append("\t").append(this.getR1StartPosition(i, j)).append("\t").append(this.getR1Strand(i, j)).append("\t").append(this.getR1MapQ(i, j)).append("\n");
+                    sb.append("R2 alignment:\t").append(this.getR2Chromosome(i, j)).append("\t").append(this.getR2StartPosition(i, j)).append("\t").append(this.getR2Strand(i, j)).append("\t").append(this.getR2MapQ(i, j)).append("\n");
+                    List<SNP> snpList = this.getSNPOfTag(i, j);
+                    sb.append("SNPNumber:\t").append(snpList.size());
+                    sb.append("\nSNPs:");
+                    for (int k = 0; k < snpList.size(); k++) {
+                        SNP s = snpList.get(k);
+                        sb.append("\t|").append(k).append("->").append(s.getChromosome()).append("\t").append(s.getPosition()).append("\t").append(s.getRefAllele()).append("\t");
+                        for (int u = 0; u < s.getAltAlleleNumber(); u++) {
+                            sb.append(s.getAltAllele(u)).append("/");
+                        }
+                        sb.deleteCharAt(sb.length()-1);
+                    }
+                    sb.append("\n");
+                    List<AlleleInfo> alleleList = this.getAlleleOfTag(i, j);
+                    sb.append("AlleleNumber:\t").append(alleleList.size());
+                    sb.append("\nAlleles:");
+                    for (int k = 0; k < alleleList.size(); k++) {
+                        sb.append("\t|").append(k).append("-").append(alleleList.get(k).getEnd()).append("-").append(alleleList.get(k).getRelativePosition())
+                                .append("->").append(alleleList.get(k).getChromosome()).append("\t").append(alleleList.get(k).getPosition())
+                                .append("\t").append(AlleleEncoder.alleleByteCharMap.get(alleleList.get(k).getAllele()));
+                    }
+                    bw.write(sb.toString());
+                    bw.newLine();
+                } 
+            }
+            bw.flush();
+            bw.close();
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+    
     public void writeTextFile (String outfileS) {
         try {
             BufferedWriter bw = IOUtils.getTextWriter(outfileS);
@@ -373,7 +427,7 @@ public class TagAnnotations {
             long cnt = 0;
             long snpCnt = 0;
             while ((temp = br.readLine()) != null) {
-                List<String> l = SAMUtils.getAlignElements(temp);
+                List<String> l = SAMUtils.getAlignElements(temp);            
                 if (Integer.parseInt(l.get(1)) > 2000) continue; //remove supplement alignment to have a pair of alignments for PE reads
                 queryCount++;
                 List<AlleleInfo> alleles = SAMUtils.getAlleles3(l, mapQThresh, sc, queryCount);
@@ -390,7 +444,7 @@ public class TagAnnotations {
                                 tagAlleleList.addAll(alleles);
                             }
                             cnt++;
-                            if (cnt%10000000 == 0) System.out.println(String.valueOf(cnt) + " tags are properly aligned for SNP calling");                           
+                            if (cnt%10000000 == 0) System.out.println(String.valueOf(cnt) + " tags are properly aligned for allele calling");                           
                             if (tagAlleleList.size() != 0) {
                                 List<String> ll = PStringUtils.fastSplit(l.get(0), "_");                               
                                 int groupIndex = Integer.parseInt(ll.get(0));
