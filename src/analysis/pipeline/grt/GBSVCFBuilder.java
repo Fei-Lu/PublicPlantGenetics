@@ -69,7 +69,7 @@ public class GBSVCFBuilder {
         int[][] indices = PArrayUtils.getSubsetsIndicesBySubsetSize(sampleFiles.length, this.numThreads);
         List<File> sampleFileList = Arrays.asList(sampleFiles);
         TagFinder tf = new TagFinder(tas);
-        System.out.println("\nStart calling genotype of each individual sample...");
+        System.out.println("\nStart calling genotype of each individual sample...\n");
         for (int i = 0; i < indices.length; i++) {
             List<File> subFList = sampleFileList.subList(indices[i][0], indices[i][1]);
             subFList.parallelStream().forEach(f -> {
@@ -110,13 +110,12 @@ public class GBSVCFBuilder {
 //              this.wirteTextTempGenotype(tempFileS, adt);
             });
         }
-        System.out.println();
         this.writeGenotype(tempDir, sampleNames, genotypeDirS);
         File[] tempfs = tempDir.listFiles();
         for (int i = 0; i < tempfs.length; i++) tempfs[i].delete();
         tempDir.delete();
     }
-
+    
     private void writeGenotype (File tempDir, String[] sampleNames, String genotypeDirS) {
         System.out.println("Start merging individual genotype into VCF by chromosomes");
         File genoDir = new File(genotypeDirS, "genotype");
@@ -134,7 +133,7 @@ public class GBSVCFBuilder {
             DataInputStream[] dis = new DataInputStream[sampleNames.length];
             for (int i = 0; i < dis.length; i++) {
                 String inputFileS = new File(tempDir, sampleNames[i]+".gen").getAbsolutePath();
-                dis[i] = IOUtils.getBinaryReader(inputFileS, 4096);
+                dis[i] = IOUtils.getBinaryReader(inputFileS, 8192);
             }
             BufferedWriter[] bws = new BufferedWriter[outfiles.length];
             String annotation = VCFUtils.getVCFAnnotation();
@@ -203,14 +202,13 @@ public class GBSVCFBuilder {
                     bws[i].write(sb.toString());
                     bws[i].newLine();   
                 }
+                bws[i].flush();
+                bws[i].close();
+                System.gc();
             }
             
             for (int i = 0; i < dis.length; i++) {
                 dis[i].close();
-            }
-            for (int i = 0; i < bws.length; i++) {
-                bws[i].flush();
-                bws[i].close();
             }
         }
         catch (Exception e) {

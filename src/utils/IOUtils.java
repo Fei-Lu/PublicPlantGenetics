@@ -21,6 +21,11 @@ import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStreamWriter;
+import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.TreeSet;
 import java.util.zip.GZIPInputStream;
@@ -89,6 +94,17 @@ public class IOUtils {
         return bw;
     }
     
+    public static BufferedWriter getNIOTextWriter (String outfileS) {
+        BufferedWriter bw = null;
+        try {
+             bw = Files.newBufferedWriter(Paths.get(outfileS), StandardCharsets.UTF_8);
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
+        return bw;
+    }
+    
     public static BufferedReader getTextReader (String infileS) {
         BufferedReader br = null;
         try {
@@ -100,10 +116,54 @@ public class IOUtils {
         return br;
     }
     
+    public static BufferedReader getNIOTextReader (String infileS) {
+        BufferedReader br = null;
+        try {
+            br = Files.newBufferedReader(Paths.get(infileS), StandardCharsets.UTF_8);
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
+        return br;
+    }
+    
     public static DataOutputStream getBinaryWriter (String outfileS) {
         DataOutputStream dos = null;
         try {
             dos = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(outfileS), 65536));
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
+        return dos;
+    }
+    
+    public static DataOutputStream getBinaryWriter (String outfileS, int bufferSize) {
+        DataOutputStream dos = null;
+        try {
+            dos = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(outfileS), bufferSize));
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
+        return dos;
+    }
+    
+    public static DataOutputStream getNIOBinaryWriter (String outfileS) {
+        DataOutputStream dos = null;
+        try {
+            dos = new DataOutputStream(new BufferedOutputStream(Files.newOutputStream(Paths.get(outfileS)), 65536));
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
+        return dos;
+    }
+    
+    public static DataOutputStream getNIOBinaryWriter (String outfileS, int bufferSize) {
+        DataOutputStream dos = null;
+        try {
+            dos = new DataOutputStream(new BufferedOutputStream(Files.newOutputStream(Paths.get(outfileS)), bufferSize));
         }
         catch (Exception e) {
             e.printStackTrace();
@@ -133,6 +193,28 @@ public class IOUtils {
         return dis;
     }
     
+    public static DataInputStream getNIOBinaryReader (String infileS) {
+        DataInputStream dis = null;
+        try {
+            dis = new DataInputStream(new BufferedInputStream(Files.newInputStream(Paths.get(infileS)), 65536));
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
+        return dis;
+    }
+    
+    public static DataInputStream getNIOBinaryReader (String infileS, int bufferSize) {
+        DataInputStream dis = null;
+        try {
+            dis = new DataInputStream(new BufferedInputStream(Files.newInputStream(Paths.get(infileS)), bufferSize));
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
+        return dis;
+    }
+    
     public static ObjectOutputStream getObjectWriter (String outfileS) {
         ObjectOutputStream oos = null;
         try {
@@ -153,6 +235,26 @@ public class IOUtils {
             e.printStackTrace();
         }
         return ois;
+    }
+    
+    public static Tuple<FileChannel, ByteBuffer> getNIOChannelBuffer (String fileS, int bufferSize) {
+        FileChannel fc = null;
+        ByteBuffer bb = ByteBuffer.allocate(bufferSize);
+        try {
+            fc = FileChannel.open(Paths.get(fileS));
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
+        return new Tuple(fc, bb);
+//        while(fc.read(bb)!=-1){
+//            bb.flip();//将Buffer从写状态切换到读状态
+//            while(bb.hasRemaining()){
+//                wChannel.write(bb);
+//            }
+//            bb.clear();//为读入数据到Buffer做准备
+//        }
+//        fc.close();
     }
     
     public static File[] listFilesContains (File[] fAll, String containStr) {
