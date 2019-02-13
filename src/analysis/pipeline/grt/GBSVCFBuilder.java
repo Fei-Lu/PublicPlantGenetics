@@ -68,7 +68,7 @@ public class GBSVCFBuilder {
         System.out.println("\nStart calling genotype of each individual sample...\n");
         for (int i = 0; i < indices.length; i++) {
             List<File> subFList = sampleFileList.subList(indices[i][0], indices[i][1]);
-            subFList.stream().forEach(f -> {
+            subFList.parallelStream().forEach(f -> {
                 String tempFileS = new File(tempDir, f.getName().replaceAll(".tas", ".gen")).getAbsolutePath();
                 AlleleDepth[][] adt = this.initializeADTable();
                 TagAnnotations ata = new TagAnnotations(f.getAbsolutePath());
