@@ -26,6 +26,7 @@ import java.nio.channels.FileChannel;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.TreeSet;
 import java.util.zip.GZIPInputStream;
@@ -237,24 +238,53 @@ public class IOUtils {
         return ois;
     }
     
-    public static Tuple<FileChannel, ByteBuffer> getNIOChannelBuffer (String fileS, int bufferSize) {
+    public static Tuple<FileChannel, ByteBuffer> getNIOChannelBufferReader (String fileS, int bufferSize) {
         FileChannel fc = null;
         ByteBuffer bb = ByteBuffer.allocate(bufferSize);
         try {
-            fc = FileChannel.open(Paths.get(fileS));
+            fc = FileChannel.open(Paths.get(fileS), StandardOpenOption.READ);
         }
         catch (Exception e) {
             e.printStackTrace();
         }
         return new Tuple(fc, bb);
-//        while(fc.read(bb)!=-1){
-//            bb.flip();//将Buffer从写状态切换到读状态
-//            while(bb.hasRemaining()){
-//                wChannel.write(bb);
-//            }
-//            bb.clear();//为读入数据到Buffer做准备
-//        }
-//        fc.close();
+    }
+    
+    public static Tuple<FileChannel, ByteBuffer> getNIOChannelDirectBufferReader (String fileS, int bufferSize) {
+        FileChannel fc = null;
+        ByteBuffer bb = ByteBuffer.allocateDirect(bufferSize);
+        try {
+            fc = FileChannel.open(Paths.get(fileS), StandardOpenOption.READ);
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
+        return new Tuple(fc, bb);
+    }
+    
+    public static Tuple<FileChannel, ByteBuffer> getNIOChannelBufferWriter (String fileS, int bufferSize) {
+        FileChannel fc = null;
+        ByteBuffer bb = ByteBuffer.allocate(bufferSize);        
+        try {
+            fc = FileChannel.open(Paths.get(fileS), StandardOpenOption.CREATE, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING);
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
+        return new Tuple(fc, bb);
+    }
+    
+    public static Tuple<FileChannel, ByteBuffer> getNIOChannelDirectBufferWriter (String fileS, int bufferSize) {
+        FileChannel fc = null;
+        ByteBuffer bb = ByteBuffer.allocateDirect(bufferSize);        
+        try {
+
+            fc = FileChannel.open(Paths.get(fileS), StandardOpenOption.CREATE, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING);
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
+        return new Tuple(fc, bb);
     }
     
     public static File[] listFilesContains (File[] fAll, String containStr) {

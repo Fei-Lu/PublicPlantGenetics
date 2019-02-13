@@ -5,9 +5,6 @@
  */
 package analysis.pipeline.grt;
 
-import cern.colt.GenericSorting;
-import cern.colt.Swapper;
-import cern.colt.function.IntComparator;
 import format.dna.BaseEncoder;
 import format.dna.snp.AlleleEncoder;
 import format.dna.snp.genotype.AlleleDepth;
@@ -15,14 +12,13 @@ import format.dna.snp.genotype.VCFUtils;
 import format.position.ChrPos;
 import gnu.trove.list.array.TByteArrayList;
 import gnu.trove.list.array.TIntArrayList;
-import gnu.trove.set.hash.TByteHashSet;
 import java.io.BufferedWriter;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
-import java.text.SimpleDateFormat;
+import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.List;
 import utils.IOUtils;
 import utils.PArrayUtils;
@@ -72,7 +68,7 @@ public class GBSVCFBuilder {
         System.out.println("\nStart calling genotype of each individual sample...\n");
         for (int i = 0; i < indices.length; i++) {
             List<File> subFList = sampleFileList.subList(indices[i][0], indices[i][1]);
-            subFList.parallelStream().forEach(f -> {
+            subFList.stream().forEach(f -> {
                 String tempFileS = new File(tempDir, f.getName().replaceAll(".tas", ".gen")).getAbsolutePath();
                 AlleleDepth[][] adt = this.initializeADTable();
                 TagAnnotations ata = new TagAnnotations(f.getAbsolutePath());
@@ -107,7 +103,6 @@ public class GBSVCFBuilder {
                     }
                 }
                 this.writeTempGenotype(tempFileS, adt);
-//              this.wirteTextTempGenotype(tempFileS, adt);
             });
         }
         this.writeGenotype(tempDir, sampleNames, genotypeDirS);
@@ -129,34 +124,62 @@ public class GBSVCFBuilder {
             short chr = sc.getChromosome(i);
             outfiles[i] = new File (genoDir, "chr"+PStringUtils.getNDigitNumber(3, chr)+".vcf").getAbsolutePath();
         }
+        int ii = 0;
+        int jj = 0;
+        int kk = 0;
         try {
-            DataInputStream[] dis = new DataInputStream[sampleNames.length];
-            for (int i = 0; i < dis.length; i++) {
+            FileChannel[] fcs = new FileChannel[sampleNames.length]; 
+            ByteBuffer[] bbs = new ByteBuffer[fcs.length];
+            for (int i = 0; i < fcs.length; i++) {
                 String inputFileS = new File(tempDir, sampleNames[i]+".gen").getAbsolutePath();
-                dis[i] = IOUtils.getBinaryReader(inputFileS, 8192);
+                Tuple<FileChannel, ByteBuffer> iot = IOUtils.getNIOChannelBufferReader(inputFileS, 65536);
+                fcs[i] = iot.getFirstElement();
+                bbs[i] = iot.getSecondElement();
             }
-            BufferedWriter[] bws = new BufferedWriter[outfiles.length];
+            for (int i = 0; i < fcs.length; i++) {
+                fcs[i].read(bbs[i]);
+                bbs[i].flip();
+            }
             String annotation = VCFUtils.getVCFAnnotation();
             String header = VCFUtils.getVCFHeader(sampleNames);
-            for (int i = 0; i < bws.length; i++) {
-                bws[i] = IOUtils.getTextWriter(outfiles[i]);
-                bws[i].write(annotation);
-                bws[i].write(header);
-                bws[i].newLine();
-            }
             for (int i = 0; i < sc.getChromosomeNumber(); i++) {
+                BufferedWriter bw = IOUtils.getTextWriter(outfiles[i]);
+                bw.write(annotation);
+                bw.write(header);
+                bw.newLine();
                 for (int j = 0; j < sc.getSNPNumberOnChromosome(i); j++) {
                     int[] depth = new int[6];
-                    AlleleDepth[] sampleAD = new AlleleDepth[dis.length];
-                    for (int k = 0; k < dis.length; k++) {
-                        sampleAD[k] = new AlleleDepth();
-                        int alleleNumber = dis[k].readInt();
-                        for (int u = 0; u < alleleNumber; u++) {
-                            byte cAllele = dis[k].readByte();
-                            int cDepth = dis[k].readInt();
-                            sampleAD[k].addAllele(cAllele);
-                            sampleAD[k].addDepth(cDepth);
-                            depth[cAllele]+=cDepth;
+                    AlleleDepth[] sampleAD = new AlleleDepth[fcs.length];
+                    for (int k = 0; k < fcs.length; k++) {
+                        if (k == 51) {
+                            int a = 3;
+                        }
+                        ii = i;jj = j;kk = k;
+                        short chrIndex = bbs[k].getShort();
+                        if (chrIndex == Short.MIN_VALUE) {
+                            bbs[k].clear();
+                            fcs[k].read(bbs[k]);
+                            bbs[k].flip();
+                            chrIndex = bbs[k].getShort();
+                        }
+                        else if (chrIndex == -1) {
+                            
+                        }
+                        int posIndex = bbs[k].getInt();
+                        if (chrIndex != i || posIndex != j) {
+                            bbs[k].position(bbs[k].position()-6);
+                            sampleAD[k] = new AlleleDepth();
+                        }
+                        else {
+                            sampleAD[k] = new AlleleDepth();
+                            byte alleleNumber = bbs[k].get();
+                            for (int u = 0; u < alleleNumber; u++) {
+                                byte cAllele = bbs[k].get();
+                                int cDepth = bbs[k].getInt();
+                                sampleAD[k].addAllele(cAllele);
+                                sampleAD[k].addDepth(cDepth);
+                                depth[cAllele]+=cDepth;
+                            }
                         }
                         sampleAD[k].toArray();
                     }
@@ -199,19 +222,19 @@ public class GBSVCFBuilder {
                         }
                         sb.append("\t").append(VCFUtils.getGenotype(readCount, sequencingAlignErrorRate));
                     }
-                    bws[i].write(sb.toString());
-                    bws[i].newLine();   
+                    bw.write(sb.toString());
+                    bw.newLine();   
                 }
-                bws[i].flush();
-                bws[i].close();
+                bw.flush();
+                bw.close();
                 System.gc();
             }
-            
-            for (int i = 0; i < dis.length; i++) {
-                dis[i].close();
+            for (int i = 0; i < fcs.length; i++) {
+                fcs[i].close();
             }
         }
         catch (Exception e) {
+            System.out.println(ii+"\t"+jj+"\t"+kk);
             e.printStackTrace();
         }
         System.out.println("VCF genotype is output to " + genotypeDirS);
@@ -243,20 +266,44 @@ public class GBSVCFBuilder {
     }
     
     private void writeTempGenotype (String tempFileS, AlleleDepth[][] adt) {
+        if (tempFileS.contains("Taxon57")) {
+            int a = 3;
+        }
         try {
-            DataOutputStream dos = IOUtils.getBinaryWriter(tempFileS);
+            Tuple<FileChannel, ByteBuffer> iot = IOUtils.getNIOChannelBufferWriter(tempFileS, 65536);
+            FileChannel fc = iot.getFirstElement();
+            ByteBuffer bb = iot.getSecondElement();
             for (int i = 0; i < adt.length; i++) {
                 for (int j = 0; j < adt[i].length; j++) {
-                    int alleleNumber  = adt[i][j].getAlleleNumber();
-                    dos.writeInt(alleleNumber);
+                    int alleleNumber = adt[i][j].getAlleleNumber();
+                    if (alleleNumber == 0) continue;
+                    bb.putShort((short)i);
+                    bb.putInt(j);
+                    bb.put((byte)alleleNumber);
                     for (int k = 0; k < alleleNumber; k++) {
-                        dos.writeByte(adt[i][j].getAllele(k));
-                        dos.writeInt(adt[i][j].getDepth(k));
+                        bb.put(adt[i][j].getAllele(k));
+                        bb.putInt(adt[i][j].getDepth(k));
+                    }
+                    int remain = bb.remaining();
+                    if (remain < 50) {
+                        bb.putShort(Short.MIN_VALUE);
+                        bb.putInt(Integer.MIN_VALUE);
+                        bb.flip();
+                        bb.limit(bb.capacity());
+                        fc.write(bb);
+                        bb.clear();
                     }
                 }
             }
-            dos.flush();
-            dos.close();
+            if (bb.hasRemaining()) {
+                bb.putShort((short)-1);
+                bb.putInt(Integer.MIN_VALUE);
+                bb.flip();
+                bb.limit(bb.capacity());
+                fc.write(bb);
+                bb.clear();
+            }
+            fc.close();
         }
         catch (Exception e) {
             e.printStackTrace();
