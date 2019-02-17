@@ -36,10 +36,11 @@ public class LibGBSGo {
         //this.mergeTagAnnotations();
         //this.alignTags();
         //this.callSNP();
-        //this.callAllele();
+        this.removeLowCountSNP();
+        this.callAllele();
         this.buildVCF();
-//        this.filterDatabase();
-//        this.retrieveGenotype();
+        //this.filterDatabase();
+        //this.retrieveGenotype();
     }
     
     public void retrieveGenotype () {
@@ -99,6 +100,14 @@ public class LibGBSGo {
         tas.callAllele(samFileS, sc, mapQThresh, maxMappingIntervalThresh);
         tas.writeBinaryFile(tagAnnotationFileS);
         //tas.writeTextFile(new File(tagLibraryDirS, "tag.tas.txt").getAbsolutePath());
+    }
+    
+    public void removeLowCountSNP () {
+        String tagLibraryDirS = new File (this.workingDirS, this.subDirS[1]).getAbsolutePath();
+        String rawSNPFileS = new File(tagLibraryDirS, "rawSNP.bin").getAbsolutePath();
+        SNPCounts snpSCs = new SNPCounts(rawSNPFileS);
+        int minTagCount = 2;
+        snpSCs.writeBinaryFile(rawSNPFileS, minTagCount);
     }
     
     public void callSNP () {

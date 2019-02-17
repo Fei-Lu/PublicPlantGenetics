@@ -81,6 +81,10 @@ public class SNPCounts {
         return chrSCLists.get(chrIndex).get(snpIndex).getReadNumber();
     }
     
+    public int getTagNumberOfSNP (int chrIndex, int snpIndex) {
+        return chrSCLists.get(chrIndex).get(snpIndex).getTagNumber();
+    }
+    
     public int getPositionOfSNP (int chrIndex, int snpIndex) {
         return chrSCLists.get(chrIndex).get(snpIndex).getPosition();
     }
@@ -138,7 +142,7 @@ public class SNPCounts {
                     for (int k = 0; k < altNumber; k++) {
                         alts.add(dis.readByte());
                     }
-                    SNPCount cs = new SNPCount(chr, pos, ref, alts, dis.readInt());
+                    SNPCount cs = new SNPCount(chr, pos, ref, alts, dis.readInt(), dis.readInt());
                     cl.add(cs);
                     cnt++;
                     if (cnt%1000000 == 0) System.out.println(String.valueOf(cnt) + " SNPs are read in");
@@ -175,6 +179,7 @@ public class SNPCounts {
                         dos.writeByte(s.getAltAlleleByte(k));
                     }
                     dos.writeInt(s.getReadNumber());
+                    dos.writeInt(s.getTagNumber());
                     cnt++;
                     if (cnt%1000000 == 0) System.out.println(String.valueOf(cnt) + " SNPs are written out");
                 }
@@ -188,6 +193,48 @@ public class SNPCounts {
         }
     }
     
+    public void writeBinaryFile (String outfileS, int minTagCount) {
+        System.out.println("Writing SNPCounts file");
+        try {
+            DataOutputStream dos = IOUtils.getBinaryWriter(outfileS);
+            dos.writeShort(chrs.length);
+            for (int i = 0; i < chrs.length; i++) {
+                dos.writeShort(chrs[i]);
+            }
+            long cnt = 0;
+            for (int i = 0; i < chrSCLists.size(); i++) {
+                List<SNPCount> cl = chrSCLists.get(i);
+                int count = 0;
+                for (int j = 0; j < cl.size(); j++) {
+                    SNPCount s = cl.get(j);
+                    if (s.getTagNumber() < minTagCount) continue;
+                    count++;
+                }
+                dos.writeInt(count); 
+                for (int j = 0; j < cl.size(); j++) {
+                    SNPCount s = cl.get(j);
+                    if (s.getTagNumber() < minTagCount) continue;
+                    dos.writeShort(s.getChromosome());
+                    dos.writeInt(s.getPosition());
+                    dos.writeByte(s.getRefAlleleByte());
+                    dos.writeByte(s.getAltAlleleNumber());
+                    for (int k = 0; k < s.getAltAlleleNumber(); k++) {
+                        dos.writeByte(s.getAltAlleleByte(k));
+                    }
+                    dos.writeInt(s.getReadNumber());
+                    dos.writeInt(s.getTagNumber());
+                    cnt++;
+                    if (cnt%1000000 == 0) System.out.println(String.valueOf(cnt) + " SNPs are written out");
+                }
+            }
+            dos.flush();
+            dos.close();
+            System.out.println("A total of " + String.valueOf(cnt) + " SNPs are written to " + outfileS);
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
     
     public int getChrIndex (short chr) {
         return Arrays.binarySearch(chrs, chr);
@@ -221,13 +268,16 @@ public class SNPCounts {
                     int index = l.get(i).compareTo(l.get(j));//
                     if (index < 0) break;
                     else {
-                        int sum = l.get(i).getReadNumber()+l.get(j).getReadNumber();
-                        l.get(i).setReadNumber(sum);
+                        int readSum = l.get(i).getReadNumber()+l.get(j).getReadNumber();
+                        int tagSum = l.get(i).getTagNumber()+l.get(j).getTagNumber();
+                        l.get(i).setReadNumber(readSum);
+                        l.get(i).setTagNumber(tagSum);
                         for (int k = 0; k < l.get(j).getAltAlleleNumber(); k++) {
                             l.get(i).addAltAlleleByte(l.get(j).getAltAlleleByte(k));
                         }
                         collapsedRows++;
                         l.get(j).setReadNumber(0);
+                        l.get(j).setTagNumber(0);
                     }
                 }
             }
@@ -271,7 +321,7 @@ public class SNPCounts {
                 if (tagSNPList.size() == 0) continue;
                 index = Arrays.binarySearch(chrs, tagSNPList.get(0).getChromosome());
                 for (int k = 0; k < tagSNPList.size(); k++) {
-                    SNPCount sc = new SNPCount (tagSNPList.get(k), tas.getReadNumber(i, j));
+                    SNPCount sc = new SNPCount (tagSNPList.get(k), tas.getReadNumber(i, j), 1);
                     chrSCLists.get(index).add(sc);
                     cnt++;
                     if (cnt%100000 == 0) System.out.println(String.valueOf(cnt) + " SNPs found");
@@ -286,20 +336,24 @@ public class SNPCounts {
 
 class SNPCount extends SNP {
     int readCount = 0;
+    int tagCount = 0;
     
-    public SNPCount(short chr, int pos, byte ref, byte alt, int readCount) {
+    public SNPCount(short chr, int pos, byte ref, byte alt, int readCount, int tagCount) {
         super(chr, pos, ref, alt);
         this.readCount = readCount;
+        this.tagCount = tagCount;
     }
     
-    public SNPCount(short chr, int pos, byte ref, TByteArrayList alts, int readCount) {
+    public SNPCount(short chr, int pos, byte ref, TByteArrayList alts, int readCount, int tagCount) {
         super(chr, pos, ref, alts);
         this.readCount = readCount;
+        this.tagCount = tagCount;
     }
     
-    public SNPCount(SNP snp, int readCount) {
+    public SNPCount(SNP snp, int readCount, int tagCount) {
         super(snp.getChromosome(), snp.getPosition(), snp.getRefAlleleByte(), snp.getAltAlleleList());
         this.readCount = readCount;
+        this.tagCount = tagCount;
     }
     
     public int getReadNumber () {
@@ -308,5 +362,13 @@ class SNPCount extends SNP {
     
     public void setReadNumber (int readCount) {
         this.readCount = readCount;
+    }
+    
+    public int getTagNumber () {
+        return tagCount;
+    }
+    
+    public void setTagNumber (int tagCount) {
+        this.tagCount = tagCount;
     }
 }

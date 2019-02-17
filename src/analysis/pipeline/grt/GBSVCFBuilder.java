@@ -266,9 +266,6 @@ public class GBSVCFBuilder {
     }
     
     private void writeTempGenotype (String tempFileS, AlleleDepth[][] adt) {
-        if (tempFileS.contains("Taxon57")) {
-            int a = 3;
-        }
         try {
             Tuple<FileChannel, ByteBuffer> iot = IOUtils.getNIOChannelBufferWriter(tempFileS, 65536);
             FileChannel fc = iot.getFirstElement();
