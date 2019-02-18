@@ -174,11 +174,12 @@ public class GRTGo implements CLIInterface {
                 System.exit(1); 
                 return;
             }
-            System.out.println("Start calling SNPs...");
+            System.out.println("Start removing low tag count SNPs...");
             String tagLibraryDirS = new File (this.workingDirS, this.subDirS[1]).getAbsolutePath();
             String rawSNPFileS = new File(tagLibraryDirS, "rawSNP.bin").getAbsolutePath();
             SNPCounts snpSCs = new SNPCounts(rawSNPFileS);
             snpSCs.writeBinaryFile(rawSNPFileS, this.minTagCountOfSNP);
+            System.out.println("Calling SNPs is complemeted in " + String.format("%.4f", Benchmark.getTimeSpanHours(start)) + " hours");
         }
         else if (mode.equals("ca")) {
             if (workingDirS == null) {
