@@ -207,14 +207,15 @@ class GroupTagFinder {
             }
             else {
                 query = intQueryList.get(i);
-                cnt = 1;
                 if (cnt > maxQueryExistence) {
                     intQueryList.remove(currentIndex, cnt);
                     indexList.remove(currentIndex, cnt);
                     i = currentIndex-1;
+                    cnt = 0;
                 }
                 else {
                     currentIndex = i;
+                    cnt = 1;
                 }
             }
         }

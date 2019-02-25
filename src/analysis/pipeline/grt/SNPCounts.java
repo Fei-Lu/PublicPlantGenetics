@@ -193,7 +193,7 @@ public class SNPCounts {
         }
     }
     
-    public void writeBinaryFile (String outfileS, int minTagCount) {
+    public void writeBinaryFile (String outfileS, int minReadCount) {
         System.out.println("Writing SNPCounts file");
         try {
             DataOutputStream dos = IOUtils.getBinaryWriter(outfileS);
@@ -207,13 +207,13 @@ public class SNPCounts {
                 int count = 0;
                 for (int j = 0; j < cl.size(); j++) {
                     SNPCount s = cl.get(j);
-                    if (s.getTagNumber() < minTagCount) continue;
+                    if (s.getReadNumber() < minReadCount) continue;
                     count++;
                 }
                 dos.writeInt(count); 
                 for (int j = 0; j < cl.size(); j++) {
                     SNPCount s = cl.get(j);
-                    if (s.getTagNumber() < minTagCount) continue;
+                    if (s.getReadNumber() < minReadCount) continue;
                     dos.writeShort(s.getChromosome());
                     dos.writeInt(s.getPosition());
                     dos.writeByte(s.getRefAlleleByte());

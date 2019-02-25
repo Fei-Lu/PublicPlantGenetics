@@ -37,8 +37,8 @@ public class LibGBSGo {
         //this.alignTags();
         //this.callSNP();
         this.removeLowCountSNP();
-        this.callAllele();
-        this.buildVCF();
+        //this.callAllele();
+        //this.buildVCF();
         //this.filterDatabase();
         //this.retrieveGenotype();
     }
@@ -106,8 +106,8 @@ public class LibGBSGo {
         String tagLibraryDirS = new File (this.workingDirS, this.subDirS[1]).getAbsolutePath();
         String rawSNPFileS = new File(tagLibraryDirS, "rawSNP.bin").getAbsolutePath();
         SNPCounts snpSCs = new SNPCounts(rawSNPFileS);
-        int minTagCount = 2;
-        snpSCs.writeBinaryFile(rawSNPFileS, minTagCount);
+        int minReadCount = 2;
+        snpSCs.writeBinaryFile(rawSNPFileS, minReadCount);
     }
     
     public void callSNP () {
