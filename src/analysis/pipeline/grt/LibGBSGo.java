@@ -53,7 +53,7 @@ public class LibGBSGo {
         SNPCounts sc = new SNPCounts (filteredSNPFileS);
         GBSVCFBuilder builder = new GBSVCFBuilder(tas, sc);
         builder.setTagIdentifyThreshold(3);
-        builder.callGenotype(tagBySampleDirS, genotypeDirS);
+        builder.callGenotypeAllInMemory(tagBySampleDirS, genotypeDirS);
     }
     
     public void filterDatabase () {
