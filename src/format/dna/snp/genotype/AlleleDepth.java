@@ -56,6 +56,14 @@ public class AlleleDepth {
         this.depthList = null;
     }
     
+    public byte[] getAlleles () {
+        return this.alleles; 
+    }
+    
+    public int[] getDepths () {
+        return this.depth;
+    }
+    
     public byte getAllele (int index) {
         return alleles[index];
     }

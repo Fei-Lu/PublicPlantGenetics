@@ -18,6 +18,7 @@ import java.io.DataOutputStream;
 import java.io.File;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import utils.IOUtils;
@@ -48,6 +49,234 @@ public class GBSVCFBuilder {
     
     public void setTagIdentifyThreshold (int identityThreshold) {
         this.identityThreshold = identityThreshold;
+    }
+    
+    public void callGenotypeAllInMemory (String tagBySampleDirS, String genotypeDirS) {
+        File genoDir = new File(genotypeDirS, "genotype");
+        genoDir.mkdir();
+        File[] sampleFiles = new File (tagBySampleDirS).listFiles();
+        sampleFiles = IOUtils.listFilesEndsWith(sampleFiles, ".tas");
+        Arrays.sort(sampleFiles);
+        String[] sampleNames = new String[sampleFiles.length];       
+        for (int i = 0; i < sampleNames.length; i++) {
+            sampleNames[i] = sampleFiles[i].getName().replaceAll(".tas$", "");
+        }
+        int[][] indices = PArrayUtils.getSubsetsIndicesBySubsetSize(sampleFiles.length, this.numThreads);
+        List<File> sampleFileList = Arrays.asList(sampleFiles);
+        TagFinder tf = new TagFinder(tas);
+        System.out.println("\nStart calling genotype of each individual sample...\n");
+        SimpleGenoInfo[][][] taxaGenoInfo = new SimpleGenoInfo[sampleFiles.length][sc.getChromosomeNumber()][];
+        for (int i = 0; i < indices.length; i++) {
+            List<File> subFList = sampleFileList.subList(indices[i][0], indices[i][1]);
+            List<Integer> subIndexList = new ArrayList<>();
+            for (int j = indices[i][0]; j < indices[i][1]; j++) {
+                subIndexList.add(j);
+            }
+            subIndexList.stream().forEach(index -> {
+                AlleleDepth[][] adt = this.initializeADTable();
+                TagAnnotations ata = new TagAnnotations(sampleFileList.get(index).getAbsolutePath());
+                for (int j = 0; j < ata.getGroupNumber(); j++) {
+                    for (int k = 0; k < ata.getTagNumber(j); k++) {
+                        long[] tag = ata.getTag(j, k);
+                        int readDepth = ata.getReadNumber(j, k);
+                        byte r1Length = ata.getR1TagLength(j, k);
+                        byte r2Length = ata.getR1TagLength(j, k);
+                        Tuple<int[], int[]> result = tf.getMostSimilarTags(tag, r1Length, r2Length, j, identityThreshold);
+                        if (result == null) continue;
+                        int[] divergence = result.getFirstElement();
+                        int[] tagIndices = result.getSecondElement();
+                        int tagIndex = this.getTagIndex(divergence, tagIndices, j, tag);
+                        if (tagIndex < 0) continue;
+                        int alleleNumber = tas.getAlleleNumberOfTag(j, tagIndex);
+                        if (alleleNumber == 0) continue;
+                        short chr = tas.getAlleleOfTag(j, tagIndex).get(0).getChromosome();
+                        int chrIndex = sc.getChrIndex(chr);
+                        if (chrIndex < 0) continue;
+                        for (int u = 0; u < alleleNumber; u++) {
+                            AlleleInfo ai = tas.getAlleleOfTag(j, tagIndex).get(u);
+                            int snpIndex = sc.getSNPIndex(chrIndex, new ChrPos(ai.getChromosome(), ai.getPosition()));
+                            adt[chrIndex][snpIndex].addAllele(ai.getAllele());
+                            adt[chrIndex][snpIndex].addDepth(readDepth);
+                        }
+                    }
+                }
+               
+                for (int j = 0; j < adt.length; j++) {
+                    List<SimpleGenoInfo> taxonGenoInfoList = new ArrayList<>();
+                    for (int k = 0; k < adt[j].length; k++) {
+                        adt[j][k].toArray();
+                        if (adt[j][k].getAlleleNumber() < 1) continue;
+                        SimpleGenoInfo sgi = new SimpleGenoInfo ((short)j, k, adt[j][k].getAlleleNumber(), adt[j][k].getAlleles(), adt[j][k].getDepths());
+                        taxonGenoInfoList.add(sgi);
+                    }
+                    SimpleGenoInfo[] taxonGenoInfo = taxonGenoInfoList.toArray(new SimpleGenoInfo[taxonGenoInfoList.size()]);
+                    taxaGenoInfo[index][j] = taxonGenoInfo;
+                }
+            });
+            System.out.println("Completed individual genotyping calling of " + String.valueOf(indices[i][1])+ " samples");
+        }
+        this.writeGenotypeAllInMemory(taxaGenoInfo, sampleNames, genotypeDirS);
+    }
+    
+    class SimpleGenoInfo {
+        short chrIndex = Short.MIN_VALUE;
+        int posIndex = Integer.MIN_VALUE;
+        int alleleNumber = 0;
+        byte[] allele = null;
+        int[] depth = null;
+        
+        public SimpleGenoInfo (short chrIndex, int posIndex) {
+            this.chrIndex = chrIndex;
+            this.posIndex = posIndex;
+        }
+        
+        public SimpleGenoInfo(short chrIndex, int posIndex, int alleleNumber, byte[] allele, int[] depth) {
+            this(chrIndex, posIndex);
+            this.alleleNumber = alleleNumber;
+            this.allele = allele;
+            this.depth = depth;
+        }
+        
+        public int getPosIndex () {
+            return posIndex;
+        }
+        
+        public short getChrIndex () {
+            return this.chrIndex;
+        }
+        
+        public byte getAlleleNumber() {
+            return (byte)this.alleleNumber;
+        }
+        
+        public byte getAllele (int index) {
+            return this.allele[index];
+        }
+        
+        public int getDepth (int index) {
+            return this.depth[index];
+        }
+    }
+    
+    private void writeGenotypeAllInMemory (SimpleGenoInfo[][][] taxaGenoInfo, String[] sampleNames, String genotypeDirS) {
+        System.out.println("Start merging individual genotype into VCF by chromosomes");
+        File genoDir = new File(genotypeDirS, "genotype");
+        File[] fs = genoDir.listFiles();
+        for (int i = 0; i < fs.length; i++) fs[i].delete();
+        genoDir.mkdir();
+        int chrNumber = sc.getChromosomeNumber();
+        String[] outfiles = new String[chrNumber];
+        for (int i = 0; i < outfiles.length; i++) {
+            short chr = sc.getChromosome(i);
+            outfiles[i] = new File (genoDir, "chr"+PStringUtils.getNDigitNumber(3, chr)+".vcf").getAbsolutePath();
+        }
+        try {
+            String annotation = VCFUtils.getVCFAnnotation();
+            String header = VCFUtils.getVCFHeader(sampleNames);
+            for (int i = 0; i < sc.getChromosomeNumber(); i++) {
+                BufferedWriter bw = IOUtils.getTextWriter(outfiles[i]);
+                bw.write(annotation);
+                bw.write(header);
+                bw.newLine();
+                int[] currentPosIndices = new int[taxaGenoInfo.length];
+                int[] currentArrayIndices = new int[taxaGenoInfo.length];
+                for (int j = 0; j < taxaGenoInfo.length; j++) {
+                    if (taxaGenoInfo[j][i] == null) {
+                        currentPosIndices[j] = Integer.MAX_VALUE;
+                        currentArrayIndices[j] = Integer.MAX_VALUE;
+                    }
+                    else {
+                        currentPosIndices[j] = taxaGenoInfo[j][i][0].getPosIndex();
+                    }
+                    
+                }
+                for (int j = 0; j < sc.getSNPNumberOnChromosome(i); j++) {
+                    int[] depth = new int[6];
+                    AlleleDepth[] sampleAD = new AlleleDepth[taxaGenoInfo.length];
+                    for (int k = 0; k < taxaGenoInfo.length; k++) {
+                        int posIndex = taxaGenoInfo[k][i][currentPosIndices[k]].getPosIndex();
+                        if (posIndex > j) {
+                            
+                        }
+                        else if (posIndex < j) {
+                            int taxonArrayIndex = currentArrayIndices[k];
+                            while (posIndex < j) {
+                                if (taxonArrayIndex >= taxaGenoInfo[k][i].length) {
+                                    break;
+                                }
+                                posIndex = taxaGenoInfo[k][i][++taxonArrayIndex].getPosIndex();
+                            }
+                            currentPosIndices[k] = posIndex;
+                            currentArrayIndices[k] = taxonArrayIndex;
+                        }
+                        if (posIndex != j) continue;
+                        
+                        SimpleGenoInfo sgi = taxaGenoInfo[k][i][currentArrayIndices[k]];
+                        short chrIndex = sgi.getChrIndex();
+
+                        sampleAD[k] = new AlleleDepth();
+                        byte alleleNumber = sgi.getAlleleNumber();
+                        for (int u = 0; u < alleleNumber; u++) {
+                            byte cAllele = sgi.getAllele(u);
+                            int cDepth = sgi.getDepth(u);
+                            sampleAD[k].addAllele(cAllele);
+                            sampleAD[k].addDepth(cDepth);
+                            depth[cAllele]+=cDepth;
+                        }
+                        
+                        sampleAD[k].toArray();
+                    }
+                    TByteArrayList alleleList = new TByteArrayList();
+                    TIntArrayList depthList = new TIntArrayList();
+                    for (int k = 0; k < depth.length; k++) {
+                        if (depth[k] == 0) continue;
+                        alleleList.add(AlleleEncoder.alleleBytes[k]);
+                        depthList.add(depth[k]);
+                    }
+                    AlleleDepth siteAD = new AlleleDepth(alleleList.toArray(), depthList.toArray());
+                    AlleleDepth altAD = siteAD.getAltAlleleDepth(sc.getRefAlleleByteOfSNP(i, j));
+                    altAD.sortByDepthDesending();
+                    StringBuilder sb = new StringBuilder();
+                    sb.append(sc.getChromosome(i)).append("\t").append(sc.getPositionOfSNP(i, j)).append("\t")
+                            .append(sc.getChromosome(i)).append("-").append(sc.getPositionOfSNP(i, j)).append("\t")
+                            .append(AlleleEncoder.alleleByteCharMap.get(sc.getRefAlleleByteOfSNP(i, j))).append("\t");
+                    int altNum = altAD.getAlleleNumber();
+                    if (altNum > this.maxAltNumber) altNum = this.maxAltNumber;
+                    for (int k = 0; k < altNum; k++) {
+                        sb.append(AlleleEncoder.alleleByteCharMap.get(altAD.getAllele(k))).append(",");
+                    }
+                    sb.deleteCharAt(sb.length()-1).append("\t.\t.\t");
+                    sb.append("DP=").append(VCFUtils.getTotalDepth(sampleAD)).append(";AD=").append(VCFUtils.getAlleleTotalDepth(sampleAD, sc.getRefAlleleByteOfSNP(i, j))).append(",");
+                    for (int k = 0; k < altNum; k++) {
+                        sb.append(VCFUtils.getAlleleTotalDepth(sampleAD, altAD.getAllele(k))).append(",");
+                    }
+                    sb.deleteCharAt(sb.length()-1).append(";NS=").append(VCFUtils.getNumberOfTaxaWithAlleles(sampleAD)).append(";AP=").append(VCFUtils.getNumberOfTaxaWithAllele(sampleAD, sc.getRefAlleleByteOfSNP(i, j))).append(",");
+                    for (int k = 0; k < altNum; k++) {
+                        sb.append(VCFUtils.getNumberOfTaxaWithAllele(sampleAD, altAD.getAllele(k))).append(",");
+                    }
+                    sb.deleteCharAt(sb.length()-1);
+                    sb.append("\tGT:AD:PL");
+                    for (int k = 0; k < sampleAD.length; k++) {
+                        int n = altNum+1;
+                        int[] readCount = new int[n];
+                        readCount[0] = sampleAD[k].getDepth(sc.getRefAlleleByteOfSNP(i, j));
+                        for (int u = 0; u < altNum; u++) {
+                            readCount[u+1] = sampleAD[k].getDepth(altAD.getAllele(u));
+                        }
+                        sb.append("\t").append(VCFUtils.getGenotype(readCount, sequencingAlignErrorRate));
+                    }
+                    bw.write(sb.toString());
+                    bw.newLine();   
+                }
+                bw.flush();
+                bw.close();
+                System.gc();
+            }
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
+        System.out.println("VCF genotype is output to " + genotypeDirS);
     }
     
     public void callGenotype (String tagBySampleDirS, String genotypeDirS) {

@@ -36,9 +36,9 @@ public class LibGBSGo {
         //this.mergeTagAnnotations();
         //this.alignTags();
         //this.callSNP();
-        this.removeLowCountSNP();
-        //this.callAllele();
-        //this.buildVCF();
+//        this.removeLowCountSNP();
+//        this.callAllele();
+        this.buildVCF();
         //this.filterDatabase();
         //this.retrieveGenotype();
     }
@@ -83,7 +83,7 @@ public class LibGBSGo {
         GBSVCFBuilder builder = new GBSVCFBuilder(tas, sc);
         builder.setTagIdentifyThreshold(3);
         builder.setThreads(8);
-        builder.callGenotype(tagBySampleDirS, genotypeDirS);
+        builder.callGenotypeAllInMemory(tagBySampleDirS, genotypeDirS);
     }
     
     public void callAllele () {
