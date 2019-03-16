@@ -247,6 +247,17 @@ public class IOUtils {
         catch (Exception e) {
             e.printStackTrace();
         }
+//        //another way to get a channel to read
+//        try {
+//            FileInputStream fis = new FileInputStream(fileS);
+//            FileChannel afc = fis.getChannel();
+//            ByteBuffer abb = ByteBuffer.allocate(bufferSize);
+//        }
+//        catch (Exception e) {
+//            e.printStackTrace();
+//        }
+//byte[] bytes = new byte[1024];
+//ByteBuffer byteBufferRead = ByteBuffer.wrap(bytes);
         return new Tuple(fc, bb);
     }
     
@@ -271,6 +282,16 @@ public class IOUtils {
         catch (Exception e) {
             e.printStackTrace();
         }
+//        //another way to get a channel to write
+//        try {
+//            FileOutputStream fos = new FileOutputStream(fileS);
+//            FileChannel afc = fos.getChannel();
+//            ByteBuffer abb = ByteBuffer.allocate(bufferSize);
+//        }
+//        catch (Exception e) {
+//            e.printStackTrace();
+//        }
+//                
         return new Tuple(fc, bb);
     }
     
@@ -286,6 +307,7 @@ public class IOUtils {
         }
         return new Tuple(fc, bb);
     }
+    
     
     public static File[] listFilesContains (File[] fAll, String containStr) {
         ArrayList<File> al = new ArrayList();

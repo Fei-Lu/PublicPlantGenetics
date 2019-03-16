@@ -212,7 +212,7 @@ public class GRTGo implements CLIInterface {
             GBSVCFBuilder builder = new GBSVCFBuilder(tas, sc);
             builder.setThreads(numThreads);
             builder.setTagIdentifyThreshold(tagIdentifyThreshold);
-            builder.callGenotypeAllInMemory(tagBySampleDirS, genotypeDirS);
+            builder.callGenotype(tagBySampleDirS, genotypeDirS);
             System.out.println("Calling genotype is complemeted in " + String.format("%.4f", Benchmark.getTimeSpanHours(start)) + " hours");
         }
         else if (mode.equals("fd")) {
@@ -242,7 +242,7 @@ public class GRTGo implements CLIInterface {
             SNPCounts sc = new SNPCounts (filteredSNPFileS);
             GBSVCFBuilder builder = new GBSVCFBuilder(tas, sc);
             builder.setTagIdentifyThreshold(3);
-            builder.callGenotypeAllInMemory(tagBySampleDirS, genotypeDirS);
+            builder.callGenotype(tagBySampleDirS, genotypeDirS);
             System.out.println("Retrieving genotype is complemeted in " + String.format("%.4f", Benchmark.getTimeSpanHours(start)) + " hours");
         }
         else {

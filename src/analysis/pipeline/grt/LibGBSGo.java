@@ -53,7 +53,7 @@ public class LibGBSGo {
         SNPCounts sc = new SNPCounts (filteredSNPFileS);
         GBSVCFBuilder builder = new GBSVCFBuilder(tas, sc);
         builder.setTagIdentifyThreshold(3);
-        builder.callGenotypeAllInMemory(tagBySampleDirS, genotypeDirS);
+        builder.callGenotype(tagBySampleDirS, genotypeDirS);
     }
     
     public void filterDatabase () {
@@ -83,7 +83,7 @@ public class LibGBSGo {
         GBSVCFBuilder builder = new GBSVCFBuilder(tas, sc);
         builder.setTagIdentifyThreshold(3);
         builder.setThreads(8);
-        builder.callGenotypeAllInMemory(tagBySampleDirS, genotypeDirS);
+        builder.callGenotype(tagBySampleDirS, genotypeDirS);
     }
     
     public void callAllele () {
