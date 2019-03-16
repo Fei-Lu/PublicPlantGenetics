@@ -340,8 +340,8 @@ public class GBSVCFBuilder {
                 this.writeTempGenotype(tempFileS, adt);
             });
         }
-        if (sampleNames.length < 512) {
-            this.writeGenotypeViaRAF(tempDir, sampleNames, genotypeDirS);
+        if (sampleNames.length > 512) {
+            this.writeGenotypeViaMergedFile(tempDir, sampleNames, genotypeDirS);
         }
         else {
             this.writeGenotype(tempDir, sampleNames, genotypeDirS);
@@ -352,7 +352,7 @@ public class GBSVCFBuilder {
         tempDir.delete();
     }
     
-    private void writeGenotypeViaRAF (File tempDir, String[] sampleNames, String genotypeDirS) {
+    private void writeGenotypeViaMergedFile (File tempDir, String[] sampleNames, String genotypeDirS) {
         System.out.println("Merging individual genotypes");
         File mergeF = new File(genotypeDirS, "mergeGeno.bin");
         Arrays.sort(sampleNames);
