@@ -34,6 +34,7 @@ public class GRTGo implements CLIInterface {
     String referenceFileS = null;
     int numThreads = 32;
     int minReadCount = 3;
+    int minReadCountAlt = 10;
     int minMappingQ = 30;
     int maxMappingLength = 1000;
     int maxDivergence = 7;
@@ -71,6 +72,10 @@ public class GRTGo implements CLIInterface {
             temp = line.getOptionValue("mc");
             if (temp != null) {
                 this.minReadCount = Integer.parseInt(temp);
+            }
+            temp = line.getOptionValue("mca");
+            if (temp != null) {
+                this.minReadCountAlt = Integer.parseInt(temp);
             }
             this.referenceFileS = line.getOptionValue("g");
             this.bwaPath = line.getOptionValue("bwa");
@@ -173,7 +178,7 @@ public class GRTGo implements CLIInterface {
             String tagLibraryDirS = new File (this.workingDirS, this.subDirS[1]).getAbsolutePath();
             String rawSNPFileS = new File(tagLibraryDirS, "rawSNP.bin").getAbsolutePath();
             SNPCounts snpSCs = new SNPCounts(rawSNPFileS);
-            snpSCs.writeBinaryFile(rawSNPFileS, this.minReadCount);
+            snpSCs.writeBinaryFile(rawSNPFileS, this.minReadCountAlt);
             System.out.println("Removing low read count SNPs is complemeted in " + String.format("%.4f", Benchmark.getTimeSpanHours(start)) + " hours");
         }
         else if (mode.equals("ca")) {
@@ -274,6 +279,7 @@ public class GRTGo implements CLIInterface {
         options.addOption("g", true, "The reference genome of the species. The indexing files should be included in the same directory of the reference genome.");
         options.addOption("bwa", true, "The path of bwa executable file, e.g /Users/Software/bwa-0.7.15/bwa");
         options.addOption("mc", true, "The minimum read count of tag in database. The default value is 3.");
+        options.addOption("mca", true, "The minimum read count of an alternative allele. The default value is 10.");
         options.addOption("mq", true, "The minimum read mapping quality for SNP calling and allele calling. The default value is 30.");
         options.addOption("ml", true, "The maximum range of paired-end read mapping. The default value is 1000.");
         options.addOption("md", true, "The maximum divergence between a tag and the reference genome, which is a quality control in SNP calling. The default value is 7.");

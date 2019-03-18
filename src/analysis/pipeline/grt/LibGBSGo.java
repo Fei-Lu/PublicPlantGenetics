@@ -36,9 +36,9 @@ public class LibGBSGo {
         //this.mergeTagAnnotations();
         //this.alignTags();
         //this.callSNP();
-//        this.removeLowCountSNP();
+        //this.removeLowCountSNP();
 //        this.callAllele();
-        this.buildVCF();
+        //this.buildVCF();
         //this.filterDatabase();
         //this.retrieveGenotype();
     }
@@ -78,7 +78,7 @@ public class LibGBSGo {
         String rawSNPFileS = new File(tagLibraryDirS, "rawSNP.bin").getAbsolutePath();
         String genotypeDirS = new File (this.workingDirS, this.subDirS[3]).getAbsolutePath();
         TagAnnotations tas = new TagAnnotations(tagAnnotationFileS);
-        tas.writeTextFileOfGroup(new File(tagLibraryDirS, "tag.tas.txt").getAbsolutePath(), 799);
+        //tas.writeTextFileOfGroup(new File(tagLibraryDirS, "tag.tas.txt").getAbsolutePath(), 799);
         SNPCounts sc = new SNPCounts (rawSNPFileS);
         GBSVCFBuilder builder = new GBSVCFBuilder(tas, sc);
         builder.setTagIdentifyThreshold(3);
@@ -106,8 +106,8 @@ public class LibGBSGo {
         String tagLibraryDirS = new File (this.workingDirS, this.subDirS[1]).getAbsolutePath();
         String rawSNPFileS = new File(tagLibraryDirS, "rawSNP.bin").getAbsolutePath();
         SNPCounts snpSCs = new SNPCounts(rawSNPFileS);
-        int minReadCount = 2;
-        snpSCs.writeBinaryFile(rawSNPFileS, minReadCount);
+        int minReadCountAlt = 2;
+        snpSCs.writeBinaryFile(rawSNPFileS, minReadCountAlt);
     }
     
     public void callSNP () {
