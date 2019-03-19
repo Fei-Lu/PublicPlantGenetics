@@ -28,17 +28,18 @@ public class LibGBSGo {
     String cutter1 = null;
     String cutter2 = null;
     String[] subDirS = {"tagsBySample","tagsLibrary","alignment", "rawGenotype", "filteredGenotype", "queryGenotype"};
+//    String[] subDirS = {"tagsBySample_large","tagsLibrary_large","alignment_large", "rawGenotype", "filteredGenotype", "queryGenotype"};
     LibraryInfo li = null;
     
     public LibGBSGo (String parameterFileS) {
         this.initializeParameter(parameterFileS);
-        //this.mkTagsBySample();
-        //this.mergeTagAnnotations();
-        //this.alignTags();
-        //this.callSNP();
-        //this.removeLowCountSNP();
+//        this.mkTagsBySample();
+//        this.mergeTagAnnotations();
+//        this.alignTags();
+//        this.callSNP();
+//        this.removeLowCountSNP();
 //        this.callAllele();
-        //this.buildVCF();
+//        this.buildVCF();
         //this.filterDatabase();
         //this.retrieveGenotype();
     }
@@ -106,7 +107,7 @@ public class LibGBSGo {
         String tagLibraryDirS = new File (this.workingDirS, this.subDirS[1]).getAbsolutePath();
         String rawSNPFileS = new File(tagLibraryDirS, "rawSNP.bin").getAbsolutePath();
         SNPCounts snpSCs = new SNPCounts(rawSNPFileS);
-        int minReadCountAlt = 2;
+        int minReadCountAlt = 10;
         snpSCs.writeBinaryFile(rawSNPFileS, minReadCountAlt);
     }
     

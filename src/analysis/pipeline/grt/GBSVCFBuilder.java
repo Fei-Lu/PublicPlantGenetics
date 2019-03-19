@@ -20,6 +20,7 @@ import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -346,10 +347,10 @@ public class GBSVCFBuilder {
         else {
             this.writeGenotype(tempDir, sampleNames, genotypeDirS);
         }
-        
-        File[] tempfs = tempDir.listFiles();
-        for (int i = 0; i < tempfs.length; i++) tempfs[i].delete();
-        tempDir.delete();
+//        
+//        File[] tempfs = tempDir.listFiles();
+//        for (int i = 0; i < tempfs.length; i++) tempfs[i].delete();
+//        tempDir.delete();
     }
     
     private void writeGenotypeViaMergedFile (File tempDir, String[] sampleNames, String genotypeDirS) {
@@ -407,18 +408,19 @@ public class GBSVCFBuilder {
             }
             String annotation = VCFUtils.getVCFAnnotation();
             String header = VCFUtils.getVCFHeader(sampleNames);
+            int totalCnt = 0;
+            int dbSNPCnt = 0;
             for (int i = 0; i < sc.getChromosomeNumber(); i++) {
                 BufferedWriter bw = IOUtils.getTextWriter(outfiles[i]);
                 bw.write(annotation);
                 bw.write(header);
                 bw.newLine();
+                int cnt = 0;
+                dbSNPCnt+=sc.getSNPNumberOnChromosome(i);
                 for (int j = 0; j < sc.getSNPNumberOnChromosome(i); j++) {
                     int[] depth = new int[6];
                     AlleleDepth[] sampleAD = new AlleleDepth[bbs.length];
                     for (int k = 0; k < bbs.length; k++) {
-                        if (k == 51) {
-                            int a = 3;
-                        }
                         ii = i;jj = j;kk = k;
                         short chrIndex = bbs[k].getShort();
                         if (chrIndex == Short.MIN_VALUE) {
@@ -457,12 +459,13 @@ public class GBSVCFBuilder {
                     }
                     AlleleDepth siteAD = new AlleleDepth(alleleList.toArray(), depthList.toArray());
                     AlleleDepth altAD = siteAD.getAltAlleleDepth(sc.getRefAlleleByteOfSNP(i, j));
+                    int altNum = altAD.getAlleleNumber();
+                    if (altNum == 0) continue;
                     altAD.sortByDepthDesending();
                     StringBuilder sb = new StringBuilder();
                     sb.append(sc.getChromosome(i)).append("\t").append(sc.getPositionOfSNP(i, j)).append("\t")
                             .append(sc.getChromosome(i)).append("-").append(sc.getPositionOfSNP(i, j)).append("\t")
                             .append(AlleleEncoder.alleleByteCharMap.get(sc.getRefAlleleByteOfSNP(i, j))).append("\t");
-                    int altNum = altAD.getAlleleNumber();
                     if (altNum > this.maxAltNumber) altNum = this.maxAltNumber;
                     for (int k = 0; k < altNum; k++) {
                         sb.append(AlleleEncoder.alleleByteCharMap.get(altAD.getAllele(k))).append(",");
@@ -488,13 +491,21 @@ public class GBSVCFBuilder {
                         sb.append("\t").append(VCFUtils.getGenotype(readCount, sequencingAlignErrorRate));
                     }
                     bw.write(sb.toString());
-                    bw.newLine();   
+                    bw.newLine();
+                    cnt++;
                 }
+                totalCnt+=cnt;
                 bw.flush();
                 bw.close();
+                System.out.println("Genotyping on chromosome "+String.valueOf(sc.getChromosome(i))+" with "+String.valueOf(cnt)+ " SNPs finished");
                 System.gc();
             }
             fc.close();
+            DecimalFormat df = new DecimalFormat("##.##%");
+            double percent = ((double)totalCnt/ dbSNPCnt);
+            String formattedPercent = df.format(percent);
+            System.out.println("A total of " + String.valueOf(dbSNPCnt) + " SNPs are in the database");
+            System.out.println("A total of " + String.valueOf(totalCnt) + ", or " +formattedPercent+ " SNPs are segregating and genotyped");
         }
         catch (Exception e) {
             System.out.println(ii+"\t"+jj+"\t"+kk);
@@ -535,18 +546,19 @@ public class GBSVCFBuilder {
             }
             String annotation = VCFUtils.getVCFAnnotation();
             String header = VCFUtils.getVCFHeader(sampleNames);
+            int totalCnt = 0;
+            int dbSNPCnt = 0;
             for (int i = 0; i < sc.getChromosomeNumber(); i++) {
                 BufferedWriter bw = IOUtils.getTextWriter(outfiles[i]);
                 bw.write(annotation);
                 bw.write(header);
                 bw.newLine();
+                int cnt = 0;
+                dbSNPCnt+=sc.getSNPNumberOnChromosome(i);
                 for (int j = 0; j < sc.getSNPNumberOnChromosome(i); j++) {
                     int[] depth = new int[6];
                     AlleleDepth[] sampleAD = new AlleleDepth[fcs.length];
                     for (int k = 0; k < fcs.length; k++) {
-                        if (k == 51) {
-                            int a = 3;
-                        }
                         ii = i;jj = j;kk = k;
                         short chrIndex = bbs[k].getShort();
                         if (chrIndex == Short.MIN_VALUE) {
@@ -585,12 +597,13 @@ public class GBSVCFBuilder {
                     }
                     AlleleDepth siteAD = new AlleleDepth(alleleList.toArray(), depthList.toArray());
                     AlleleDepth altAD = siteAD.getAltAlleleDepth(sc.getRefAlleleByteOfSNP(i, j));
+                    int altNum = altAD.getAlleleNumber();
+                    if (altNum == 0) continue;
                     altAD.sortByDepthDesending();
                     StringBuilder sb = new StringBuilder();
                     sb.append(sc.getChromosome(i)).append("\t").append(sc.getPositionOfSNP(i, j)).append("\t")
                             .append(sc.getChromosome(i)).append("-").append(sc.getPositionOfSNP(i, j)).append("\t")
-                            .append(AlleleEncoder.alleleByteCharMap.get(sc.getRefAlleleByteOfSNP(i, j))).append("\t");
-                    int altNum = altAD.getAlleleNumber();
+                            .append(AlleleEncoder.alleleByteCharMap.get(sc.getRefAlleleByteOfSNP(i, j))).append("\t");                  
                     if (altNum > this.maxAltNumber) altNum = this.maxAltNumber;
                     for (int k = 0; k < altNum; k++) {
                         sb.append(AlleleEncoder.alleleByteCharMap.get(altAD.getAllele(k))).append(",");
@@ -616,15 +629,23 @@ public class GBSVCFBuilder {
                         sb.append("\t").append(VCFUtils.getGenotype(readCount, sequencingAlignErrorRate));
                     }
                     bw.write(sb.toString());
-                    bw.newLine();   
+                    bw.newLine();
+                    cnt++;
                 }
+                totalCnt+=cnt;
                 bw.flush();
                 bw.close();
+                System.out.println("Genotyping on chromosome "+String.valueOf(sc.getChromosome(i))+" with "+String.valueOf(cnt)+ " SNPs finished");
                 System.gc();
             }
             for (int i = 0; i < fcs.length; i++) {
                 fcs[i].close();
             }
+            DecimalFormat df = new DecimalFormat("##.##%");
+            double percent = ((double)totalCnt/ dbSNPCnt);
+            String formattedPercent = df.format(percent);
+            System.out.println("A total of " + String.valueOf(dbSNPCnt) + " SNPs are in the database");
+            System.out.println("A total of " + String.valueOf(totalCnt) + ", or " +formattedPercent+ " SNPs are segregating and genotyped");
         }
         catch (Exception e) {
             System.out.println(ii+"\t"+jj+"\t"+kk);
