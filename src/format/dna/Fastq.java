@@ -137,7 +137,7 @@ public class Fastq {
             for (int i = 0; i < size; i++) {
                 br.readLine();br.readLine();br.readLine();
                 byte[] qualB = br.readLine().getBytes();
-                for (int j = qualB.length; j > -1; j--) {
+                for (int j = qualB.length-1; j > -1; j--) {
                     if (qualB[j] < 65) {
                         this.phredScale = 33;
                         return;
