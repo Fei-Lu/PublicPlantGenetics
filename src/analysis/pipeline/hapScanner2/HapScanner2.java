@@ -4,8 +4,6 @@
  * and open the template in the editor.
  */
 package analysis.pipeline.hapScanner2;
-
-import analysis.maize2k.*;
 import static cern.jet.math.Arithmetic.factorial;
 import com.koloboke.collect.map.IntDoubleMap;
 import com.koloboke.collect.map.hash.HashIntDoubleMaps;

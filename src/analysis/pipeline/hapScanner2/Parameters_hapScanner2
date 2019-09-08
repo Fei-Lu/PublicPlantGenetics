@@ -5,11 +5,11 @@ Homepage: http://plantgeneticslab.weebly.com/
 #This program is used to genotype whole genome sequenced (WGS) individuals by scanning an existing haplotype library.
 #The usage is java -Xms10g -Xmx20g HapScanner2.jar parameters_hapScanner2.txt > log.txt &
 #Please keep the order of following parameters
-#The taxaRefBam file containing information of taxon and its corresponding refernece genome and bam files. The bam file should have .bai file in the same folder
+#The taxaRefBam file containing information of taxon and its corresponding reference genome and bam files. The bam file should have .bai file in the same folder. For the situation of one taxon with multiple bams, the bams can be listed by row.
 /Users/feilu/Documents/analysisL/pipelineTest/HapScanner/hapScanner2/TaxaRefBAM
 #The posAllele file (with header), the format is Chr\tPos\tRef\tAlt (from VCF format). The positions come from haplotype library.
 /Users/feilu/Documents/analysisL/pipelineTest/HapScanner/hapScanner2/posAllele/chr044.posAllele.txt
-#The pos files (without header), the format is Chr\tPos. The positions come from haplotype library, which is used in mpileup.
+#The pos files (without header), the format is Chr\tPos. The positions come from haplotype library, which is used in mpileup to select pileup sites.
 /Users/feilu/Documents/analysisL/pipelineTest/HapScanner/hapScanner2/hapPos/chr044.pos.txt
 #The chromosome which will be scanned
 44

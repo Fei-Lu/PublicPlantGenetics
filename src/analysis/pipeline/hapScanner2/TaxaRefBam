@@ -1,4 +1,4 @@
-Taxa	Reference	BamPath
+Taxa	Reference	BamPath(bams of the same taxon can be listed by row)
 A001	/Users/feilu/Documents/database/wheat/reference/v1.0/A/a_iwgscV1.fa	/Users/feilu/Documents/analysisL/pipelineTest/HapScanner/hapScanner2/bams/A001.rmdup.bam
 B001	/Users/feilu/Documents/database/wheat/reference/v1.0/AB/ab_iwgscV1.fa	/Users/feilu/Documents/analysisL/pipelineTest/HapScanner/hapScanner2/bams/B001.rmdup.bam
 AFG-L1	/Users/feilu/Documents/database/wheat/reference/v1.0/ABD/abd_iwgscV1.fa	/Users/feilu/Documents/analysisL/pipelineTest/HapScanner/hapScanner2/bams/AFG-L1.chr044.bam
