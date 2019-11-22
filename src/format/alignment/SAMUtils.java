@@ -833,7 +833,6 @@ public class SAMUtils {
     /**
      * Return a list of called SNPs from elements of a SAM alignment record
      * Return null if the seq is not aligned
-     * @param inputStr
      * @param mapQThresh
      * @return 
      */

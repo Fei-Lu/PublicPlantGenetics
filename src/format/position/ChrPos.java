@@ -8,7 +8,6 @@ package format.position;
 /**
  *
  * @author feilu
- * @param <T>
  */
 public class ChrPos implements Comparable<ChrPos> {
     short chr;

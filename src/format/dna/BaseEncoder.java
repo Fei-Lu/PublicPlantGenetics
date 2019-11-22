@@ -137,7 +137,6 @@ public class BaseEncoder {
     
     /**
      * Return an int array from a long
-     * @param l
      * @return 
      */
     public static int[] getIntSeqsFromLongSeq (long val) {

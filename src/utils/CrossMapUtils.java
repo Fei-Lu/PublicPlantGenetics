@@ -24,7 +24,6 @@ import java.util.List;
  * CrossMapUtils cm = new CrossMapUtils(chr, pos, inputBedFileS);
  * cm.setMaizeV3ToV4();
  * cm.convert();
- * List<int[]> l  = cm.getConvertedCoordinate();
  * cm.deleteBedFiles();
  * @author feilu
  */
