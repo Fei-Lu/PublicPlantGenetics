@@ -27,7 +27,7 @@ import java.util.List;
 import utils.IOUtils;
 import utils.PArrayUtils;
 import utils.PStringUtils;
-import utils.Tuple;
+import utils.Dyad;
 
 /**
  *
@@ -83,7 +83,7 @@ public class GBSVCFBuilder {
 //                        int readDepth = ata.getReadNumber(j, k);
 //                        byte r1Length = ata.getR1TagLength(j, k);
 //                        byte r2Length = ata.getR1TagLength(j, k);
-//                        Tuple<int[], int[]> result = tf.getMostSimilarTags(tag, r1Length, r2Length, j, identityThreshold);
+//                        Dyad<int[], int[]> result = tf.getMostSimilarTags(tag, r1Length, r2Length, j, identityThreshold);
 //                        if (result == null) continue;
 //                        int[] divergence = result.getFirstElement();
 //                        int[] tagIndices = result.getSecondElement();
@@ -314,7 +314,7 @@ public class GBSVCFBuilder {
                         int readDepth = ata.getReadNumber(j, k);
                         byte r1Length = ata.getR1TagLength(j, k);
                         byte r2Length = ata.getR1TagLength(j, k);
-                        Tuple<int[], int[]> result = tf.getMostSimilarTags(tag, r1Length, r2Length, j, identityThreshold);
+                        Dyad<int[], int[]> result = tf.getMostSimilarTags(tag, r1Length, r2Length, j, identityThreshold);
                         if (result == null) continue;
                         int[] divergence = result.getFirstElement();
                         int[] tagIndices = result.getSecondElement();
@@ -359,12 +359,12 @@ public class GBSVCFBuilder {
         Arrays.sort(sampleNames);
         long[] fileSizes = new long[sampleNames.length];
         try {
-            Tuple<FileChannel, ByteBuffer> wt = IOUtils.getNIOChannelBufferWriter(mergeF.getAbsolutePath(), 65536);
+            Dyad<FileChannel, ByteBuffer> wt = IOUtils.getNIOChannelBufferWriter(mergeF.getAbsolutePath(), 65536);
             FileChannel wf = wt.getFirstElement();
             for (int i = 0; i < sampleNames.length; i++) {
                 String inputFileS = new File(tempDir, sampleNames[i]+".gen").getAbsolutePath();
                 fileSizes[i] = new File(inputFileS).length();
-                Tuple<FileChannel, ByteBuffer> rt = IOUtils.getNIOChannelBufferReader(inputFileS, 65536);
+                Dyad<FileChannel, ByteBuffer> rt = IOUtils.getNIOChannelBufferReader(inputFileS, 65536);
                 FileChannel rf = rt.getFirstElement();
                 ByteBuffer rb = rt.getSecondElement();
                 while ((rf.read(rb)) != -1) {
@@ -536,7 +536,7 @@ public class GBSVCFBuilder {
             ByteBuffer[] bbs = new ByteBuffer[fcs.length];
             for (int i = 0; i < fcs.length; i++) {
                 String inputFileS = new File(tempDir, sampleNames[i]+".gen").getAbsolutePath();
-                Tuple<FileChannel, ByteBuffer> iot = IOUtils.getNIOChannelBufferReader(inputFileS, 65536);
+                Dyad<FileChannel, ByteBuffer> iot = IOUtils.getNIOChannelBufferReader(inputFileS, 65536);
                 fcs[i] = iot.getFirstElement();
                 bbs[i] = iot.getSecondElement();
             }
@@ -681,7 +681,7 @@ public class GBSVCFBuilder {
     
     private void writeTempGenotype (String tempFileS, AlleleDepth[][] adt) {
         try {
-            Tuple<FileChannel, ByteBuffer> iot = IOUtils.getNIOChannelBufferWriter(tempFileS, 65536);
+            Dyad<FileChannel, ByteBuffer> iot = IOUtils.getNIOChannelBufferWriter(tempFileS, 65536);
             FileChannel fc = iot.getFirstElement();
             ByteBuffer bb = iot.getSecondElement();
             for (int i = 0; i < adt.length; i++) {

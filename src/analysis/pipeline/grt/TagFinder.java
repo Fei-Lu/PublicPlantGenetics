@@ -14,7 +14,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import utils.PArrayUtils;
-import utils.Tuple;
+import utils.Dyad;
 
 /**
  *
@@ -32,7 +32,7 @@ public class TagFinder {
         this.initialize(tas);
     }
     
-    public Tuple<int[], int[]> getMostSimilarTags (long[] tag, byte r1Length, byte r2Length, int groupIndex, int maxDivergence) {
+    public Dyad<int[], int[]> getMostSimilarTags (long[] tag, byte r1Length, byte r2Length, int groupIndex, int maxDivergence) {
         TIntArrayList r1IntSeqList = this.getR1IntSeq(tag, r1Length);
         TIntArrayList r2IntSeqList = this.getR2IntSeq(tag, r2Length);       
         int[] startEndIndex = null;
@@ -95,7 +95,7 @@ public class TagFinder {
         if (mismatchList.isEmpty()) return null;
         int[] mismatch = mismatchList.toArray();
         int[] tagIndices = tagIndicesList.toArray();
-        Tuple<int[], int[]> t = new Tuple<>(mismatch, tagIndices);
+        Dyad<int[], int[]> t = new Dyad<>(mismatch, tagIndices);
         t.sortByFirstIntInt();
         mismatch = t.getFirstElement();
         tagIndices = t.getSecondElement();
@@ -112,7 +112,7 @@ public class TagFinder {
             mismatchArray[i] = mismatch[i];
             tagIndicesArray[i] = tagIndices[i];
         }
-        Tuple<int[], int[]> result = new Tuple<>(mismatchArray, tagIndicesArray);
+        Dyad<int[], int[]> result = new Dyad<>(mismatchArray, tagIndicesArray);
         return result;
     }
     

@@ -15,8 +15,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import utils.PStringUtils;
-import utils.Tuple;
-import utils.Tuple3;
+import utils.Dyad;
+import utils.Triad;
 
 /**
  *
@@ -180,7 +180,7 @@ public class SAMUtils {
             else strand = 1;
             startPos = Integer.parseInt(l.get(3));
             String cigar = l.get(5);
-            Tuple<TByteArrayList, TIntArrayList> cigarOpPosIndex = getCigarOPAndPosIndex (cigar);
+            Dyad<TByteArrayList, TIntArrayList> cigarOpPosIndex = getCigarOPAndPosIndex (cigar);
             endPos = getEndPos(cigar, cigarOpPosIndex, startPos);
             mapQ = Short.parseShort(l.get(4));
             alnMatchNumber  = getAlignMatchNumberInCigar (cigar, cigarOpPosIndex);
@@ -198,7 +198,7 @@ public class SAMUtils {
      * @return 
      */
     public static int getEndPos (String cigar, int startPos) {
-        Tuple<TByteArrayList, TIntArrayList> opPosIndex = getCigarOPAndPosIndex(cigar);
+        Dyad<TByteArrayList, TIntArrayList> opPosIndex = getCigarOPAndPosIndex(cigar);
         return getEndPos(cigar, opPosIndex, startPos);
     }
     
@@ -210,7 +210,7 @@ public class SAMUtils {
      * @param startPos
      * @return 
      */
-    private static int getEndPos (String cigar, Tuple<TByteArrayList, TIntArrayList> opPosIndex, int startPos) {
+    private static int getEndPos (String cigar, Dyad<TByteArrayList, TIntArrayList> opPosIndex, int startPos) {
         if (opPosIndex == null) return -1;
         byte[] op = opPosIndex.getFirstElement().toArray();
         int[] posIndex = opPosIndex.getSecondElement().toArray();
@@ -234,7 +234,7 @@ public class SAMUtils {
      * @param cigarOpPosIndex
      * @return 
      */
-    private static short getAlignMatchNumberInCigar (String cigar, Tuple<TByteArrayList, TIntArrayList> cigarOpPosIndex) {
+    private static short getAlignMatchNumberInCigar (String cigar, Dyad<TByteArrayList, TIntArrayList> cigarOpPosIndex) {
         byte[] op = cigarOpPosIndex.getFirstElement().toArray();
         int[] posIndex = cigarOpPosIndex.getSecondElement().toArray();
         int len = 0;
@@ -251,11 +251,11 @@ public class SAMUtils {
     }
     
     /**
-     * Return operators and their position index of CIGAR in a {@link utils.Tuple} format
+     * Return operators and their position index of CIGAR in a {@link utils.Dyad} format
      * @param cigar
      * @return 
      */
-    private static Tuple<TByteArrayList, TIntArrayList> getCigarOPAndPosIndex (String cigar) {
+    private static Dyad<TByteArrayList, TIntArrayList> getCigarOPAndPosIndex (String cigar) {
         if (cigar.startsWith("*")) return null;
         TByteArrayList opList = new TByteArrayList();
         TIntArrayList posList = new TIntArrayList();
@@ -266,7 +266,7 @@ public class SAMUtils {
                 posList.add(i);
             }
         }
-        return new Tuple<TByteArrayList, TIntArrayList> (opList, posList);
+        return new Dyad<TByteArrayList, TIntArrayList> (opList, posList);
     }
     
     /**
@@ -296,7 +296,7 @@ public class SAMUtils {
         if (Integer.parseInt(l.get(4)) < mapQThresh) return null;
         short chr = (short)Integer.parseInt(l.get(2));
         int startPos = Integer.parseInt(l.get(3));
-        Tuple<TByteArrayList, TIntArrayList> cigarOPPosIndex = getCigarOPAndPosIndex(cigar);
+        Dyad<TByteArrayList, TIntArrayList> cigarOPPosIndex = getCigarOPAndPosIndex(cigar);
         int endPos = getEndPos (cigar, cigarOPPosIndex, startPos);
         int chrIndex = sc.getChrIndex(chr);
         if (chrIndex < 0) return null;
@@ -467,7 +467,7 @@ public class SAMUtils {
 //        if (Integer.parseInt(l.get(4)) < mapQThresh) return null;
 //        short chr = (short)Integer.parseInt(l.get(2));
 //        int startPos = Integer.parseInt(l.get(3));
-//        Tuple<TByteArrayList, TIntArrayList> cigarOPPosIndex = getCigarOPAndPosIndex(cigar);
+//        Dyad<TByteArrayList, TIntArrayList> cigarOPPosIndex = getCigarOPAndPosIndex(cigar);
 //        int endPos = getEndPos (cigar, cigarOPPosIndex, startPos);
 //        int chrIndex = sc.getChrIndex(chr);
 //        if (chrIndex < 0) return null;
@@ -682,7 +682,7 @@ public class SAMUtils {
 //        return tagAlleleList;
 //    }
 //    
-//    public static Tuple<List<ChrPos>, TByteArrayList> getAlleles (List<String> l, int mapQThresh, SNPCounts sc) {
+//    public static Dyad<List<ChrPos>, TByteArrayList> getAlleles (List<String> l, int mapQThresh, SNPCounts sc) {
 //        List<ChrPos> allelePosList = new ArrayList();
 //        TByteArrayList alleleList = new TByteArrayList();
 //        String cigar = l.get(5);
@@ -690,7 +690,7 @@ public class SAMUtils {
 //        if (Integer.parseInt(l.get(4)) < mapQThresh) return null;
 //        short chr = (short)Integer.parseInt(l.get(2));
 //        int startPos = Integer.parseInt(l.get(3));
-//        Tuple<TByteArrayList, TIntArrayList> cigarOPPosIndex = getCigarOPAndPosIndex(cigar);
+//        Dyad<TByteArrayList, TIntArrayList> cigarOPPosIndex = getCigarOPAndPosIndex(cigar);
 //        int endPos = getEndPos (cigar, cigarOPPosIndex, startPos);
 //        int chrIndex = sc.getChrIndex(chr);
 //        if (chrIndex < 0) return null;
@@ -826,7 +826,7 @@ public class SAMUtils {
 //            }
 //        }
 //        if (allelePosList.size() == 0) return null;
-//        return new Tuple(allelePosList, alleleList);
+//        return new Dyad(allelePosList, alleleList);
 //
 //    }
     
@@ -844,7 +844,7 @@ public class SAMUtils {
         int startPos = Integer.parseInt(l.get(3));
         String seq = l.get(9);
         String md = l.get(12).split(":")[2];
-        Tuple<TByteArrayList, TIntArrayList> cigarOPPosIndex = getCigarOPAndPosIndex(cigar);
+        Dyad<TByteArrayList, TIntArrayList> cigarOPPosIndex = getCigarOPAndPosIndex(cigar);
         TByteArrayList opList = cigarOPPosIndex.getFirstElement();
         TIntArrayList posIndexList = cigarOPPosIndex.getSecondElement();
         if (opList.get(0) == 83) {//S

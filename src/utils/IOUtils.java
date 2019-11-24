@@ -238,7 +238,7 @@ public class IOUtils {
         return ois;
     }
     
-    public static Tuple<FileChannel, ByteBuffer> getNIOChannelBufferReader (String fileS, int bufferSize) {
+    public static Dyad<FileChannel, ByteBuffer> getNIOChannelBufferReader (String fileS, int bufferSize) {
         FileChannel fc = null;
         ByteBuffer bb = ByteBuffer.allocate(bufferSize);
         try {
@@ -258,10 +258,10 @@ public class IOUtils {
 //        }
 //byte[] bytes = new byte[1024];
 //ByteBuffer byteBufferRead = ByteBuffer.wrap(bytes);
-        return new Tuple(fc, bb);
+        return new Dyad(fc, bb);
     }
     
-    public static Tuple<FileChannel, ByteBuffer> getNIOChannelDirectBufferReader (String fileS, int bufferSize) {
+    public static Dyad<FileChannel, ByteBuffer> getNIOChannelDirectBufferReader (String fileS, int bufferSize) {
         FileChannel fc = null;
         ByteBuffer bb = ByteBuffer.allocateDirect(bufferSize);
         try {
@@ -270,10 +270,10 @@ public class IOUtils {
         catch (Exception e) {
             e.printStackTrace();
         }
-        return new Tuple(fc, bb);
+        return new Dyad(fc, bb);
     }
     
-    public static Tuple<FileChannel, ByteBuffer> getNIOChannelBufferWriter (String fileS, int bufferSize) {
+    public static Dyad<FileChannel, ByteBuffer> getNIOChannelBufferWriter (String fileS, int bufferSize) {
         FileChannel fc = null;
         ByteBuffer bb = ByteBuffer.allocate(bufferSize);        
         try {
@@ -292,10 +292,10 @@ public class IOUtils {
 //            e.printStackTrace();
 //        }
 //                
-        return new Tuple(fc, bb);
+        return new Dyad(fc, bb);
     }
     
-    public static Tuple<FileChannel, ByteBuffer> getNIOChannelDirectBufferWriter (String fileS, int bufferSize) {
+    public static Dyad<FileChannel, ByteBuffer> getNIOChannelDirectBufferWriter (String fileS, int bufferSize) {
         FileChannel fc = null;
         ByteBuffer bb = ByteBuffer.allocateDirect(bufferSize);        
         try {
@@ -305,7 +305,7 @@ public class IOUtils {
         catch (Exception e) {
             e.printStackTrace();
         }
-        return new Tuple(fc, bb);
+        return new Dyad(fc, bb);
     }
     
     
