@@ -5,9 +5,11 @@
  */
 package graphcis.tablesaw;
 
+import format.table.TableInterface;
 import java.io.IOException;
 import tech.tablesaw.api.ColumnType;
 import tech.tablesaw.api.Table;
+import tech.tablesaw.api.TextColumn;
 import tech.tablesaw.io.csv.CsvReadOptions;
 
 /**
@@ -63,5 +65,19 @@ public class TablesawUtils {
      */
     public static Table readCsv (String infileS) throws IOException {
         return Table.read().file(infileS);
+    }
+    
+    /**
+     * Return a Table from TableInferface
+     * @param ti
+     * @return 
+     */
+    public static Table getTable (TableInterface<String> ti) {
+        Table t = Table.create();
+        for (int i = 0; i < ti.getColumnNumber(); i++) {
+            TextColumn c = TextColumn.create(ti.getHeader().get(i), ti.getColumn(i));
+            t.addColumns(c);
+        }
+        return t;
     }
 }
