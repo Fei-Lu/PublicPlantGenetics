@@ -40,10 +40,15 @@ public class TablesawUtils {
      * @return
      * @throws IOException 
      */
-    public static Table readTsv (String infileS) throws IOException {
+    public static Table readTsv (String infileS) {
         CsvReadOptions.Builder builder = getTsvReadOptionBuilder (infileS);
         CsvReadOptions options = builder.build();
-        return Table.read().csv(options);
+        try {
+            return Table.read().csv(options);
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
     }
     
     /**
@@ -90,9 +95,13 @@ public class TablesawUtils {
      * @param t
      * @param oufileS
      */
-    public static void writeTsv (Table t, String outfileS) throws IOException {
+    public static void writeTsv (Table t, String outfileS) {
         CsvWriteOptions builder;
-        builder = CsvWriteOptions.builder(outfileS).separator('\t').header(true).build();
-        t.write().csv(builder);
+        try {
+            builder = CsvWriteOptions.builder(outfileS).separator('\t').header(true).build();
+            t.write().csv(builder);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }
