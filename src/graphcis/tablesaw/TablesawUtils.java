@@ -7,10 +7,14 @@ package graphcis.tablesaw;
 
 import format.table.TableInterface;
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import tech.tablesaw.api.ColumnType;
 import tech.tablesaw.api.Table;
 import tech.tablesaw.api.TextColumn;
 import tech.tablesaw.io.csv.CsvReadOptions;
+import tech.tablesaw.io.csv.CsvWriteOptions;
+import tech.tablesaw.io.csv.CsvWriter;
 
 /**
  *
@@ -79,5 +83,16 @@ public class TablesawUtils {
             t.addColumns(c);
         }
         return t;
+    }
+
+    /**
+     * Write a Table to a TSV file
+     * @param t
+     * @param oufileS
+     */
+    public static void writeTsv (Table t, String outfileS) throws IOException {
+        CsvWriteOptions builder;
+        builder = CsvWriteOptions.builder(outfileS).separator('\t').header(true).build();
+        t.write().csv(builder);
     }
 }
