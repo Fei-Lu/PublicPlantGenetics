@@ -11,12 +11,15 @@ import com.google.common.base.Splitter;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.regex.Pattern;
 
 /**
  *
  * @author Fei Lu 
  */
 public class PStringUtils {
+    
+    public static Pattern whitespacePattern = Pattern.compile("\\s+");
     
     /**
      * Return a joined String from selected elements of input string array
@@ -111,6 +114,21 @@ public class PStringUtils {
      */
     public static List<String> fastSplit (String line) {
         List<String> ls = fastSplit(line, "\t");
+        return ls;
+    }
+    
+    /**
+     * Return a list of split String based on white space of any length
+     * @param line
+     * @return 
+     */
+    public static List<String> fastSplitOnWhitespace (String line) {
+        List<String> ls = new ArrayList<String>();
+        Splitter spl = Splitter.on(whitespacePattern);
+        Iterator<String> it = spl.split(line).iterator();
+        while (it.hasNext()) {
+          ls.add(it.next());
+        }
         return ls;
     }
     
