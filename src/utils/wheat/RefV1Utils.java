@@ -85,7 +85,6 @@ public class RefV1Utils {
             if (i%2 != 0) continue;
             chrmosomeHalfLengthMap.put(temp[3].replaceFirst("chr", ""), Integer.parseInt(temp[2]));
         }
-        System.out.println("XXXXXXXXXXXXXXX");
         return new Triad(chrIDChromosomeMap, chrIDLengthMap, chrmosomeHalfLengthMap);
     }
     
@@ -150,7 +149,7 @@ public class RefV1Utils {
     public static int getPosOnChrID (String chromosome, int position) {
         int chr = getChrID (chromosome, position);
         if (chr%2==0) {
-            return position - chrIDLengthMap.get(chr);
+            return position - chrmosomeHalfLengthMap.get(chromosome);
         }
         else return position;
     }
