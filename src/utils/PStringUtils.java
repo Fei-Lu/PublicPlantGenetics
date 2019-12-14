@@ -156,7 +156,7 @@ public class PStringUtils {
      * @param endIndex
      * @return 
      */
-    public static List<String> fastaSplit (String line, String splitS, int startIndex, int endIndex) {
+    public static List<String> fastSplit(String line, String splitS, int startIndex, int endIndex) {
         return fastSplit(line.substring(startIndex, endIndex), splitS);
     }
 }

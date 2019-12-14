@@ -5,6 +5,7 @@
  */
 package utils.wheat;
 
+import gnu.trove.map.hash.TIntIntHashMap;
 import java.io.BufferedReader;
 import java.io.File;
 import java.util.HashMap;
@@ -69,7 +70,7 @@ public class RefV1Utils {
     private static HashMap<Integer, Integer> chrIDLengthMap = map3.getSecondElement();
             
     private static HashMap<String, Integer> chrmosomeHalfLengthMap = map3.getThirdElement();
-            
+    
     
     private static Triad<HashMap<Integer, String>, HashMap<Integer, Integer>, HashMap<String, Integer>> getThreeMaps () {
         Triad<HashMap<Integer, String>, HashMap<Integer, Integer>, HashMap<String, Integer>> map3 = null;
@@ -86,6 +87,26 @@ public class RefV1Utils {
             chrmosomeHalfLengthMap.put(temp[3].replaceFirst("chr", ""), Integer.parseInt(temp[2]));
         }
         return new Triad(chrIDChromosomeMap, chrIDLengthMap, chrmosomeHalfLengthMap);
+    }
+    
+    /**
+     * Return the length of chrID
+     * @param chrID
+     * @return 
+     */
+    public static int getChrIDLength (int chrID) {
+        return chrIDLengthMap.get(chrID);
+    }
+    
+    /**
+     * Return the length of a chromosome, e.g. "1A"
+     * @param chromosome
+     * @return 
+     */
+    public static int getChromosomeLength (String chromosome) {
+        int length = getChrIDLength(getChrID(chromosome, 1));
+        length += getChrIDLength(getChrID(chromosome, Integer.MAX_VALUE));
+        return length;
     }
     
     /**
