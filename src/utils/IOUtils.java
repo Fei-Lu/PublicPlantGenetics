@@ -28,6 +28,9 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.TreeSet;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
@@ -308,6 +311,28 @@ public class IOUtils {
         return new Dyad(fc, bb);
     }
     
+    public static List<File> getFileListInDir (String inDirS) {
+        File[] fs = new File(inDirS).listFiles();
+        return Arrays.asList(fs);
+    }
+    
+    public static List<File> getFileListInDirContains (String inDirS, String containStr) {
+        File[] fs = new File(inDirS).listFiles();
+        fs = listFilesContains(fs, containStr);
+        return Arrays.asList(fs);
+    }
+    
+    public static List<File> getFileListInDirStartsWith (String inDirS, String startStr) {
+        File[] fs = new File(inDirS).listFiles();
+        fs = listFilesStartsWith(fs, startStr);
+        return Arrays.asList(fs);
+    }
+    
+    public static List<File> getFileListInDirEndsWith (String inDirS, String endStr) {
+        File[] fs = new File(inDirS).listFiles();
+        fs = listFilesEndsWith(fs, endStr);
+        return Arrays.asList(fs);
+    }
     
     public static File[] listFilesContains (File[] fAll, String containStr) {
         ArrayList<File> al = new ArrayList();
