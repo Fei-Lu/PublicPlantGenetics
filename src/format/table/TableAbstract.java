@@ -9,6 +9,8 @@ import gnu.trove.list.array.TDoubleArrayList;
 import java.io.BufferedWriter;
 import java.util.HashMap;
 import java.util.List;
+
+import gnu.trove.list.array.TIntArrayList;
 import utils.IOFileFormat;
 import utils.IOUtils;
 
@@ -50,7 +52,19 @@ public abstract class TableAbstract<T> implements TableInterface<T> {
         }
         return l.toArray();
     }
-    
+
+    public int[] getColumnAsIntArray (int columnIndex) {
+        TIntArrayList l = new TIntArrayList();
+        Integer in = null;
+        for (int i = 0; i < this.getRowNumber(); i++) {
+            in = this.getCellAsInteger(i, columnIndex);
+            if (in == null) return null;
+            l.add(in);
+        }
+        return l.toArray();
+
+    }
+
     @Override
     public String getCellAsString (int rowIndex, int columnIndex) {
         return this.getCell(rowIndex, columnIndex).toString();
@@ -63,7 +77,7 @@ public abstract class TableAbstract<T> implements TableInterface<T> {
             return ((Number) ob).doubleValue();
         }
         else if (ob instanceof String) {
-            return Double.valueOf((String)ob);
+            return Double.parseDouble((String)ob);
         }
         else {
             return null;
@@ -71,13 +85,13 @@ public abstract class TableAbstract<T> implements TableInterface<T> {
     }
     
     @Override
-    public Integer getCellAsInteger (int rowIndex, int columnIndex) throws NumberFormatException {
+    public Integer getCellAsInteger (int rowIndex, int columnIndex) {
         T ob = this.getCell(rowIndex, columnIndex);
         if (ob instanceof Number) {
             return ((Number) ob).intValue();
         }
         else if (ob instanceof String) {
-            return Integer.valueOf((String)ob);
+            return Integer.parseInt((String)ob);
         }
         else {
             return null;

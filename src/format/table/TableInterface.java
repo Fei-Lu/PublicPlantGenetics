@@ -81,7 +81,14 @@ public interface TableInterface <T> {
      * @return 
      */
     public double[] getColumnAsDoubleArray (int columnIndex);
-    
+
+    /**
+     * Return a int array from a column
+     * @param columnIndex
+     * @return
+     */
+    public int[] getColumnAsIntArray (int columnIndex);
+
     /**
      * Return a values as list from a certain row
      * @param rowIndex
