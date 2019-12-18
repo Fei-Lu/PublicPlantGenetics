@@ -8,8 +8,13 @@ package utils.wheat;
 import gnu.trove.map.hash.TIntIntHashMap;
 import java.io.BufferedReader;
 import java.io.File;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
+
+import utils.Dyad;
 import utils.IOUtils;
+import utils.PStringUtils;
 import utils.Triad;
 
 /**
@@ -61,7 +66,29 @@ public class RefV1Utils {
                                         "39	0	453822637	chr7B	0	453822637\n" +
                                         "40	0	296797748	chr7B	453822637	750620385\n" +
                                         "41	0	453812268	chr7D	0	453812268\n" +
-                                        "42	0	184873787	chr7D	453812268	638686055"; 
+                                        "42	0	184873787	chr7D	453812268	638686055";
+
+    private static String centromereFileS = "chr1A\t210200000\t215800000\n" +
+                                        "chr1B\t237700000\t243500000\n" +
+                                        "chr1D\t166200000\t173800000\n" +
+                                        "chr2A\t326300000\t327000000\n" +
+                                        "chr2B\t344400000\t351300000\n" +
+                                        "chr2D\t264400000\t272500000\n" +
+                                        "chr3A\t316900000\t319900000\n" +
+                                        "chr3B\t345800000\t347000000\n" +
+                                        "chr3D\t237100000\t243200000\n" +
+                                        "chr4A\t264100000\t267900000\n" +
+                                        "chr4B\t303900000\t304400000\n" +
+                                        "chr4D\t182300000\t188200000\n" +
+                                        "chr5A\t252500000\t255100000\n" +
+                                        "chr5B\t198900000\t202500000\n" +
+                                        "chr5D\t185600000\t188700000\n" +
+                                        "chr6A\t283300000\t288700000\n" +
+                                        "chr6B\t323000000\t327500000\n" +
+                                        "chr6D\t211900000\t217400000\n" +
+                                        "chr7A\t360200000\t363800000\n" +
+                                        "chr7B\t308000000\t310100000\n" +
+                                        "chr7D\t336300000\t341700000";
     
     private static Triad<HashMap<Integer, String>, HashMap<Integer, Integer>, HashMap<String, Integer>> map3 = getThreeMaps();
     
@@ -69,9 +96,29 @@ public class RefV1Utils {
             
     private static HashMap<Integer, Integer> chrIDLengthMap = map3.getSecondElement();
             
-    private static HashMap<String, Integer> chrmosomeHalfLengthMap = map3.getThirdElement();
-    
-    
+    private static HashMap<String, Integer> chromosomeHalfLengthMap = map3.getThirdElement();
+
+    private static Dyad<HashMap<String, Integer>, HashMap<String, Integer>> centromereMaps = getCentromereMaps();
+
+    private static HashMap<String, Integer> centromereStartMap = centromereMaps.getFirstElement();
+
+    private static HashMap<String, Integer> centromereEndMap = centromereMaps.getSecondElement();
+
+    private static Dyad<HashMap<String, Integer>, HashMap<String, Integer>> getCentromereMaps () {
+        String[] temps = centromereFileS.split("\n");
+        HashMap<String, Integer> startMap = new HashMap<>();
+        HashMap<String, Integer> endMap = new HashMap<>();
+        List<String> l = new ArrayList<>();
+        String chromosome = null;
+        for (int i = 0; i < temps.length; i++) {
+            l = PStringUtils.fastSplit(temps[i]);
+            chromosome = l.get(0).replaceFirst("chr", "");
+            startMap.put(chromosome, Integer.parseInt(l.get(1)));
+            endMap.put(chromosome, Integer.parseInt(l.get(2)));
+        }
+        return new Dyad<HashMap<String, Integer>, HashMap<String, Integer>>(startMap, endMap);
+    }
+
     private static Triad<HashMap<Integer, String>, HashMap<Integer, Integer>, HashMap<String, Integer>> getThreeMaps () {
         Triad<HashMap<Integer, String>, HashMap<Integer, Integer>, HashMap<String, Integer>> map3 = null;
         String[] temps = positionFileS.split("\n");
@@ -88,7 +135,25 @@ public class RefV1Utils {
         }
         return new Triad(chrIDChromosomeMap, chrIDLengthMap, chrmosomeHalfLengthMap);
     }
-    
+
+    /**
+     * Return the start pos of a chromosome
+     * @param chromosome
+     * @return
+     */
+    public static int getCentromereStart (String chromosome) {
+        return centromereStartMap.get(chromosome);
+    }
+
+    /**
+     * Return the end pos of a chromosome
+     * @param chromosome
+     * @return
+     */
+    public static int getCentromereEnd (String chromosome) {
+        return centromereEndMap.get(chromosome);
+    }
+
     /**
      * Return the length of chrID
      * @param chrID
@@ -142,7 +207,7 @@ public class RefV1Utils {
      * @return 
      */
     public static int getChrID (String chromosome, int position) {
-        int halfLength = chrmosomeHalfLengthMap.get(chromosome);
+        int halfLength = chromosomeHalfLengthMap.get(chromosome);
         int chr = 0;
         chr = (Integer.parseInt(chromosome.substring(0, 1))-1)*6;
         char subgenome = chromosome.charAt(1);
@@ -170,7 +235,7 @@ public class RefV1Utils {
     public static int getPosOnChrID (String chromosome, int position) {
         int chr = getChrID (chromosome, position);
         if (chr%2==0) {
-            return position - chrmosomeHalfLengthMap.get(chromosome);
+            return position - chromosomeHalfLengthMap.get(chromosome);
         }
         else return position;
     }
