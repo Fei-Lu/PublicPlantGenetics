@@ -37,7 +37,7 @@ public class SimpleWindow {
         int lastIndex = -1;
         for (int i = 0; i < positions.length; i++) {
             firstIndex = this.getFirstWindowIndex(positions[i]);
-            lastIndex = this.getLastWindowIndex(positions[1]);
+            lastIndex = this.getLastWindowIndex(positions[i]);
             for (int j = firstIndex; j < lastIndex; j++) {
                 this.windowValues[j]++;
             }
@@ -117,6 +117,13 @@ public class SimpleWindow {
             values[i] = (float)this.windowValues[i];
         }
         return values;
+    }
+
+    /**
+     * Clear window values to 0
+     */
+    public void clearWindowValues () {
+        this.windowValues = new double[this.starts.length];
     }
 
     /**

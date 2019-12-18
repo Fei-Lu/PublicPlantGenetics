@@ -9,6 +9,7 @@ import gnu.trove.map.hash.TIntIntHashMap;
 import java.io.BufferedReader;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 
@@ -89,51 +90,56 @@ public class RefV1Utils {
                                         "chr7A\t360200000\t363800000\n" +
                                         "chr7B\t308000000\t310100000\n" +
                                         "chr7D\t336300000\t341700000";
+
     
-    private static Triad<HashMap<Integer, String>, HashMap<Integer, Integer>, HashMap<String, Integer>> map3 = getThreeMaps();
-    
-    private static HashMap<Integer, String> chrIDChromosomeMap = map3.getFirstElement();
+    private static HashMap<Integer, String> chrIDChromosomeMap = null;
             
-    private static HashMap<Integer, Integer> chrIDLengthMap = map3.getSecondElement();
+    private static HashMap<Integer, Integer> chrIDLengthMap = null;
             
-    private static HashMap<String, Integer> chromosomeHalfLengthMap = map3.getThirdElement();
+    private static HashMap<String, Integer> chromosomeHalfLengthMap = null;
 
-    private static Dyad<HashMap<String, Integer>, HashMap<String, Integer>> centromereMaps = getCentromereMaps();
+    private static HashMap<String, Integer> centromereStartMap = null;
 
-    private static HashMap<String, Integer> centromereStartMap = centromereMaps.getFirstElement();
+    private static HashMap<String, Integer> centromereEndMap = null;
 
-    private static HashMap<String, Integer> centromereEndMap = centromereMaps.getSecondElement();
+    private static boolean build = buildMaps ();
 
-    private static Dyad<HashMap<String, Integer>, HashMap<String, Integer>> getCentromereMaps () {
-        String[] temps = centromereFileS.split("\n");
-        HashMap<String, Integer> startMap = new HashMap<>();
-        HashMap<String, Integer> endMap = new HashMap<>();
-        List<String> l = new ArrayList<>();
-        String chromosome = null;
-        for (int i = 0; i < temps.length; i++) {
-            l = PStringUtils.fastSplit(temps[i]);
-            chromosome = l.get(0).replaceFirst("chr", "");
-            startMap.put(chromosome, Integer.parseInt(l.get(1)));
-            endMap.put(chromosome, Integer.parseInt(l.get(2)));
-        }
-        return new Dyad<HashMap<String, Integer>, HashMap<String, Integer>>(startMap, endMap);
-    }
-
-    private static Triad<HashMap<Integer, String>, HashMap<Integer, Integer>, HashMap<String, Integer>> getThreeMaps () {
-        Triad<HashMap<Integer, String>, HashMap<Integer, Integer>, HashMap<String, Integer>> map3 = null;
+    private static boolean buildMaps () {
         String[] temps = positionFileS.split("\n");
-        HashMap<Integer, String> chrIDChromosomeMap = new HashMap();
-        HashMap<Integer, Integer> chrIDLengthMap =  new HashMap();
-        HashMap<String, Integer> chrmosomeHalfLengthMap = new HashMap();
+        chrIDChromosomeMap = new HashMap();
+        chrIDLengthMap =  new HashMap();
+        chromosomeHalfLengthMap = new HashMap();
         String[] temp = null;
         for (int i = 0; i < temps.length; i++) {
             temp = temps[i].split("\t");
             chrIDChromosomeMap.put(Integer.parseInt(temp[0]), temp[3].replaceFirst("chr", ""));
             chrIDLengthMap.put(Integer.parseInt(temp[0]), Integer.parseInt(temp[2]));
             if (i%2 != 0) continue;
-            chrmosomeHalfLengthMap.put(temp[3].replaceFirst("chr", ""), Integer.parseInt(temp[2]));
+            chromosomeHalfLengthMap.put(temp[3].replaceFirst("chr", ""), Integer.parseInt(temp[2]));
         }
-        return new Triad(chrIDChromosomeMap, chrIDLengthMap, chrmosomeHalfLengthMap);
+
+        temps = centromereFileS.split("\n");
+        centromereStartMap = new HashMap<>();
+        centromereEndMap = new HashMap<>();
+        List<String> l = new ArrayList<>();
+        String chromosome = null;
+        for (int i = 0; i < temps.length; i++) {
+            l = PStringUtils.fastSplit(temps[i]);
+            chromosome = l.get(0).replaceFirst("chr", "");
+            centromereStartMap.put(chromosome, Integer.parseInt(l.get(1)));
+            centromereEndMap.put(chromosome, Integer.parseInt(l.get(2)));
+        }
+        return true;
+    }
+
+    /**
+     * Return a sorted list of chromosome names
+     * @return
+     */
+    public static List<String> getChromosomeList () {
+        List<String> chromosomeList = new ArrayList<>(centromereStartMap.keySet());
+        Collections.sort(chromosomeList);
+        return chromosomeList;
     }
 
     /**
@@ -192,7 +198,7 @@ public class RefV1Utils {
      * @return 
      */
     public static int getPosOnChromosome (int chrID, int position) {
-        if (chrID%2 == 0) {
+        if (chrID%2 == 1) {
             return position;
         }
         else {
