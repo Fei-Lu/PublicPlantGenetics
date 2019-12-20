@@ -4,6 +4,10 @@ import gnu.trove.list.array.TIntArrayList;
 
 import java.util.Arrays;
 
+/**
+ * Simple implementation of sliding window to calculate sum of assigned values
+ * @author feilu
+ */
 public class SimpleWindow {
     //incluside
     int[] starts = null;
@@ -28,22 +32,59 @@ public class SimpleWindow {
         this.initialize();
     }
 
+
     /**
-     * Add count of specified positions in windows
-     * @param positions
+     * Add count of specified positions from a range
+     * @param rangeStart inclusive
+     * @param rangeEnd exclusive
      */
-    public void addCount (int[] positions) {
-        int firstIndex = -1;
-        int lastIndex = -1;
-        for (int i = 0; i < positions.length; i++) {
-            firstIndex = this.getFirstWindowIndex(positions[i]);
-            lastIndex = this.getLastWindowIndex(positions[i]);
-            for (int j = firstIndex; j < lastIndex; j++) {
-                this.windowValues[j]++;
+    public void addPositionCountFromRange (int rangeStart, int rangeEnd) {
+        int firstIndexStart = this.getFirstWindowIndex(rangeStart);
+        int lastIndexStart = this.getLastWindowIndex(rangeStart);
+        int firstIndexEnd = this.getFirstWindowIndex(rangeEnd);
+        int lastIndexEnd = this.getLastWindowIndex(rangeEnd);
+        int start = -1;
+        int end = -1;
+        for (int i = firstIndexStart; i < lastIndexEnd; i++) {
+            if (rangeStart > this.starts[i]) {
+                start = rangeStart;
             }
+            else {
+                start = this.starts[i];
+            }
+            if (rangeEnd > this.ends[i]) {
+                end = ends[i];
+            }
+            else {
+                end = rangeEnd;
+            }
+            this.windowValues[i]+=(end-start);
         }
     }
 
+    /**
+     * Add count of specified positions to windows
+     * @param positions
+     */
+    public void addPositionCount(int[] positions) {
+        for (int i = 0; i < positions.length; i++) {
+            this.addPositionCount(positions[i]);
+        }
+    }
+
+    /**
+     * Add count of a specified position to windows
+     * @param position
+     */
+    public void addPositionCount(int position) {
+        int firstIndex = -1;
+        int lastIndex = -1;
+        firstIndex = this.getFirstWindowIndex(position);
+        lastIndex = this.getLastWindowIndex(position);
+        for (int i = firstIndex; i < lastIndex; i++) {
+            this.windowValues[i]++;
+        }
+    }
     /**
      * Add values of specified positions in windows
      * @param positions
@@ -58,6 +99,21 @@ public class SimpleWindow {
             for (int j = firstIndex; j < lastIndex; j++) {
                 this.windowValues[j]+=values[i];
             }
+        }
+    }
+
+    /**
+     * Add value of a specified position in windows
+     * @param position
+     * @param value
+     */
+    public void addIntValue (int position, int value) {
+        int firstIndex = -1;
+        int lastIndex = -1;
+        firstIndex = this.getFirstWindowIndex(position);
+        lastIndex = this.getLastWindowIndex(position);
+        for (int i = firstIndex; i < lastIndex; i++) {
+            this.windowValues[i]+=value;
         }
     }
 
@@ -80,6 +136,21 @@ public class SimpleWindow {
 
     /**
      * Add values of specified positions in windows
+     * @param position
+     * @param value
+     */
+    public void addFloatValue (int position, float value) {
+        int firstIndex = -1;
+        int lastIndex = -1;
+        firstIndex = this.getFirstWindowIndex(position);
+        lastIndex = this.getLastWindowIndex(position);
+        for (int i = firstIndex; i < lastIndex; i++) {
+            this.windowValues[i]+=value;
+        }
+    }
+
+    /**
+     * Add values of specified positions in windows
      * @param positions
      * @param values
      */
@@ -92,6 +163,21 @@ public class SimpleWindow {
             for (int j = firstIndex; j < lastIndex; j++) {
                 this.windowValues[j]+=values[i];
             }
+        }
+    }
+
+    /**
+     * Add values of specified positions in windows
+     * @param position
+     * @param value
+     */
+    public void addDoubleValue (int position, double value) {
+        int firstIndex = -1;
+        int lastIndex = -1;
+        firstIndex = this.getFirstWindowIndex(position);
+        lastIndex = this.getLastWindowIndex(position);
+        for (int i = firstIndex; i < lastIndex; i++) {
+            this.windowValues[i]+=value;
         }
     }
 
