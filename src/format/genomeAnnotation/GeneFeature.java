@@ -445,7 +445,31 @@ public class GeneFeature {
     public byte getTranscriptStrand (int i, int j) {
         return genes[i].ts.get(j).strand;
     }
-    
+
+    /**
+     * Return a Range list of exon
+     * @param i
+     * @param j
+     * @return
+     */
+    public List<Range> getExonList (int i, int j) {
+        List<Range> cdsList = this.getCDSList(i, j);
+        List<Range>  fiveUTRList = this.get5UTRList(i , j);
+        List<Range> threeUTRList = this.get3UTRList(i, j);
+        List<Range> exonList = new ArrayList<>();
+        for (int k = 0; k < fiveUTRList.size(); k++) {
+            exonList.add(fiveUTRList.get(k));
+        }
+        for (int k = 0; k < cdsList.size(); k++) {
+            exonList.add(cdsList.get(k));
+        }
+        for (int k = 0; k < threeUTRList.size(); k++) {
+            exonList.add(threeUTRList.get(k));
+        }
+        Collections.sort(exonList);
+        return exonList;
+    }
+
     /**
      * Return a range list of CDS, return an empty list if there is no CDS
      * @param i
