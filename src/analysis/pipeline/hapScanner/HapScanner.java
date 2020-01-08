@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package analysis.pipeline.hapScanner2;
+package analysis.pipeline.hapScanner;
 import static cern.jet.math.Arithmetic.factorial;
 import com.koloboke.collect.map.IntDoubleMap;
 import com.koloboke.collect.map.hash.HashIntDoubleMaps;
@@ -28,7 +28,7 @@ import utils.PStringUtils;
  *
  * @author feilu
  */
-public class HapScanner2 {
+public class HapScanner {
     //The taxaRefBam file containing information of taxon and its corresponding bam files. The bam file should have .bai file in the same folder
     String taxaRefBamFileS = null;
     //The posAllele file (with header), the format is Chr\tPos\tRef\tAlt (from VCF format). The positions come from haplotype library.
@@ -52,16 +52,20 @@ public class HapScanner2 {
     
     IntDoubleMap factorialMap = null;
     int maxFactorial = 150;
-    double sequencingErrorRate = 0.05;
+    //combined: sequencing error and alignment error
+    double combinedErrorRate = 0.05;
     
-    public HapScanner2 (String infileS) {
+    public HapScanner (String infileS) {
         this.parseParameters(infileS);
         this.mkDir();
         this.scanIndiVCF();
         this.mkFinalVCF();
-        //this.mkFinalVCF2(); //multi threaded, but slow
     }
-    
+
+    /**
+     * Multiple threading for merging VCF, but slow
+     * @deprecated
+     */
     public void mkFinalVCF2 () {
         Set<String> taxaSet = taxaBamsMap.keySet();
         String[] taxa = taxaSet.toArray(new String[taxaSet.size()]);
@@ -210,7 +214,6 @@ public class HapScanner2 {
             bw.write("##INFO=<ID=MAF,Number=1,Type=Float,Description=\"Minor allele frequency\">\n");
             bw.write("##ALT=<ID=DEL,Description=\"Deletion\">\n");
             bw.write("##ALT=<ID=INS,Description=\"Insertion\">\n");
-            bw.write("##HapMapVersion=\"3.2.1\"\n");
             StringBuilder sb = new StringBuilder("#CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO	FORMAT");
             for (int i = 0; i < taxa.length; i++) {
                 sb.append("\t").append(taxa[i]);
@@ -378,6 +381,11 @@ public class HapScanner2 {
                 int cnt = counter.intValue();
                 if (cnt%10 == 0) System.out.println("Pileuped " + String.valueOf(cnt) + " taxa. Total: " + String.valueOf(taxaBamsMap.size()));
                 try {
+                    File pf = new File (pileupFileS);
+                    if (!pf.exists()) {
+                        System.out.println("Pileup file does not exist. "+ pf.getName());
+                        System.out.println(command);
+                    }
                     BufferedReader br = IOUtils.getTextReader(pileupFileS);
                     BufferedWriter bw = IOUtils.getTextWriter(indiVCFFileS);
                     String current = br.readLine();
@@ -399,10 +407,10 @@ public class HapScanner2 {
                                 char[] alleleC = new char[alts.length+1];
                                 alleleC[0] = ref.charAt(0);
                                 for (int j = 0; j < alts.length; j++) {
-                                    if (alts[j].startsWith("<I")) {
+                                    if (alts[j].startsWith("I") || alts[j].startsWith("<I")) {
                                         alleleC[j+1] = '+';
                                     }
-                                    else if (alts[j].startsWith("<D")) {
+                                    else if (alts[j].startsWith("D") || alts[j].startsWith("<D")) {
                                         alleleC[j+1] = '-';
                                     }
                                     alleleC[j+1] = alts[j].charAt(0);
@@ -497,10 +505,10 @@ public class HapScanner2 {
                 int index = (j*(j+1)/2)+i;
                 double value = Double.MAX_VALUE;
                 if (i == j) {
-                    value = -Math.log10(coe*Math.pow((1-0.75*this.sequencingErrorRate), cnt[i])*Math.pow(this.sequencingErrorRate/4, (sum-cnt[i])));
+                    value = -Math.log10(coe*Math.pow((1-0.75*this.combinedErrorRate), cnt[i])*Math.pow(this.combinedErrorRate /4, (sum-cnt[i])));
                 }
                 else {
-                    value = -Math.log10(coe*Math.pow((0.5-this.sequencingErrorRate/4), cnt[i]+cnt[j])*Math.pow(this.sequencingErrorRate/4, (sum-cnt[i]-cnt[j])));
+                    value = -Math.log10(coe*Math.pow((0.5-this.combinedErrorRate /4), cnt[i]+cnt[j])*Math.pow(this.combinedErrorRate /4, (sum-cnt[i]-cnt[j])));
                 }
                 if (value < max) {
                     max = value;
@@ -539,12 +547,12 @@ public class HapScanner2 {
             BufferedReader br = IOUtils.getTextReader(infileS);
             String temp = null;
             boolean ifOut = false;
-            if (!(temp = br.readLine()).equals("HapScanner2")) ifOut = true;
+            if (!(temp = br.readLine()).equals("HapScanner")) ifOut = true;
             if (!(temp = br.readLine()).equals("Author: Aoyue Bi, Xuebo Zhao, Fei Lu")) ifOut = true;
             if (!(temp = br.readLine()).equals("Email: biaoyue17@genetics.ac.cn; xuebozhao@genetics.ac.cn; flu@genetics.ac.cn")) ifOut = true;
             if (!(temp = br.readLine()).equals("Homepage: http://plantgeneticslab.weebly.com/")) ifOut = true;
             if (ifOut) {
-                System.out.println("Thanks for using HapScanner2.");
+                System.out.println("Thanks for using HapScanner.");
                 System.out.println("Please keep the authorship in the parameter file. Program stops.");
                 System.exit(0);
             }
@@ -565,6 +573,7 @@ public class HapScanner2 {
         samtoolsPath = pLineList.get(4);
         this.nThreads = Integer.parseInt(pLineList.get(5));
         outputDirS = pLineList.get(6);
+        this.combinedErrorRate = Double.parseDouble(pLineList.get(7));
         new File(outputDirS).mkdir();
         RowTable<String> t = new RowTable<>(taxaRefBamFileS);
         Set<String> taxaSet = new HashSet<>();
@@ -587,6 +596,6 @@ public class HapScanner2 {
     }
     
     public static void main (String[] args) {
-        new HapScanner2(args[0]);
+        new HapScanner(args[0]);
     }
 }
