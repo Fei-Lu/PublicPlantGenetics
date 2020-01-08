@@ -311,27 +311,46 @@ public class IOUtils {
         return new Dyad(fc, bb);
     }
     
+    public static List<File> getVisibleFileListInDir (String inDirS) {
+        File[] fs = new File(inDirS).listFiles();
+        List<File> fList = new ArrayList<>();
+        for (int i = 0; i < fs.length; i++) {
+            if (fs[i].isHidden()) continue;
+            fList.add(fs[i]);
+        }
+        Collections.sort(fList);
+        return fList;
+    }
+    
     public static List<File> getFileListInDir (String inDirS) {
         File[] fs = new File(inDirS).listFiles();
-        return Arrays.asList(fs);
+        List<File> fList = Arrays.asList(fs);
+        Collections.sort(fList);
+        return fList;
     }
     
     public static List<File> getFileListInDirContains (String inDirS, String containStr) {
         File[] fs = new File(inDirS).listFiles();
         fs = listFilesContains(fs, containStr);
-        return Arrays.asList(fs);
+        List<File> fList = Arrays.asList(fs);
+        Collections.sort(fList);
+        return fList;
     }
     
     public static List<File> getFileListInDirStartsWith (String inDirS, String startStr) {
         File[] fs = new File(inDirS).listFiles();
         fs = listFilesStartsWith(fs, startStr);
-        return Arrays.asList(fs);
+        List<File> fList = Arrays.asList(fs);
+        Collections.sort(fList);
+        return fList;
     }
     
     public static List<File> getFileListInDirEndsWith (String inDirS, String endStr) {
         File[] fs = new File(inDirS).listFiles();
         fs = listFilesEndsWith(fs, endStr);
-        return Arrays.asList(fs);
+        List<File> fList = Arrays.asList(fs);
+        Collections.sort(fList);
+        return fList;
     }
     
     public static File[] listFilesContains (File[] fAll, String containStr) {

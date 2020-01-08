@@ -9,9 +9,11 @@ import gnu.trove.map.hash.TIntIntHashMap;
 import java.io.BufferedReader;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+
 
 import utils.Dyad;
 import utils.IOUtils;
@@ -130,6 +132,87 @@ public class RefV1Utils {
             centromereEndMap.put(chromosome, Integer.parseInt(l.get(2)));
         }
         return true;
+    }
+
+    /**
+     * Return all chromosomes
+     * @return
+     */
+    public static String[] getChromosomes () {
+        String[] chromosomes = centromereStartMap.keySet().toArray(new String[centromereStartMap.keySet().size()]);
+        Arrays.sort(chromosomes);
+        return chromosomes;
+    }
+
+    /**
+     * Return all chrIDs
+     * @return
+     */
+    public static int[] getChrIDs () {
+        Integer[] cs = chrIDChromosomeMap.keySet().toArray(new Integer[chrIDChromosomeMap.keySet().size()]);
+        int[] chrIDs = new int[cs.length];
+        for (int i = 0; i < chrIDs.length; i++) {
+            chrIDs[i] = cs[i];
+        }
+        return chrIDs;
+    }
+
+    public static int[] getChrIDsOfSubgenomeA () {
+        return getChrIDsOfSubgenome("A");
+    }
+
+    public static int[] getChrIDsOfSubgenomeB () {
+        return getChrIDsOfSubgenome("B");
+    }
+
+    public static int[] getChrIDsOfSubgenomeD () {
+        return getChrIDsOfSubgenome("D");
+    }
+
+    public static int[] getChrIDsOfSubgenome (String sub) {
+        String[] chromosomes = getChromosomesOfSubgenome(sub);
+        int[] chrIDs = new int[chromosomes.length * 2];
+        for (int i = 0; i < chromosomes.length; i++) {
+            chrIDs[i] = getChrID(chromosomes[i], 1);
+            chrIDs[i+chromosomes.length] = getChrID(chromosomes[i], Integer.MAX_VALUE);
+        }
+        Arrays.sort(chrIDs);
+        return chrIDs;
+    }
+
+    /**
+     * Return chromosomes of A subgenome
+     * @return
+     */
+    public static String[] getChromosomesOfSubgenomeA () {
+        return getChromosomesOfSubgenome("A");
+    }
+
+    /**
+     * Return chromosomes of B subgenome
+     * @return
+     */
+    public static String[] getChromosomesOfSubgenomeB () {
+        return getChromosomesOfSubgenome("B");
+    }
+
+    /**
+     * Return chromosomes of D subgenome
+     * @return
+     */
+    public static String[] getChromosomesOfSubgenomeD () {
+        return getChromosomesOfSubgenome("D");
+    }
+
+    public static String[] getChromosomesOfSubgenome (String sub) {
+        String[] chromosomes = getChromosomes();
+        List<String> chrList = new ArrayList<>();
+        for (int i = 0; i < chromosomes.length; i++) {
+            if (chromosomes[i].endsWith(sub)) chrList.add(chromosomes[i]);
+        }
+        String[] subs = chrList.toArray(new String[chrList.size()]);
+        Arrays.sort(subs);
+        return subs;
     }
 
     /**
