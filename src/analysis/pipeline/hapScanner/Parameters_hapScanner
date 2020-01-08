@@ -3,7 +3,7 @@ Author: Aoyue Bi, Xuebo Zhao, Fei Lu
 Email: biaoyue17@genetics.ac.cn; xuebozhao@genetics.ac.cn; flu@genetics.ac.cn
 Homepage: http://plantgeneticslab.weebly.com/
 #This program is used to genotype whole genome sequenced (WGS) individuals by scanning an existing haplotype library.
-#The usage is java -Xms10g -Xmx20g HapScanner.jar parameters_hapScanner.txt > log.txt &
+#The usage is java -Xms10g -Xmx20g -jar HapScanner.jar parameters_hapScanner.txt > log.txt &
 #Please keep the order of following parameters.
 #Note: Only integers can be recegonized for Chr.
 #The taxaRefBam file containing information of taxon and its corresponding refernece genome and bam files. The bam file should have .bai file in the same folder
