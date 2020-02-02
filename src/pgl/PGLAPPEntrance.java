@@ -11,4 +11,7 @@ package pgl;
  */
 public class PGLAPPEntrance {
     
+    public static void main (String[] args) {
+        
+    }
 }
