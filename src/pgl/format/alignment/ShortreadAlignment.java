@@ -28,6 +28,7 @@ import pgl.utils.IOUtils;
  * Holding info from short read alignment result, including tools to convert results from aligners (Bowtie2 and BWA-MEM)
  * Alignments with no hits are included
  * Can be sort by query name, also (hit name and position)
+ * @deprecated 
  * @author Fei Lu
  */
 public class ShortreadAlignment {

@@ -30,11 +30,11 @@ public class SAMUtils {
     
     
     /**
-     * Return if the seq has multiple alignments
+     * Return if the seq has multiple segments
      * @param flag
      * @return 
      */
-    public static boolean isHavingMultipleAlignment (int flag) {
+    public static boolean isHavingMultipleSegments(int flag) {
         if (getBinaryValueAtNthBit(flag, 1) == 1) return true;
         return false;
     }
@@ -44,7 +44,7 @@ public class SAMUtils {
      * @param flag
      * @return 
      */
-    public static boolean isReadsMappedInPropePair (int flag) {
+    public static boolean isReadsMappedInProperPair(int flag) {
         if (getBinaryValueAtNthBit(flag, 2) == 1) return true;
         return false;
     }
@@ -140,12 +140,8 @@ public class SAMUtils {
     }
     
     private static int getBinaryValueAtNthBit (int flag, int bitPosRightMost) {
-        int v = 1;
         int shift = (bitPosRightMost - 1);
-        v = v << shift;
-        int value = v & flag;
-        value = value >>> shift;
-        return value;
+        return (flag>>shift)&1;
     }
     
     /**
@@ -163,9 +159,8 @@ public class SAMUtils {
      * @return 
      */
     private static SEAlignRecord getSEAlignRecord (List<String> l) {
-        int flag = Integer.parseInt(l.get(1));
-        String hit = null;
-        byte strand = Byte.MIN_VALUE;
+        short flag = Short.parseShort(l.get(1));
+        String hit = "";
         int startPos = Integer.MIN_VALUE;
         int endPos = Integer.MIN_VALUE;
         short mapQ = Short.MIN_VALUE;
@@ -176,8 +171,6 @@ public class SAMUtils {
         }
         else {
             hit = l.get(2);
-            if (((flag >> 4) & 1) == 1) strand = 0;
-            else strand = 1;
             startPos = Integer.parseInt(l.get(3));
             String cigar = l.get(5);
             Dyad<TByteArrayList, TIntArrayList> cigarOpPosIndex = getCigarOPAndPosIndex (cigar);
@@ -186,13 +179,13 @@ public class SAMUtils {
             alnMatchNumber  = getAlignMatchNumberInCigar (cigar, cigarOpPosIndex);
             editDistance = Short.valueOf(l.get(11).split(":")[2]);
         }
-        SEAlignRecord sar = new SEAlignRecord (l.get(0), hit, startPos, endPos, strand, mapQ, alnMatchNumber, editDistance);
+        SEAlignRecord sar = new SEAlignRecord (l.get(0), hit, startPos, endPos, flag, mapQ, alnMatchNumber, editDistance);
         return sar;
     }
     
     /**
-     * Return the end position (inclusive) of reference from an alignment
-     * Return -1 if the query is not aligned, in which cigar is *
+     * Return the end position (exclusive) of reference from an alignment
+     * Return Integer.MIN_VALUE if the query is not aligned, in which cigar is *
      * @param cigar
      * @param startPos
      * @return 
@@ -203,15 +196,15 @@ public class SAMUtils {
     }
     
     /**
-     * Return the end position (inclusive) of reference from an alignment
-     * Return -1 if the query is not aligned, in which cigar is *
+     * Return the end position (exclusive) of reference from an alignment
+     * Return Integer.MIN_VALUE if the query is not aligned, in which cigar is *
      * @param cigar
      * @param opPosIndex
      * @param startPos
      * @return 
      */
     private static int getEndPos (String cigar, Dyad<TByteArrayList, TIntArrayList> opPosIndex, int startPos) {
-        if (opPosIndex == null) return -1;
+        if (opPosIndex == null) return Integer.MIN_VALUE;
         byte[] op = opPosIndex.getFirstElement().toArray();
         int[] posIndex = opPosIndex.getSecondElement().toArray();
         int endPos = startPos - 1;
@@ -225,11 +218,11 @@ public class SAMUtils {
                 endPos += Integer.valueOf(cigar.substring(posIndex[i-1]+1, posIndex[i]));
             }
         }
-        return endPos;
+        return endPos+1;
     }
     
     /**
-     * Return total length of alignment match in CIGAR, including both sequence match and mismatch
+     * Return total length of alignment match in CIGAR ('M'), including both sequence match and mismatch
      * @param cigar
      * @param cigarOpPosIndex
      * @return 
@@ -288,7 +281,15 @@ public class SAMUtils {
         List<String> l = PStringUtils.fastSplit(inputStr);
         return getVariants(l, mapQThresh);
     }
-    
+
+    /**
+     * Working on it
+     * @param l
+     * @param mapQThresh
+     * @param sc
+     * @param end
+     * @return
+     */
     public static List<AlleleInfo> getAlleles3 (List<String> l, int mapQThresh, SNPCounts sc, int end) {
         List<AlleleInfo> tagAlleleList = new ArrayList();
         String cigar = l.get(5);
