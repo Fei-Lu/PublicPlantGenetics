@@ -4,9 +4,8 @@
  * and open the template in the editor.
  */
 
-package pgl.format.alignment;
+package pgl.format.alignment.gen2;
 
-import pgl.format.alignment.ShortreadAlignment.AlignmentInfo;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
@@ -25,6 +24,7 @@ import pgl.utils.IOUtils;
 
 
 /**
+ * @deprecated
  * Hold paired end alignment information from aligners (Bowtie2 and BWA-MEM)
  * @author Fei Lu
  */
@@ -187,8 +187,8 @@ public class ShortreadPEAlignment {
             String temp;
             String[] forwardArray = null;
             String[] backwardArray = null;
-            AlignmentInfo fInfo = null;
-            AlignmentInfo bInfo = null;
+            ShortreadAlignment.AlignmentInfo fInfo = null;
+            ShortreadAlignment.AlignmentInfo bInfo = null;
             ShortreadAlignment sa = new ShortreadAlignment();
             int cnt = 0;
             ArrayList<String[]> infoL = new ArrayList();
@@ -262,8 +262,8 @@ public class ShortreadPEAlignment {
         saR2.readFromBlast(r2AlignmentFileS, eThresh, readLength);
         String[] querys = saR1.getQuerys();
         for (int i = 0; i < querys.length; i++) {
-            AlignmentInfo r1 = saR1.ai[saR1.getAlignmentStartIndexByQuery(querys[i])];
-            AlignmentInfo r2 = saR2.ai[saR2.getAlignmentStartIndexByQuery(querys[i])];
+            ShortreadAlignment.AlignmentInfo r1 = saR1.ai[saR1.getAlignmentStartIndexByQuery(querys[i])];
+            ShortreadAlignment.AlignmentInfo r2 = saR2.ai[saR2.getAlignmentStartIndexByQuery(querys[i])];
             aList.add(new PEAlignmentInfo(r1, r2));
             if (i%500000 == 0) System.out.println("Processed " + String.valueOf(i) + " PE alignment");
         }
@@ -289,8 +289,8 @@ public class ShortreadPEAlignment {
             while(br.readLine().startsWith("@PG")==false) {};
             String forwardStr = null;
             String backwardStr = null;
-            AlignmentInfo fInfo = null;
-            AlignmentInfo bInfo = null;
+            ShortreadAlignment.AlignmentInfo fInfo = null;
+            ShortreadAlignment.AlignmentInfo bInfo = null;
             ShortreadAlignment sa = new ShortreadAlignment();
             int cnt = 0;
             while((forwardStr = br.readLine())!=null) {
@@ -621,7 +621,7 @@ public class ShortreadPEAlignment {
         /**If backward sequence is a perfect match to reference*/
         boolean ifPerfectMatchB = false;
         
-        public PEAlignmentInfo (AlignmentInfo fInfo, AlignmentInfo bInfo) {
+        public PEAlignmentInfo (ShortreadAlignment.AlignmentInfo fInfo, ShortreadAlignment.AlignmentInfo bInfo) {
             this.query = fInfo.query;
             this.hitF = fInfo.hit;
             this.startPosF = fInfo.startPos;

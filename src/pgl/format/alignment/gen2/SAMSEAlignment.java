@@ -3,18 +3,18 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package pgl.format.alignment;
+package pgl.format.alignment.gen2;
 
 import java.io.BufferedReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
+
 import pgl.utils.IOUtils;
 
 /**
- * Class holding alignment results of next-gen sequencing reads from BWA-MEM
+ * Class holding single-end alignment results of next-gen sequencing reads from BWA-MEM
  * Supplementary alignments are ignored while reading SAM from BWA-MEM
  * Can be sorted by position
  * @author feilu
@@ -46,9 +46,10 @@ public class SAMSEAlignment {
             }
             while(br.readLine().startsWith("@PG")==false) {};
             String inputStr = null;
+            SEAlignRecord sar = null;
             int cnt = 0;
             while((inputStr = br.readLine())!=null) {
-                SEAlignRecord sar = SAMUtils.getSEAlignRecord(inputStr);
+                sar = SAMUtils.getSEAlignRecord(inputStr);
                 if (sar.isSupplementaryAlignment()) continue; //did not find other type of second-alignment
                 rList.add(sar);
                 cnt++;
@@ -113,6 +114,7 @@ public class SAMSEAlignment {
      */
     public void sortByPosition () {
         Arrays.sort(sars);
+        sortType = 0;
     }
     
     /**

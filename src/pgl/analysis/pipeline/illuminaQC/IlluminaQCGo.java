@@ -1,6 +1,6 @@
 package pgl.analysis.pipeline.illuminaQC;
 
-import pgl.format.alignment.ShortreadPEAlignment;
+import pgl.format.alignment.gen2.ShortreadPEAlignment;
 import pgl.format.dna.FastaByte;
 import gnu.trove.list.array.TDoubleArrayList;
 import gnu.trove.list.array.TIntArrayList;

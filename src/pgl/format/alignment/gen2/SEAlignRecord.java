@@ -3,10 +3,10 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package pgl.format.alignment;
+package pgl.format.alignment.gen2;
 
 /**
- * Holding information of single end read alignment from BWA-MEM
+ * Class holding information of single end read alignment from BWA-MEM
  * @author feilu
  */
 public class SEAlignRecord implements Comparable<SEAlignRecord>{

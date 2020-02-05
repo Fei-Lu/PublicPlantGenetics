@@ -4,7 +4,7 @@
  * and open the template in the editor.
  */
 
-package pgl.format.alignment;
+package pgl.format.alignment.gen2;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -20,7 +20,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.TreeSet;
-import pgl.utils.PStringUtils;
+
 import pgl.utils.IOFileFormat;
 import pgl.utils.IOUtils;
 
@@ -37,7 +37,7 @@ public class ShortreadAlignment {
     byte sortType = 0; 
     
     /**
-     * Construct a {@link pgl.format.alignment.ShortreadAlignment} object
+     * Construct a {@link ShortreadAlignment} object
      */
     public ShortreadAlignment() {}
     

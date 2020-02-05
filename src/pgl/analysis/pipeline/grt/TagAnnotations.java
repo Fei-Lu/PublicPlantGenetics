@@ -5,7 +5,7 @@
  */
 package pgl.analysis.pipeline.grt;
 
-import pgl.format.alignment.SAMUtils;
+import pgl.format.alignment.gen2.SAMUtils;
 import pgl.format.dna.snp.AlleleEncoder;
 import pgl.format.dna.snp.SNP;
 import pgl.format.position.ChrPos;

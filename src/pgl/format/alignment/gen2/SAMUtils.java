@@ -1,13 +1,12 @@
 /*
  * SAMUtils
  */
-package pgl.format.alignment;
+package pgl.format.alignment.gen2;
 
 import pgl.analysis.pipeline.grt.AlleleInfo;
 import pgl.analysis.pipeline.grt.SNPCounts;
 import pgl.format.dna.snp.AlleleEncoder;
 import pgl.format.dna.snp.SNP;
-import pgl.format.position.ChrPos;
 import gnu.trove.list.array.TByteArrayList;
 import gnu.trove.list.array.TIntArrayList;
 import java.util.ArrayList;
@@ -16,7 +15,6 @@ import java.util.Collections;
 import java.util.List;
 import pgl.utils.PStringUtils;
 import pgl.utils.Dyad;
-import pgl.utils.Triad;
 
 /**
  *
@@ -145,7 +143,7 @@ public class SAMUtils {
     }
     
     /**
-     * Return a {@link pgl.format.alignment.SEAlignRecord} object from a SAM alignment record
+     * Return a {@link SEAlignRecord} object from a SAM alignment record
      * @param inputStr
      * @return 
      */
@@ -154,7 +152,7 @@ public class SAMUtils {
     }
     
     /**
-     * Return a {@link pgl.format.alignment.SEAlignRecord} object from elements of a SAM alignment record
+     * Return a {@link SEAlignRecord} object from elements of a SAM alignment record
      * @param l
      * @return 
      */
