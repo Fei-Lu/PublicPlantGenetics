@@ -5,16 +5,14 @@
  */
 package pgl.graphcis.tablesaw;
 
-import pgl.format.table.TableInterface;
+import pgl.infra.table.TableInterface;
 import java.io.IOException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+
 import tech.tablesaw.api.ColumnType;
 import tech.tablesaw.api.Table;
 import tech.tablesaw.api.TextColumn;
 import tech.tablesaw.io.csv.CsvReadOptions;
 import tech.tablesaw.io.csv.CsvWriteOptions;
-import tech.tablesaw.io.csv.CsvWriter;
 
 /**
  *

@@ -10,7 +10,7 @@ import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Options;
-import pgl.utils.CLIInterface;
+import pgl.infra.utils.CLIInterface;
 
 /**
  *

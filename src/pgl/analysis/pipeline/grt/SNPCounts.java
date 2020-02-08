@@ -5,8 +5,8 @@
  */
 package pgl.analysis.pipeline.grt;
 
-import pgl.format.dna.snp.SNP;
-import pgl.format.position.ChrPos;
+import pgl.infra.dna.allele.snp.SNP;
+import pgl.infra.position.ChrPos;
 import gnu.trove.list.array.TByteArrayList;
 import gnu.trove.set.hash.TShortHashSet;
 import java.io.DataInputStream;
@@ -16,7 +16,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
-import pgl.utils.IOUtils;
+import pgl.infra.utils.IOUtils;
 
 /**
  *

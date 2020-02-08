@@ -8,13 +8,13 @@ package pgl.analysis.pipeline.grt;
 import cern.colt.GenericSorting;
 import cern.colt.Swapper;
 import cern.colt.function.IntComparator;
-import pgl.format.dna.BaseEncoder;
+import pgl.infra.dna.BaseEncoder;
 import gnu.trove.list.array.TIntArrayList;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import pgl.utils.PArrayUtils;
-import pgl.utils.Dyad;
+import pgl.infra.utils.PArrayUtils;
+import pgl.infra.utils.Dyad;
 
 /**
  *

@@ -5,9 +5,9 @@
  */
 package pgl.analysis.pipeline.grt;
 
-import pgl.format.table.RowTable;
+import pgl.infra.table.RowTable;
 import gnu.trove.list.array.TIntArrayList;
-import java.io.DataOutputStream;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;

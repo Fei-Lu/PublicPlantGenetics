@@ -5,11 +5,11 @@
  */
 package pgl.analysis.pipeline.grt;
 
-import pgl.format.dna.BaseEncoder;
-import pgl.format.dna.snp.AlleleEncoder;
-import pgl.format.dna.snp.genotype.AlleleDepth;
-import pgl.format.dna.snp.genotype.VCFUtils;
-import pgl.format.position.ChrPos;
+import pgl.infra.dna.BaseEncoder;
+import pgl.infra.dna.allele.snp.AlleleEncoder;
+import pgl.infra.dna.genotype.AlleleDepth;
+import pgl.infra.dna.genotype.VCFUtils;
+import pgl.infra.position.ChrPos;
 import gnu.trove.list.array.TByteArrayList;
 import gnu.trove.list.array.TIntArrayList;
 import java.io.BufferedWriter;
@@ -21,10 +21,10 @@ import java.nio.file.StandardOpenOption;
 import java.text.DecimalFormat;
 import java.util.Arrays;
 import java.util.List;
-import pgl.utils.IOUtils;
-import pgl.utils.PArrayUtils;
-import pgl.utils.PStringUtils;
-import pgl.utils.Dyad;
+import pgl.infra.utils.IOUtils;
+import pgl.infra.utils.PArrayUtils;
+import pgl.infra.utils.PStringUtils;
+import pgl.infra.utils.Dyad;
 
 /**
  *

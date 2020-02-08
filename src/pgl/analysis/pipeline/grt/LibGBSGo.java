@@ -5,15 +5,14 @@
  */
 package pgl.analysis.pipeline.grt;
 
-import pgl.format.position.ChrPos;
-import pgl.format.table.RowTable;
+import pgl.infra.position.ChrPos;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
-import pgl.utils.IOUtils;
+
+import pgl.infra.utils.IOUtils;
 
 /**
  *

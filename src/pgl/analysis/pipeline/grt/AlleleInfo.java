@@ -5,7 +5,7 @@
  */
 package pgl.analysis.pipeline.grt;
 
-import pgl.format.position.ChrPos;
+import pgl.infra.position.ChrPos;
 
 /**
  *

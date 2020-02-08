@@ -7,8 +7,8 @@ package pgl.analysis.pipeline.grt;
 
 import java.io.File;
 import java.util.Arrays;
-import pgl.utils.Benchmark;
-import pgl.utils.IOUtils;
+import pgl.infra.utils.Benchmark;
+import pgl.infra.utils.IOUtils;
 
 /**
  *

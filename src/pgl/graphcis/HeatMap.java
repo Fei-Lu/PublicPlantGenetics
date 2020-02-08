@@ -12,7 +12,7 @@ import com.itextpdf.text.Document;
 import com.itextpdf.text.Rectangle;
 import com.itextpdf.text.pdf.PdfContentByte;
 import com.itextpdf.text.pdf.PdfWriter;
-import pgl.format.table.TableInterface;
+import pgl.infra.table.TableInterface;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.geom.Ellipse2D;

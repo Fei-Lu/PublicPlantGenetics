@@ -6,7 +6,7 @@
 package pgl.analysis.pipeline.grt;
 
 import com.koloboke.collect.map.hash.HashByteByteMap;
-import pgl.format.dna.BaseEncoder;
+import pgl.infra.dna.BaseEncoder;
 import java.util.Comparator;
 
 /**

@@ -6,21 +6,18 @@
 package pgl.analysis.pipeline.grt;
 
 import com.koloboke.collect.map.hash.HashByteByteMap;
-import pgl.format.dna.BaseEncoder;
+import pgl.infra.dna.BaseEncoder;
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.File;
-import java.sql.Connection;
-import java.sql.DatabaseMetaData;
-import java.sql.DriverManager;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import pgl.utils.IOUtils;
-import pgl.utils.PArrayUtils;
+import pgl.infra.utils.IOUtils;
+import pgl.infra.utils.PArrayUtils;
 
 /**
  *

@@ -5,7 +5,7 @@
  */
 package pgl.analysis.pipeline.grt;
 
-import pgl.format.position.ChrPos;
+import pgl.infra.position.ChrPos;
 import java.io.File;
 import java.util.List;
 import org.apache.commons.cli.CommandLine;
@@ -13,8 +13,8 @@ import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Options;
-import pgl.utils.Benchmark;
-import pgl.utils.CLIInterface;
+import pgl.infra.utils.Benchmark;
+import pgl.infra.utils.CLIInterface;
 
 /**
  *
