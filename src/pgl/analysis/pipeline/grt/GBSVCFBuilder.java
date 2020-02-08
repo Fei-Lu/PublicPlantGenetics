@@ -13,15 +13,12 @@ import pgl.format.position.ChrPos;
 import gnu.trove.list.array.TByteArrayList;
 import gnu.trove.list.array.TIntArrayList;
 import java.io.BufferedWriter;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.File;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.text.DecimalFormat;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import pgl.utils.IOUtils;
@@ -735,7 +732,7 @@ public class GBSVCFBuilder {
     private int getTagIndex (int[] divergence, int[] tagIndices, int groupIndex, long[] queryTag) {
         byte[][] query = new byte[2][];
         for (int i = 0; i < 2; i++) {
-            query[i] = BaseEncoder.getByteArrayFromLongs(Arrays.copyOfRange(queryTag, i*tas.getTagLengthInLong(), (i+1)*tas.getTagLengthInLong()));
+            query[i] = BaseEncoder.getBaseByteArrayFromLongs(Arrays.copyOfRange(queryTag, i*tas.getTagLengthInLong(), (i+1)*tas.getTagLengthInLong()));
             //System.out.println(BaseEncoder.getSequenceFromLongs(Arrays.copyOfRange(queryTag, i*tas.getTagLengthInLong(), (i+1)*tas.getTagLengthInLong())));
         }
         for (int i = 0; i < tagIndices.length; i++) {
@@ -743,7 +740,7 @@ public class GBSVCFBuilder {
             List<AlleleInfo> ai = tas.getAlleleOfTag(groupIndex, tagIndices[i]);
             byte[][] dbTag = new byte[2][];
             for (int j = 0; j < dbTag.length; j++) {
-                dbTag[j] = BaseEncoder.getByteArrayFromLongs(Arrays.copyOfRange(tas.getTag(groupIndex, tagIndices[i]), j*tas.getTagLengthInLong(), (j+1)*tas.getTagLengthInLong()));
+                dbTag[j] = BaseEncoder.getBaseByteArrayFromLongs(Arrays.copyOfRange(tas.getTag(groupIndex, tagIndices[i]), j*tas.getTagLengthInLong(), (j+1)*tas.getTagLengthInLong()));
                 //System.out.println(BaseEncoder.getSequenceFromLongs(Arrays.copyOfRange(tas.getTag(groupIndex, tagIndices[i]), j*tas.getTagLengthInLong(), (j+1)*tas.getTagLengthInLong())));
             }
             for (int j = 0; j < ai.size(); j++) {

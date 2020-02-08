@@ -37,8 +37,7 @@ public class TablesawUtils {
     /**
      * Read a TSV file and return a Table
      * @param infileS
-     * @return
-     * @throws IOException 
+     * @return 
      */
     public static Table readTsv (String infileS) {
         CsvReadOptions.Builder builder = getTsvReadOptionBuilder (infileS);
@@ -93,7 +92,7 @@ public class TablesawUtils {
     /**
      * Write a Table to a TSV file
      * @param t
-     * @param oufileS
+     * @param outfileS
      */
     public static void writeTsv (Table t, String outfileS) {
         CsvWriteOptions builder;

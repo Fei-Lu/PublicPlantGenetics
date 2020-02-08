@@ -14,35 +14,35 @@ import com.koloboke.collect.map.hash.HashByteByteMaps;
  */
 public class DNAUtils {
     /**The byte value of 4 DNA bases, A, C, G, T*/
-    private static final byte[] baseByte = {65, 67, 71, 84};
+    private static final byte[] baseAscII = BaseEncoder.baseAscII;
     /**The byte value of 4 DNA bases and any base, A, C, G, N, T*/
-    private static final byte[] baseByteWithN = {65, 67, 71, 78, 84};
+    private static final byte[] baseAscIIWithN = {65, 67, 71, 78, 84};
     
-    private static final byte[] compleBaseByteWithN = {84, 71, 67, 78, 65};
+    private static final byte[] compleBaseAscIIWithN = {84, 71, 67, 78, 65};
     
-    private static final byte[] lowerBaseByte = {97, 99, 103, 116};
+    private static final byte[] lowerBaseAscII = {97, 99, 103, 116};
     
     /**
      * Return byte value hash map pointing to complementary bases
      * @return 
      */
-    public static HashByteByteMap getBaseCompleByteMap () {
-        return HashByteByteMaps.getDefaultFactory().newImmutableMap(baseByteWithN, compleBaseByteWithN);
+    public static HashByteByteMap getBaseCompleAscIIMap() {
+        return HashByteByteMaps.getDefaultFactory().newImmutableMap(baseAscIIWithN, compleBaseAscIIWithN);
     }
     
     /**
      * Return a byte value base array of A, C, G, T
      * @return 
      */
-    public static byte[] getBaseByteArray () {
-        return baseByte;
+    public static byte[] getBaseAscIIArray() {
+        return baseAscII;
     }
     
     /**
      * Return a byte value base array of A, C, G, N, T
      * @return 
      */
-    public static byte[] getBaseWithNByteArray () {
-        return baseByteWithN;
+    public static byte[] getBaseWithNAscIIArray() {
+        return baseAscIIWithN;
     }
 }

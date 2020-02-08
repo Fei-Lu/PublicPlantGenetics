@@ -5,8 +5,6 @@
  */
 package pgl.format.dna;
 
-import com.koloboke.collect.map.hash.HashByteByteMap;
-import com.koloboke.collect.map.hash.HashByteByteMaps;
 import java.util.Arrays;
 
 
@@ -17,7 +15,7 @@ import java.util.Arrays;
  * @author feilu
  */
 public class Sequence2Bit extends Sequence3Bit {
-    private static final byte[] baseAscII = DNAUtils.getBaseByteArray();
+    private static final byte[] baseAscII = DNAUtils.getBaseAscIIArray();
     
     public Sequence2Bit(String seq) {
         super(seq, 2);

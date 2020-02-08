@@ -237,7 +237,7 @@ public class Sequence3Bit implements SequenceInterface {
 
     @Override
     public String getReverseComplementarySeq(int startIndex, int endIndex) {
-        HashByteByteMap baseCompleByteMap = DNAUtils.getBaseCompleByteMap();
+        HashByteByteMap baseCompleByteMap = DNAUtils.getBaseCompleAscIIMap();
         byte[] reverseByte = new byte[endIndex - startIndex];
         for (int i = 0; i < reverseByte.length; i++) {
             reverseByte[i] = baseCompleByteMap.get(getBaseAscII(endIndex-i-1));
@@ -247,7 +247,7 @@ public class Sequence3Bit implements SequenceInterface {
 
     @Override
     public boolean isThereNonACGTNBase() {
-        byte[] baseByteWithN = DNAUtils.getBaseWithNByteArray();
+        byte[] baseByteWithN = DNAUtils.getBaseWithNAscIIArray();
         for (int i = 0; i < this.getSequenceLength(); i++) {
             int index = Arrays.binarySearch(baseByteWithN, this.getBaseAscII(i));
             if (index < 0) {

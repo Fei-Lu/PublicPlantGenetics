@@ -22,10 +22,12 @@ public class BaseEncoder {
     public static final int intChunkSize = 16;
     public static final int shortChunkSize = 8;
     public static final char[] bases = {'A', 'C', 'G', 'T'};
+    public static final byte[] baseAscII = {65, 67, 71, 84};
     public static final byte[] baseBytes = {0, 1, 2, 3};
+    public static final HashByteByteMap ascIIBaseByteMap = getAscIIByteMap();
     
     /**
-     * Build a byte converter to convert AscII byte following the base encoding rules
+     * Build a base byte converter to convert AscII byte following the base encoding rules
      * A(00000000), C(00000001), G(00000010), T(0000000011), others(00000100)
      * @return 
      */
@@ -60,7 +62,28 @@ public class BaseEncoder {
 //        ascIIByteMap.put((byte)116, (byte)3);
         return ascIIByteMap;
     }
-    
+
+    /**
+     * Convert to an array of base byte from an array of AscII code
+     * @param a an array of bytes of AscII code
+     * @return
+     */
+    public static byte[] convertToBaseByteArray (byte[] a) {
+        for (int i = 0; i < a.length; i++) {
+            a[i] = convertToBaseByte(a[i]);
+        }
+        return a;
+    }
+
+    /**
+     * Convert a base byte from an AscII code
+     * @param a a byte of AscII code
+     * @return
+     */
+    public static byte convertToBaseByte (byte a) {
+        return ascIIBaseByteMap.get(a);
+    }
+
     /**
      * Return a reverse complementary byte array
      * @param a The byte array must be in 0-3 coding for A, C, G, T, other bases are 4
@@ -80,7 +103,7 @@ public class BaseEncoder {
         }
         return b;
     }
-    
+
     /**
      * Return a long from a byte array. It is padded with polyA at the end if the length of this array is less than 32
      * If the length of this array is greater than 32, return -1 (polyT)
@@ -102,7 +125,7 @@ public class BaseEncoder {
     /**
      * Return a long from a subset byte array. It is padded with polyA at the end if the length of this subset array is less than 32
      * If the length of this subset array is greater than 32, return -1 (polyT)
-     * @param b
+     * @param b The byte array must be in 0-3 coding for A, C, G, T
      * @param startIndex inclusive
      * @param endIndex exclusive
      * @return 
@@ -167,7 +190,7 @@ public class BaseEncoder {
     /**
      * Return an int from a subset byte array. It is padded with polyA at the end if the length of this subset array is less than 16
      * If the length of this subset array is greater than 16, return -1 (polyT)
-     * @param b
+     * @param b The byte array must be in 0-3 coding for A, C, G, T
      * @param startIndex
      * @param endIndex
      * @return 
@@ -206,7 +229,7 @@ public class BaseEncoder {
     /**
      * Return a short from a subset byte array. It is padded with polyA at the end if the length of this subset array is less than 8
      * If the length of this subset array is greater than 8, return -1 (polyT)
-     * @param b
+     * @param b The byte array must be in 0-3 coding for A, C, G, T
      * @param startIndex
      * @param endIndex
      * @return 
@@ -228,20 +251,20 @@ public class BaseEncoder {
      * Return a reverse complementary long. It is padded with polyA at the end if the length of this array is less than 32
      * If the length of this array is greater than 32 or less than 0, return -1 (polyT)
      * @param seq
-     * @param kmerLength
+     * @param seqLength The actual length of the seq
      * @return 
      */
-    public static long getLongReverseComplement(long seq, int kmerLength) {
-        if (kmerLength<0 || kmerLength>longChunkSize) return -1;
+    public static long getLongReverseComplement(long seq, int seqLength) {
+        if (seqLength<0 || seqLength>longChunkSize) return -1;
         long rev = 0;
         long mask = 3;
         seq = ~seq;
-        seq = seq >> ((longChunkSize-kmerLength)*2);
-        for (int i = 0; i < kmerLength; i++) {
+        seq = seq >> ((longChunkSize-seqLength)*2);
+        for (int i = 0; i < seqLength; i++) {
             rev = (rev << 2) + (seq & mask);
             seq = seq >> 2;
         }
-        rev = rev << ((longChunkSize-kmerLength)*2);
+        rev = rev << ((longChunkSize-seqLength)*2);
         return rev;
     }
     
@@ -249,20 +272,20 @@ public class BaseEncoder {
      * Return a reverse complementary int. It is padded with polyA at the end if the length of this array is less than 16
      * If the length of this array is greater than 16 or less than 0, return -1 (polyT)
      * @param seq
-     * @param kmerLength
+     * @param seqLength The actual length of the seq
      * @return 
      */
-    public static int getIntReverseComplement(int seq, int kmerLength) {
-        if (kmerLength<0 || kmerLength>intChunkSize) return -1;
+    public static int getIntReverseComplement(int seq, int seqLength) {
+        if (seqLength<0 || seqLength>intChunkSize) return -1;
         int rev = 0;
         int mask = 3;
         seq = ~seq;
-        seq = seq >> ((intChunkSize-kmerLength)*2);
-        for (int i = 0; i < kmerLength; i++) {
+        seq = seq >> ((intChunkSize-seqLength)*2);
+        for (int i = 0; i < seqLength; i++) {
             rev = (rev << 2) + (seq & mask);
             seq = seq >> 2;
         }
-        rev = rev << ((intChunkSize-kmerLength)*2);
+        rev = rev << ((intChunkSize-seqLength)*2);
         return rev;
     }
     
@@ -270,20 +293,20 @@ public class BaseEncoder {
      * Return a reverse complementary int. It is padded with polyA at the end if the length of this array is less than 8
      * If the length of this array is greater than 8 or less than 0, return -1 (polyT)
      * @param seq
-     * @param kmerLength
+     * @param seqLength The actual length of the seq
      * @return 
      */
-    public static short getShortReverseComplement(int seq, int kmerLength) {
-        if (kmerLength<0 || kmerLength>shortChunkSize) return -1;
+    public static short getShortReverseComplement(int seq, int seqLength) {
+        if (seqLength<0 || seqLength>shortChunkSize) return -1;
         int rev = 0;
         int mask = 3;
         seq = ~seq;
-        seq = seq >> ((shortChunkSize-kmerLength)*2);
-        for (int i = 0; i < kmerLength; i++) {
+        seq = seq >> ((shortChunkSize-seqLength)*2);
+        for (int i = 0; i < seqLength; i++) {
             rev = (rev << 2) + (seq & mask);
             seq = seq >> 2;
         }
-        rev = rev << ((shortChunkSize-kmerLength)*2);
+        rev = rev << ((shortChunkSize-seqLength)*2);
         return (short)rev;
     }
     
@@ -391,21 +414,21 @@ public class BaseEncoder {
     	return seq.toString();
     }
     
-    public static byte[] getByteArrayFromLong (long val) {
+    public static byte[] getBaseByteArrayFromLong(long val) {
         byte[] array = new byte[longChunkSize];
         long mask = 3L << 62;
     	for (int i = 0; i < longChunkSize; i++) {
             byte base = (byte) (((val & mask) >>> 62));
-            array[i] = baseBytes[base];          
+            array[i] = baseBytes[base];
             val = val << 2;
     	}
         return array;
     }
     
-    public static byte[] getByteArrayFromLongs (long[] val) {
+    public static byte[] getBaseByteArrayFromLongs(long[] val) {
         TByteArrayList byteList = new TByteArrayList();
         for (int i = 0; i < val.length; i++) {
-            byteList.addAll(getByteArrayFromLong(val[i]));
+            byteList.addAll(getBaseByteArrayFromLong(val[i]));
         }
         return byteList.toArray();
     }
