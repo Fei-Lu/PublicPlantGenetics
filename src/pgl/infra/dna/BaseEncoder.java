@@ -18,20 +18,41 @@ import gnu.trove.list.array.TByteArrayList;
  * @author fl262
  */
 public class BaseEncoder {
+    /**
+     * Sequence length in long using 2 bits coding
+     */
     public static final int longChunkSize = 32;
+    /**
+     * Sequence length in int using 2 bits coding
+     */
     public static final int intChunkSize = 16;
+    /**
+     * Sequence length in short using 2 bits coding
+     */
     public static final int shortChunkSize = 8;
+    /**
+     * Nucleotide bases in char
+     */
     public static final char[] bases = {'A', 'C', 'G', 'T'};
+    /**
+     * Nucleotide bases in AscII code
+     */
     public static final byte[] baseAscIIs = {65, 67, 71, 84};
+    /**
+     * Nucleotide bases in byte
+     */
     public static final byte[] baseBytes = {0, 1, 2, 3};
-    public static final HashByteByteMap ascIIBaseByteMap = getAscIIByteMap();
+    /**
+     * Converter from AscII to base byte
+     */
+    public static final HashByteByteMap ascIIBaseByteMap = getAscIIBaseByteMap();
     
     /**
      * Build a base byte converter to convert AscII byte following the base encoding rules
      * A(00000000), C(00000001), G(00000010), T(0000000011), others(00000100)
      * @return 
      */
-    public static HashByteByteMap getAscIIByteMap () {
+    public static HashByteByteMap getAscIIBaseByteMap() {
         int size = 128;
         byte[] key = new byte[size];
         byte[] value = new byte[size];

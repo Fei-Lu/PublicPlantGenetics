@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package pgl.infra.dna.allele.snp;
+package pgl.infra.dna.snp;
 
 /**
  *

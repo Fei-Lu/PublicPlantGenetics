@@ -113,7 +113,7 @@ public class TagParser {
             String readR2 = null;
             byte readR1Len = 0;
             byte readR2Len = 0;
-            HashByteByteMap ascIIByteMap = BaseEncoder.getAscIIByteMap();
+            HashByteByteMap ascIIByteMap = BaseEncoder.getAscIIBaseByteMap();
             while ((temp1 = br1.readLine()) != null) {
                 temp2 = br2.readLine();
                 totalCnt++;

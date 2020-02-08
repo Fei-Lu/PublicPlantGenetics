@@ -6,7 +6,7 @@
 package pgl.analysis.pipeline.grt;
 
 import pgl.infra.dna.BaseEncoder;
-import pgl.infra.dna.allele.snp.AlleleEncoder;
+import pgl.infra.dna.allele.AlleleEncoder;
 import pgl.infra.dna.genotype.AlleleDepth;
 import pgl.infra.dna.genotype.VCFUtils;
 import pgl.infra.position.ChrPos;

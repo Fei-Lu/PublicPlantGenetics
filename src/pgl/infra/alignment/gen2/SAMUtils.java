@@ -5,8 +5,8 @@ package pgl.infra.alignment.gen2;
 
 import pgl.analysis.pipeline.grt.AlleleInfo;
 import pgl.analysis.pipeline.grt.SNPCounts;
-import pgl.infra.dna.allele.snp.AlleleEncoder;
-import pgl.infra.dna.allele.snp.SNP;
+import pgl.infra.dna.allele.AlleleEncoder;
+import pgl.infra.dna.snp.SNP;
 import gnu.trove.list.array.TByteArrayList;
 import gnu.trove.list.array.TIntArrayList;
 import java.util.ArrayList;

@@ -6,8 +6,8 @@
 package pgl.analysis.pipeline.grt;
 
 import pgl.infra.alignment.gen2.SAMUtils;
-import pgl.infra.dna.allele.snp.AlleleEncoder;
-import pgl.infra.dna.allele.snp.SNP;
+import pgl.infra.dna.allele.AlleleEncoder;
+import pgl.infra.dna.snp.SNP;
 import pgl.infra.position.ChrPos;
 import gnu.trove.list.array.TByteArrayList;
 import java.io.BufferedReader;

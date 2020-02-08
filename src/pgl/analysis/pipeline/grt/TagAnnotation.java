@@ -8,7 +8,7 @@ package pgl.analysis.pipeline.grt;
 import cern.colt.GenericSorting;
 import cern.colt.Swapper;
 import cern.colt.function.IntComparator;
-import pgl.infra.dna.allele.snp.SNP;
+import pgl.infra.dna.snp.SNP;
 import gnu.trove.list.array.TByteArrayList;
 import gnu.trove.list.array.TIntArrayList;
 import gnu.trove.list.array.TShortArrayList;

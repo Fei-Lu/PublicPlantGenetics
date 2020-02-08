@@ -5,7 +5,7 @@
  */
 package pgl.analysis.pipeline.grt;
 
-import pgl.infra.dna.allele.snp.SNP;
+import pgl.infra.dna.snp.SNP;
 import pgl.infra.position.ChrPos;
 import gnu.trove.list.array.TByteArrayList;
 import gnu.trove.set.hash.TShortHashSet;
