@@ -20,7 +20,7 @@ public class SNP extends ChrPos implements SNPInterface {
     
     public SNP (short chr, int pos, char refAllele, char altAllele) {
         super(chr, pos);
-        this.ref = AlleleEncoder.alleleCharByteMap.get(refAllele);
+        this.ref = AlleleEncoder.alleleBaseByteMap.get(refAllele);
         this.addAltAllele(altAllele);
     }
     
@@ -49,7 +49,7 @@ public class SNP extends ChrPos implements SNPInterface {
     
     @Override
     public void addAltAllele (char altAllele) {
-        this.addAltAlleleByte(AlleleEncoder.alleleCharByteMap.get(altAllele));
+        this.addAltAlleleByte(AlleleEncoder.alleleBaseByteMap.get(altAllele));
     }
     
     @Override
@@ -75,7 +75,7 @@ public class SNP extends ChrPos implements SNPInterface {
     
     @Override
     public int getAltAlleleIndex (char altAllele) {
-        return this.getAltAlleleIndex(AlleleEncoder.alleleCharByteMap.get(altAllele));
+        return this.getAltAlleleIndex(AlleleEncoder.alleleBaseByteMap.get(altAllele));
     }
     
     @Override
@@ -85,7 +85,7 @@ public class SNP extends ChrPos implements SNPInterface {
 
     @Override
     public char getRefAllele() {
-        return AlleleEncoder.alleleByteCharMap.get(this.getRefAlleleByte());
+        return AlleleEncoder.alleleByteBaseMap.get(this.getRefAlleleByte());
     }
 
     @Override
@@ -95,6 +95,6 @@ public class SNP extends ChrPos implements SNPInterface {
 
     @Override
     public char getAltAllele(int alleleIndex) {
-        return AlleleEncoder.alleleByteCharMap.get(this.getAltAlleleByte(alleleIndex));
+        return AlleleEncoder.alleleByteBaseMap.get(this.getAltAlleleByte(alleleIndex));
     }
 }

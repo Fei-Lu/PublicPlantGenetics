@@ -5,8 +5,6 @@
  */
 package pgl.infra.dna.allele;
 
-import com.koloboke.collect.map.hash.HashByteByteMap;
-import com.koloboke.collect.map.hash.HashByteByteMaps;
 import com.koloboke.collect.map.hash.HashByteCharMap;
 import com.koloboke.collect.map.hash.HashByteCharMaps;
 import com.koloboke.collect.map.hash.HashCharByteMap;
@@ -17,10 +15,11 @@ import com.koloboke.collect.map.hash.HashCharByteMaps;
  * @author feilu
  */
 public class AlleleEncoder {
+
     /**
      * Alleles in char, D is deletion, I is insertion, N is missing either biological or technical
      */
-    public static final char[] alleles = {'A', 'C', 'G', 'T', 'D', 'I', 'N'};
+    public static final char[] alleleBases = {'A', 'C', 'G', 'T', 'D', 'I', 'N'};
     /**
      * Alleles in AscII code
      */
@@ -33,22 +32,22 @@ public class AlleleEncoder {
     /**
      * Converter from char to allele byte
      */
-    public static final HashCharByteMap alleleCharByteMap =
-            HashCharByteMaps.getDefaultFactory().withDefaultValue((byte)-1).newImmutableMap(alleles, alleleBytes);
+    public static final HashCharByteMap alleleBaseByteMap =
+            HashCharByteMaps.getDefaultFactory().withDefaultValue((byte)-1).newImmutableMap(alleleBases, alleleBytes);
 
     /**
      * Converter from allele byte to char
      */
-    public static final HashByteCharMap alleleByteCharMap =
-            HashByteCharMaps.getDefaultFactory().withDefaultValue('!').newImmutableMap(alleleBytes, alleles);
+    public static final HashByteCharMap alleleByteBaseMap =
+            HashByteCharMaps.getDefaultFactory().withDefaultValue('!').newImmutableMap(alleleBytes, alleleBases);
 
     /**
      * Return an allele byte from char
      * @param c
      * @return
      */
-    public static byte getAlleleByteFromChar (char c) {
-        return alleleCharByteMap.get(c);
+    public static byte getAlleleByteFromBase(char c) {
+        return alleleBaseByteMap.get(c);
     }
 
     /**
@@ -56,8 +55,8 @@ public class AlleleEncoder {
      * @param b
      * @return
      */
-    public static char getAlleleCharFromByte (byte b) {
-        return alleleByteCharMap.get(b);
+    public static char getAlleleBaseFromByte(byte b) {
+        return alleleByteBaseMap.get(b);
     }
 
     /**
@@ -77,7 +76,7 @@ public class AlleleEncoder {
      * @return
      */
     public static byte getGenotypeByte (char c1, char c2) {
-        return getGenotypeByte(getAlleleByteFromChar(c1), getAlleleByteFromChar(c2));
+        return getGenotypeByte(getAlleleByteFromBase(c1), getAlleleByteFromBase(c2));
     }
 
     /**
@@ -103,8 +102,8 @@ public class AlleleEncoder {
      * @param g
      * @return
      */
-    public static char getAlleleChar1FromGenotypeByte (byte g) {
-        return getAlleleCharFromByte(getAlleleByte1FromGenotypeByte(g));
+    public static char getAlleleBase1FromGenotypeByte(byte g) {
+        return getAlleleBaseFromByte(getAlleleByte1FromGenotypeByte(g));
     }
 
     /**
@@ -112,7 +111,7 @@ public class AlleleEncoder {
      * @param g
      * @return
      */
-    public static char getAlleleChar2FromGenotypeByte (byte g) {
-        return getAlleleCharFromByte(getAlleleByte2FromGenotypeByte(g));
+    public static char getAlleleBase2FromGenotypeByte(byte g) {
+        return getAlleleBaseFromByte(getAlleleByte2FromGenotypeByte(g));
     }
 }
