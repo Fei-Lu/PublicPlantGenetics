@@ -11,23 +11,23 @@ import com.koloboke.collect.map.hash.HashCharByteMap;
 import com.koloboke.collect.map.hash.HashCharByteMaps;
 
 /**
- * Class encoding alleles and site genotype from A, C, G, T, D, I, N
+ * Class encoding alleles and site genotype from A, C, G, T, D, I
  * @author feilu
  */
 public class AlleleEncoder {
 
     /**
-     * Alleles in char, D is deletion, I is insertion, N is missing either biological or technical
+     * Alleles in char, D is deletion, I is insertion
      */
-    public static final char[] alleleBases = {'A', 'C', 'G', 'T', 'D', 'I', 'N'};
+    public static final char[] alleleBases = {'A', 'C', 'G', 'T', 'D', 'I'};
     /**
      * Alleles in AscII code
      */
-    public static final byte[] alleleAscIIs = {65, 67, 71, 84, 68, 73, 78};
+    public static final byte[] alleleAscIIs = {65, 67, 71, 84, 68, 73};
     /**
      * Alleles in byte code
      */
-    public static final byte[] alleleBytes = {0, 1, 2, 3, 4, 5, 6};
+    public static final byte[] alleleBytes = {0, 1, 2, 3, 4, 5};
 
     /**
      * Converter from char to allele byte

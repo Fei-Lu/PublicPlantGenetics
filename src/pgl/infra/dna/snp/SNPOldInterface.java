@@ -9,7 +9,7 @@ package pgl.infra.dna.snp;
  *
  * @author feilu
  */
-public interface SNPInterface {
+public interface SNPOldInterface {
     /**
      * Remove duplicated alternative allele in alternative allele list and sort the sort the byte list
      */

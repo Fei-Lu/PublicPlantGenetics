@@ -32,7 +32,7 @@ public enum AlleleType {
     /**
      * Derived allele
      */
-    Derived (7, (byte)0b100000000);
+    Derived (7, (byte)0b10000000);
 
     private final int index;
     private final byte feature;

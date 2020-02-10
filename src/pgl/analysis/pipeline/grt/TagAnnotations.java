@@ -7,7 +7,7 @@ package pgl.analysis.pipeline.grt;
 
 import pgl.infra.alignment.gen2.SAMUtils;
 import pgl.infra.dna.allele.AlleleEncoder;
-import pgl.infra.dna.snp.SNP;
+import pgl.infra.dna.snp.SNPOld;
 import pgl.infra.position.ChrPos;
 import gnu.trove.list.array.TByteArrayList;
 import java.io.BufferedReader;
@@ -151,7 +151,7 @@ public class TagAnnotations {
                     byte r2Strand = dis.readByte();
                     byte r2MapQ = dis.readByte();
                     byte snpNumber = dis.readByte();
-                    List<SNP> tagSNPList = new ArrayList<>();
+                    List<SNPOld> tagSNPList = new ArrayList<>();
                     for (int k = 0; k < snpNumber; k++) {
                         short chr = dis.readShort();
                         int pos = dis.readInt();
@@ -161,7 +161,7 @@ public class TagAnnotations {
                         for (int u = 0; u < altNumber; u++) {
                             alts.add(dis.readByte());
                         }
-                        tagSNPList.add(new SNP(chr, pos, ref, alts));
+                        tagSNPList.add(new SNPOld(chr, pos, ref, alts));
                     }
                     List<AlleleInfo> tagAlleleList = new ArrayList();
                     byte alleleNumber = dis.readByte();
@@ -217,9 +217,9 @@ public class TagAnnotations {
                     dos.writeByte(this.getR2MapQ(i, j));
                     byte snpNumber = this.getSNPNumberOfTag(i, j);
                     dos.writeByte(snpNumber);
-                    List<SNP> snpList = this.getSNPOfTag(i, j);
+                    List<SNPOld> snpList = this.getSNPOfTag(i, j);
                     for (int k = 0; k < snpNumber; k++) {
-                        SNP s = snpList.get(k);
+                        SNPOld s = snpList.get(k);
                         dos.writeShort(s.getChromosome());
                         dos.writeInt(s.getPosition());
                         dos.writeByte(s.getRefAlleleByte());  
@@ -275,11 +275,11 @@ public class TagAnnotations {
                     sb.append(reads[0]).append("\t").append(reads[1]).append("\n");
                     sb.append("R1 alignment:\t").append(this.getR1Chromosome(i, j)).append("\t").append(this.getR1StartPosition(i, j)).append("\t").append(this.getR1Strand(i, j)).append("\t").append(this.getR1MapQ(i, j)).append("\n");
                     sb.append("R2 alignment:\t").append(this.getR2Chromosome(i, j)).append("\t").append(this.getR2StartPosition(i, j)).append("\t").append(this.getR2Strand(i, j)).append("\t").append(this.getR2MapQ(i, j)).append("\n");
-                    List<SNP> snpList = this.getSNPOfTag(i, j);
+                    List<SNPOld> snpList = this.getSNPOfTag(i, j);
                     sb.append("SNPNumber:\t").append(snpList.size());
                     sb.append("\nSNPs:");
                     for (int k = 0; k < snpList.size(); k++) {
-                        SNP s = snpList.get(k);
+                        SNPOld s = snpList.get(k);
                         sb.append("\t|").append(k).append("->").append(s.getChromosome()).append("\t").append(s.getPosition()).append("\t").append(s.getRefAllele()).append("\t");
                         for (int u = 0; u < s.getAltAlleleNumber(); u++) {
                             sb.append(s.getAltAllele(u)).append("/");
@@ -329,11 +329,11 @@ public class TagAnnotations {
                     sb.append(reads[0]).append("\t").append(reads[1]).append("\n");
                     sb.append("R1 alignment:\t").append(this.getR1Chromosome(i, j)).append("\t").append(this.getR1StartPosition(i, j)).append("\t").append(this.getR1Strand(i, j)).append("\t").append(this.getR1MapQ(i, j)).append("\n");
                     sb.append("R2 alignment:\t").append(this.getR2Chromosome(i, j)).append("\t").append(this.getR2StartPosition(i, j)).append("\t").append(this.getR2Strand(i, j)).append("\t").append(this.getR2MapQ(i, j)).append("\n");
-                    List<SNP> snpList = this.getSNPOfTag(i, j);
+                    List<SNPOld> snpList = this.getSNPOfTag(i, j);
                     sb.append("SNPNumber:\t").append(snpList.size());
                     sb.append("\nSNPs:");
                     for (int k = 0; k < snpList.size(); k++) {
-                        SNP s = snpList.get(k);
+                        SNPOld s = snpList.get(k);
                         sb.append("\t|").append(k).append("->").append(s.getChromosome()).append("\t").append(s.getPosition()).append("\t").append(s.getRefAllele()).append("\t");
                         for (int u = 0; u < s.getAltAlleleNumber(); u++) {
                             sb.append(s.getAltAllele(u)).append("/");
@@ -393,8 +393,8 @@ public class TagAnnotations {
         Collections.sort(validatedSNPPosList);
         for (int i = 0; i < this.getGroupNumber(); i++) {
             for (int j = 0; j < this.getTagNumber(i); j++) {
-                List<SNP> snpList = new ArrayList<>();
-                List<SNP> currentSNPList = this.getSNPOfTag(i, j);
+                List<SNPOld> snpList = new ArrayList<>();
+                List<SNPOld> currentSNPList = this.getSNPOfTag(i, j);
                 for (int k = 0; k < currentSNPList.size(); k++) {
                     ChrPos query = currentSNPList.get(k).getChrPos();
                     int index = Collections.binarySearch(validatedSNPPosList, query);
@@ -477,7 +477,7 @@ public class TagAnnotations {
             String temp = null;
             while ((temp = br.readLine()).startsWith("@SQ")){}
             int queryCount = 0;
-            List<SNP> tagSNPList = new ArrayList();
+            List<SNPOld> tagSNPList = new ArrayList();
             long cnt = 0;
             long snpCnt = 0;
             while ((temp = br.readLine()) != null) {
@@ -487,7 +487,7 @@ public class TagAnnotations {
                 int tagIndex = Integer.parseInt(ll.get(1));
                 if (Integer.parseInt(l.get(1)) > 2000) continue; //remove supplement alignment to have a pair of alignments for PE reads
                 queryCount++;
-                List<SNP> snpList = SAMUtils.getVariants(l, mapQThresh);
+                List<SNPOld> snpList = SAMUtils.getVariants(l, mapQThresh);
                 if (queryCount == 1) {
                     if (!l.get(5).startsWith("*")) {
                         short chr = Short.parseShort(l.get(2));
@@ -695,7 +695,7 @@ public class TagAnnotations {
         return (byte)this.getSNPOfTag(groupIndex, tagIndex).size();
     }
     
-    public List<SNP> getSNPOfTag (int groupIndex, int tagIndex) {
+    public List<SNPOld> getSNPOfTag (int groupIndex, int tagIndex) {
         return this.taList.get(groupIndex).getSNPOfTag(tagIndex);
     } 
     
@@ -739,7 +739,7 @@ public class TagAnnotations {
         taList.get(groupIndex).setR2MapQ(tagIndex, mapQ);
     }
     
-    public void setSNPOfTag (int groupIndex, int tagIndex, List<SNP> tagSNPList) {
+    public void setSNPOfTag (int groupIndex, int tagIndex, List<SNPOld> tagSNPList) {
         taList.get(groupIndex).setSNPOfTag(tagIndex, tagSNPList);
     }
     

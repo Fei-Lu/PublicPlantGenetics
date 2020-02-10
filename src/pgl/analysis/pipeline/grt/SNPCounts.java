@@ -5,7 +5,7 @@
  */
 package pgl.analysis.pipeline.grt;
 
-import pgl.infra.dna.snp.SNP;
+import pgl.infra.dna.snp.SNPOld;
 import pgl.infra.position.ChrPos;
 import gnu.trove.list.array.TByteArrayList;
 import gnu.trove.set.hash.TShortHashSet;
@@ -300,7 +300,7 @@ public class SNPCounts {
         TShortHashSet chrSet = new TShortHashSet();
         for (int i = 0; i < tas.groupCount; i++) {
             for (int j = 0; j < tas.getTagNumber(i); j++) {
-                List<SNP> tagSNPList = tas.getSNPOfTag(i, j);
+                List<SNPOld> tagSNPList = tas.getSNPOfTag(i, j);
                 if (tagSNPList.size() == 0) continue;
                 chrSet.add(tagSNPList.get(0).getChromosome());
             }
@@ -317,7 +317,7 @@ public class SNPCounts {
         int cnt = 0;
         for (int i = 0; i < tas.getGroupNumber(); i++) {
             for (int j = 0; j < tas.getTagNumber(i); j++) {
-                List<SNP> tagSNPList = tas.getSNPOfTag(i, j);
+                List<SNPOld> tagSNPList = tas.getSNPOfTag(i, j);
                 if (tagSNPList.size() == 0) continue;
                 index = Arrays.binarySearch(chrs, tagSNPList.get(0).getChromosome());
                 for (int k = 0; k < tagSNPList.size(); k++) {
@@ -334,7 +334,7 @@ public class SNPCounts {
     }
 }
 
-class SNPCount extends SNP {
+class SNPCount extends SNPOld {
     int readCount = 0;
     int tagCount = 0;
     
@@ -350,7 +350,7 @@ class SNPCount extends SNP {
         this.tagCount = tagCount;
     }
     
-    public SNPCount(SNP snp, int readCount, int tagCount) {
+    public SNPCount(SNPOld snp, int readCount, int tagCount) {
         super(snp.getChromosome(), snp.getPosition(), snp.getRefAlleleByte(), snp.getAltAlleleList());
         this.readCount = readCount;
         this.tagCount = tagCount;

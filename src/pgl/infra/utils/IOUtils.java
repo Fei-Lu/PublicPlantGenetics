@@ -97,18 +97,7 @@ public class IOUtils {
         }
         return bw;
     }
-    
-    public static BufferedWriter getNIOTextWriter (String outfileS) {
-        BufferedWriter bw = null;
-        try {
-             bw = Files.newBufferedWriter(Paths.get(outfileS), StandardCharsets.UTF_8);
-        }
-        catch (Exception e) {
-            e.printStackTrace();
-        }
-        return bw;
-    }
-    
+
     public static BufferedReader getTextReader (String infileS) {
         BufferedReader br = null;
         try {
@@ -119,18 +108,7 @@ public class IOUtils {
         }
         return br;
     }
-    
-    public static BufferedReader getNIOTextReader (String infileS) {
-        BufferedReader br = null;
-        try {
-            br = Files.newBufferedReader(Paths.get(infileS), StandardCharsets.UTF_8);
-        }
-        catch (Exception e) {
-            e.printStackTrace();
-        }
-        return br;
-    }
-    
+
     public static DataOutputStream getBinaryWriter (String outfileS) {
         DataOutputStream dos = null;
         try {
@@ -153,28 +131,6 @@ public class IOUtils {
         return dos;
     }
     
-    public static DataOutputStream getNIOBinaryWriter (String outfileS) {
-        DataOutputStream dos = null;
-        try {
-            dos = new DataOutputStream(new BufferedOutputStream(Files.newOutputStream(Paths.get(outfileS)), 65536));
-        }
-        catch (Exception e) {
-            e.printStackTrace();
-        }
-        return dos;
-    }
-    
-    public static DataOutputStream getNIOBinaryWriter (String outfileS, int bufferSize) {
-        DataOutputStream dos = null;
-        try {
-            dos = new DataOutputStream(new BufferedOutputStream(Files.newOutputStream(Paths.get(outfileS)), bufferSize));
-        }
-        catch (Exception e) {
-            e.printStackTrace();
-        }
-        return dos;
-    }
-    
     public static DataInputStream getBinaryReader (String infileS) {
         DataInputStream dis = null;
         try {
@@ -190,28 +146,6 @@ public class IOUtils {
         DataInputStream dis = null;
         try {
             dis = new DataInputStream(new BufferedInputStream(new FileInputStream(infileS), bufferSize));
-        }
-        catch (Exception e) {
-            e.printStackTrace();
-        }
-        return dis;
-    }
-    
-    public static DataInputStream getNIOBinaryReader (String infileS) {
-        DataInputStream dis = null;
-        try {
-            dis = new DataInputStream(new BufferedInputStream(Files.newInputStream(Paths.get(infileS)), 65536));
-        }
-        catch (Exception e) {
-            e.printStackTrace();
-        }
-        return dis;
-    }
-    
-    public static DataInputStream getNIOBinaryReader (String infileS, int bufferSize) {
-        DataInputStream dis = null;
-        try {
-            dis = new DataInputStream(new BufferedInputStream(Files.newInputStream(Paths.get(infileS)), bufferSize));
         }
         catch (Exception e) {
             e.printStackTrace();
@@ -310,7 +244,7 @@ public class IOUtils {
         }
         return new Dyad(fc, bb);
     }
-    
+
     public static List<File> getVisibleFileListInDir (String inDirS) {
         File[] fs = new File(inDirS).listFiles();
         List<File> fList = new ArrayList<>();
@@ -321,7 +255,7 @@ public class IOUtils {
         Collections.sort(fList);
         return fList;
     }
-    
+
     public static List<File> getFileListInDir (String inDirS) {
         File[] fs = new File(inDirS).listFiles();
         List<File> fList = Arrays.asList(fs);

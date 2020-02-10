@@ -14,23 +14,23 @@ import gnu.trove.set.hash.TByteHashSet;
  *
  * @author feilu
  */
-public class SNP extends ChrPos implements SNPInterface {
+public class SNPOld extends ChrPos implements SNPOldInterface {
     byte ref = Byte.MIN_VALUE;
     TByteArrayList alts = new TByteArrayList();
     
-    public SNP (short chr, int pos, char refAllele, char altAllele) {
+    public SNPOld (short chr, int pos, char refAllele, char altAllele) {
         super(chr, pos);
         this.ref = AlleleEncoder.alleleBaseByteMap.get(refAllele);
         this.addAltAllele(altAllele);
     }
     
-    public SNP (short chr, int pos, byte ref, byte alt) {
+    public SNPOld (short chr, int pos, byte ref, byte alt) {
         super(chr, pos);
         this.ref = ref;
         this.addAltAlleleByte(alt);
     }
     
-    public SNP (short chr, int pos, byte ref, TByteArrayList alts) {
+    public SNPOld (short chr, int pos, byte ref, TByteArrayList alts) {
         super(chr, pos);
         this.ref = ref;
         this.alts = alts;

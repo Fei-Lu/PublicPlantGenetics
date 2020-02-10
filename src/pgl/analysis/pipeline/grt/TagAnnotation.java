@@ -8,7 +8,7 @@ package pgl.analysis.pipeline.grt;
 import cern.colt.GenericSorting;
 import cern.colt.Swapper;
 import cern.colt.function.IntComparator;
-import pgl.infra.dna.snp.SNP;
+import pgl.infra.dna.snp.SNPOld;
 import gnu.trove.list.array.TByteArrayList;
 import gnu.trove.list.array.TIntArrayList;
 import gnu.trove.list.array.TShortArrayList;
@@ -34,7 +34,7 @@ public class TagAnnotation implements Swapper, IntComparator {
     protected TByteArrayList r2StrandList = null;
     protected TByteArrayList r1MapQList = null;
     protected TByteArrayList r2MapQList = null;
-    protected List<List<SNP>> SNPList = null;
+    protected List<List<SNPOld>> SNPList = null;
     protected List<List<AlleleInfo>> alleleList = null;
     
 
@@ -87,11 +87,11 @@ public class TagAnnotation implements Swapper, IntComparator {
         r2StrandList.add(Byte.MIN_VALUE);
         r1MapQList.add(Byte.MIN_VALUE);
         r2MapQList.add(Byte.MIN_VALUE);
-        SNPList.add(new ArrayList<SNP>());
+        SNPList.add(new ArrayList<SNPOld>());
         alleleList.add(new ArrayList<AlleleInfo>());
     }
     
-    void appendTag (long[] tag, byte r1Len, byte r2Len, int readNumber, short r1Chr, int r1Pos, byte r1Strand, byte r1MapQ, short r2Chr, int r2Pos, byte r2Strand, byte r2MapQ, List<SNP> tagSNPList, List<AlleleInfo> tagAlleleList) {
+    void appendTag (long[] tag, byte r1Len, byte r2Len, int readNumber, short r1Chr, int r1Pos, byte r1Strand, byte r1MapQ, short r2Chr, int r2Pos, byte r2Strand, byte r2MapQ, List<SNPOld> tagSNPList, List<AlleleInfo> tagAlleleList) {
         tagList.add(tag);
         r1LenList.add(r1Len);
         r2LenList.add(r2Len);
@@ -152,7 +152,7 @@ public class TagAnnotation implements Swapper, IntComparator {
         return this.r2MapQList.get(tagIndex);
     }
     
-    List<SNP> getSNPOfTag (int tagIndex) {
+    List<SNPOld> getSNPOfTag (int tagIndex) {
         return this.SNPList.get(tagIndex);
     }
     
@@ -213,7 +213,7 @@ public class TagAnnotation implements Swapper, IntComparator {
         this.r2MapQList.set(tagIndex, mapQ);
     }
     
-    void setSNPOfTag (int tagIndex, List<SNP> tagSNPList) {
+    void setSNPOfTag (int tagIndex, List<SNPOld> tagSNPList) {
         this.SNPList.set(tagIndex, tagSNPList);
     }
     
@@ -267,7 +267,7 @@ public class TagAnnotation implements Swapper, IntComparator {
         tb = r2MapQList.get(index1);
         r2MapQList.set(index1, r2MapQList.get(index2));
         r2MapQList.set(index2, tb);
-        List<SNP> tempSNP = SNPList.get(index1);
+        List<SNPOld> tempSNP = SNPList.get(index1);
         SNPList.set(index1, SNPList.get(index2));
         SNPList.set(index2, tempSNP);
         List<AlleleInfo> tempAllele = alleleList.get(index1);
@@ -329,7 +329,7 @@ public class TagAnnotation implements Swapper, IntComparator {
         TByteArrayList aR2StrandList = new TByteArrayList();
         TByteArrayList aR1MapQList = new TByteArrayList();
         TByteArrayList aR2MapQList = new TByteArrayList();
-        List<List<SNP>> aSNPList = new ArrayList<>();
+        List<List<SNPOld>> aSNPList = new ArrayList<>();
         List<List<AlleleInfo>> aAlleleList = new ArrayList<>();
         for (int i = 0; i < this.getTagNumber(); i++) {
             if (readCountList.get(i) < minReadCount) continue;

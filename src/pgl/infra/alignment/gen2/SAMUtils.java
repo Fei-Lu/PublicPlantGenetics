@@ -6,7 +6,7 @@ package pgl.infra.alignment.gen2;
 import pgl.analysis.pipeline.grt.AlleleInfo;
 import pgl.analysis.pipeline.grt.SNPCounts;
 import pgl.infra.dna.allele.AlleleEncoder;
-import pgl.infra.dna.snp.SNP;
+import pgl.infra.dna.snp.SNPOld;
 import gnu.trove.list.array.TByteArrayList;
 import gnu.trove.list.array.TIntArrayList;
 import java.util.ArrayList;
@@ -275,7 +275,7 @@ public class SAMUtils {
      * @param mapQThresh
      * @return 
      */
-    public static List<SNP> getVariants (String inputStr, int mapQThresh) {
+    public static List<SNPOld> getVariants (String inputStr, int mapQThresh) {
         List<String> l = PStringUtils.fastSplit(inputStr);
         return getVariants(l, mapQThresh);
     }
@@ -548,7 +548,7 @@ public class SAMUtils {
 //                        char alt = 'I';
 //                        char ref = seq.charAt(currentAltPos-1);
 //                        alleleRelaPosList.add((byte)(currentAltPos+frontLength)); 
-//                        snpList.add(new SNP(chr, currentPos, ref, alt));
+//                        snpList.add(new SNPOld(chr, currentPos, ref, alt));
 //                        StringBuilder sb = new StringBuilder(seq);
 //                        sb.delete(currentAltPos, currentAltPos+length);
 //                        seq = sb.toString();
@@ -589,7 +589,7 @@ public class SAMUtils {
 //                currentPos++;
 //                currentAltPos++;
 //                char alt = seq.charAt(currentAltPos-1);
-//                snpList.add(new SNP(chr, currentPos, c, alt));
+//                snpList.add(new SNPOld(chr, currentPos, c, alt));
 //                int index = insertionPosList.binarySearch(currentAltPos);
 //                if (index > -2) {
 //                    alleleRelaPosList.add((byte)(currentAltPos+frontLength));
@@ -611,7 +611,7 @@ public class SAMUtils {
 //                String deletionS = md.substring(i+1, j);
 //                char alt = 'D';
 //                char ref = md.charAt(i+1);
-//                snpList.add(new SNP(chr, currentPos+1, ref, alt));
+//                snpList.add(new SNPOld(chr, currentPos+1, ref, alt));
 //                int index = insertionPosList.binarySearch(currentAltPos);
 //                if (index > -2) {
 //                    alleleRelaPosList.add((byte)(currentAltPos+frontLength));
@@ -640,7 +640,7 @@ public class SAMUtils {
 //            }
 //        }
 //        
-//        class SNPWithRelativePos  extends SNP {
+//        class SNPWithRelativePos  extends SNPOld {
 //            byte relaPos = -1;
 //            public SNPWithRelativePos(short chr, int pos, byte ref, byte alt) {
 //                super(chr, pos, ref, alt);
@@ -756,7 +756,7 @@ public class SAMUtils {
 //                    if (cop == 'I') {
 //                        char alt = 'I';
 //                        char ref = seq.charAt(currentAltPos-1);
-//                        snpList.add(new SNP(chr, currentPos, ref, alt));
+//                        snpList.add(new SNPOld(chr, currentPos, ref, alt));
 //                        StringBuilder sb = new StringBuilder(seq);
 //                        sb.delete(currentAltPos, currentAltPos+length);
 //                        seq = sb.toString();
@@ -795,7 +795,7 @@ public class SAMUtils {
 //                currentPos++;
 //                currentAltPos++;
 //                char alt = seq.charAt(currentAltPos-1);
-//                snpList.add(new SNP(chr, currentPos, c, alt));
+//                snpList.add(new SNPOld(chr, currentPos, c, alt));
 //            }
 //            else if (c == '^'){
 //                int j;
@@ -805,7 +805,7 @@ public class SAMUtils {
 //                String deletionS = md.substring(i+1, j);
 //                char alt = 'D';
 //                char ref = md.charAt(i+1);
-//                snpList.add(new SNP(chr, currentPos+1, ref, alt));
+//                snpList.add(new SNPOld(chr, currentPos+1, ref, alt));
 //                currentPos += deletionS.length();
 //                i = j -1;
 //            }
@@ -835,7 +835,7 @@ public class SAMUtils {
      * @param mapQThresh
      * @return 
      */
-    public static List<SNP> getVariants (List<String> l, int mapQThresh) {
+    public static List<SNPOld> getVariants (List<String> l, int mapQThresh) {
         String cigar = l.get(5);
         if (cigar.startsWith("*")) return null;
         if (Integer.parseInt(l.get(4)) < mapQThresh) return null;
@@ -872,7 +872,7 @@ public class SAMUtils {
         else if (opList.get(opList.size()-1) == 72) {//H
             cigar = cigar.substring(0, posIndexList.get(opList.size()-2)+1);
         }
-        List<SNP> snpList = new ArrayList();
+        List<SNPOld> snpList = new ArrayList();
         int currentPos = startPos-1;
         int currentAltPos = 0;
         if (opList.contains((byte)73)) {//I 18M1I31M1D46M
@@ -890,7 +890,7 @@ public class SAMUtils {
                     if (cop == 'I') {
                         char alt = 'I';
                         char ref = seq.charAt(currentAltPos-1);
-                        snpList.add(new SNP(chr, currentPos, ref, alt));
+                        snpList.add(new SNPOld(chr, currentPos, ref, alt));
                         StringBuilder sb = new StringBuilder(seq);
                         sb.delete(currentAltPos, currentAltPos+length);
                         seq = sb.toString();
@@ -929,7 +929,7 @@ public class SAMUtils {
                 currentPos++;
                 currentAltPos++;
                 char alt = seq.charAt(currentAltPos-1);
-                snpList.add(new SNP(chr, currentPos, c, alt));
+                snpList.add(new SNPOld(chr, currentPos, c, alt));
             }
             else if (c == '^'){
                 int j;
@@ -939,7 +939,7 @@ public class SAMUtils {
                 String deletionS = md.substring(i+1, j);
                 char alt = 'D';
                 char ref = md.charAt(i+1);
-                snpList.add(new SNP(chr, currentPos+1, ref, alt));
+                snpList.add(new SNPOld(chr, currentPos+1, ref, alt));
                 currentPos += deletionS.length();
                 i = j -1;
             }
