@@ -7,33 +7,24 @@ import java.util.BitSet;
 import java.util.List;
 
 public class SiteGenotypeBit extends BiSNP {
-    BitSet majorP = null;
-    BitSet minorP = null;
-    BitSet missingP = null;
+    BitSet phase1 = null;
+    BitSet phase2 = null;
+    BitSet missing = null;
     byte taxaNumberResidual = Byte.MIN_VALUE;
 
     public SiteGenotypeBit () {
         
     }
     
-    public SiteGenotypeBit (short chr, int pos, char refBase, char altBase, String info, BitSet majorP, BitSet minorP, BitSet missingP, int taxaNumber) {
+    public SiteGenotypeBit (short chr, int pos, char refBase, char altBase, String info, BitSet phase1, BitSet phase2, BitSet missing, int taxaNumber) {
         super(chr, pos, refBase, altBase, info);
-        this.majorP = majorP;
-        this.minorP = minorP;
-        this.missingP = missingP;
-        this.setTaxaNumber(taxaNumber);
-    }
-
-    public void setTaxaNumber (int taxaNumber) {
-
+        this.phase1 = phase1;
+        this.phase2 = phase2;
+        this.missing = missing;
     }
 
     public int getTaxaNumber () {
-        return -1;
-    }
-
-    public int getWordNumber () {
-        return -1;
+        return phase1.length();
     }
 
     public static SiteGenotypeBit buildFromVCFLine (String line) {
@@ -46,8 +37,8 @@ public class SiteGenotypeBit extends BiSNP {
         char altBase = l.get(4).charAt(0);
         String info = l.get(7);
         int taxaNumber = l.size()-9;
-        BitSet majorP = new BitSet(taxaNumber);
-        BitSet minorP = new BitSet(taxaNumber);
+        BitSet phase1 = new BitSet(taxaNumber);
+        BitSet phase2 = new BitSet(taxaNumber);
         BitSet missingP = new BitSet(taxaNumber);
         byte[] values = null;
         for (int i = 0; i < taxaNumber; i++) {
@@ -59,16 +50,14 @@ public class SiteGenotypeBit extends BiSNP {
             ll = PStringUtils.fastSplit(current, ":");
             values = ll.get(0).getBytes();
             if (values[0] == 49) {
-                minorP.set(i);
+                phase1.set(i);
             }
-            else majorP.set(i);
             if (values[2] == 49) {
-                minorP.set(i);
+                phase2.set(i);
             }
-            else majorP.set(i);
         }
         //SiteGenotypeBit sgb = new SiteGenotypeBit(chr, pos, refBase, altBase, info, majorP, minorP, missingP, taxaNumber);
-        SiteGenotypeBit sgb = new SiteGenotypeBit(chr, pos, refBase, altBase, null, majorP, minorP, missingP, taxaNumber);
+        SiteGenotypeBit sgb = new SiteGenotypeBit(chr, pos, refBase, altBase, null, phase1, phase2, missingP, taxaNumber);
         return sgb;
     }
 }
