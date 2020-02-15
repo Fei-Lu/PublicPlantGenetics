@@ -12,6 +12,7 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
 public class GenotypeBit extends GenotypeAbstract {
     List<SiteGenotypeBit> genoRows = null;
@@ -63,7 +64,7 @@ public class GenotypeBit extends GenotypeAbstract {
             List<Future<SGBBlockVCF>> resultList = new ArrayList<>();
             int siteCount = 0;
             int startIndex = 0;
-            List<String> lines = new ArrayList<>();
+            List<String> lines = new ArrayList ();
             StringBuilder sb = new StringBuilder();
             while ((temp = br.readLine()) != null) {
                 lines.add(temp);
@@ -72,7 +73,7 @@ public class GenotypeBit extends GenotypeAbstract {
                     Future<SGBBlockVCF> result = pool.submit(sgb);
                     resultList.add(result);
                     startIndex+=lines.size();
-                    lines.clear();
+                    lines = new ArrayList<>();
                 }
                 siteCount++;
                 if (siteCount%1000000 == 0) {
@@ -87,6 +88,8 @@ public class GenotypeBit extends GenotypeAbstract {
                 Future<SGBBlockVCF> result = pool.submit(sgb);
                 resultList.add(result);
             }
+            pool.shutdown();
+            pool.awaitTermination(Long.MAX_VALUE, TimeUnit.MICROSECONDS);
             SiteGenotypeBit[] sgbArray = new SiteGenotypeBit[siteCount];
             for (int i = 0; i < resultList.size(); i++) {
                 SGBBlockVCF block = resultList.get(i).get();
@@ -94,8 +97,7 @@ public class GenotypeBit extends GenotypeAbstract {
                     sgbArray[block.getStartIndex()+i] = block.getSiteGenotypes()[j];
                 }
             }
-            genoRows = Arrays.asList(sgbArray);
-            pool.shutdown();
+            genoRows = Arrays.asList(sgbArray);           
             sb.setLength(0);
             sb.append("A total of ").append(this.getSiteNumber()).append(" SNPs are in ").append(infileS).append("\n");
             sb.append("Genotype table is successfully built");
@@ -115,10 +117,6 @@ class SGBBlockVCF implements Callable<SGBBlockVCF> {
     int actBlockSize = Integer.MIN_VALUE;
     SiteGenotypeBit[] sgbArray = null;
 
-    public SGBBlockVCF (int startIndex) {
-        this.startIndex = startIndex;
-    }
-
     public SGBBlockVCF (List<String> lines, int startIndex) {
         this.lines = lines;
         this.startIndex = startIndex;
@@ -136,8 +134,10 @@ class SGBBlockVCF implements Callable<SGBBlockVCF> {
     @Override
     public SGBBlockVCF call() throws Exception {
         this.sgbArray = new SiteGenotypeBit[this.actBlockSize];
-        
+        for (int i = 0; i < this.actBlockSize; i++) {
+            sgbArray[i] = SiteGenotypeBit.buildFromVCFLine(lines.get(i));
+        }
+        lines = null;
         return this;
     }
-
 }

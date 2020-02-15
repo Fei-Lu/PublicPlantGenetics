@@ -12,10 +12,11 @@ package pgl.infra.position;
 public class ChrPos implements Comparable<ChrPos> {
     short chr;
     int pos;
-
-    public ChrPos() {
+    
+    public ChrPos () {
+        
     }
-
+    
     public ChrPos (short chr, int pos) {
         this.chr = chr;
         this.pos = pos;
@@ -33,18 +34,12 @@ public class ChrPos implements Comparable<ChrPos> {
         return pos;
     }
 
-    public ChrPos setChromosome (short chr) {
+    public void setChromosome (short chr) {
         this.chr = chr;
-        return this;
     }
 
-    public ChrPos setPosition (int position) {
+    public void setPosition (int position) {
         this.pos = position;
-        return this;
-    }
-
-    public ChrPos build () {
-        return this;
     }
 
     @Override
