@@ -18,6 +18,11 @@ public class GenotypeAbstract implements GenotypeTable {
     }
 
     @Override
+    public int getTaxonIndex(String taxon) {
+        return Collections.binarySearch(taxaList, taxon);
+    }
+
+    @Override
     public int getSiteNumber() {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
@@ -43,7 +48,7 @@ public class GenotypeAbstract implements GenotypeTable {
     }
 
     @Override
-    public byte getGenotype(int siteIndex, int taxonIndex) {
+    public byte getGenotypeByte(int siteIndex, int taxonIndex) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
@@ -63,12 +68,7 @@ public class GenotypeAbstract implements GenotypeTable {
     }
 
     @Override
-    public int getTaxonIndex(String taxon) {
-        return Collections.binarySearch(taxaList, taxon);
-    }
-
-    @Override
-    public int getSiteIndex() {
+    public int getSiteIndex(short chromosome, int position) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
@@ -79,6 +79,16 @@ public class GenotypeAbstract implements GenotypeTable {
 
     @Override
     public int getMissingNumberByTaxon(int taxonIndex) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+    
+    @Override
+    public int getNonMissingNumberBySite(int siteIndex) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public int getNonMissingNumberByTaxon(int taxonIndex) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
@@ -101,24 +111,34 @@ public class GenotypeAbstract implements GenotypeTable {
     public int getHeterozygoteNumberByTaxon(int taxonIndex) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
-
+    
     @Override
-    public int getMinorAlleleFrequency(int siteIndex) {
+    public double getTaxonHeterozygosity(int taxonIndex) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public int getMajorAlleleFrequency(int siteIndex) {
+    public double getSiteHeterozygoteFraction(int siteIndex) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public int getReferenceAlleleFrequency(int siteIndex) {
+    public double getMinorAlleleFrequency(int siteIndex) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public int getAlternativeAlleleFrequency(int siteIndex) {
+    public double getMajorAlleleFrequency(int siteIndex) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public double getReferenceAlleleFrequency(int siteIndex) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public double getAlternativeAlleleFrequency(int siteIndex) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
@@ -142,4 +162,16 @@ public class GenotypeAbstract implements GenotypeTable {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
+    @Override
+    public GenotypeTable getSubGenotypeTableBySite(int[] siteIndices) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public GenotypeTable getSubGenotypeTableByTaxa(int[] taxaIndices) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    
+    
 }

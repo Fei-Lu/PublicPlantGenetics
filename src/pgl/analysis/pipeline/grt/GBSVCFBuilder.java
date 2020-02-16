@@ -462,10 +462,10 @@ public class GBSVCFBuilder {
                     StringBuilder sb = new StringBuilder();
                     sb.append(sc.getChromosome(i)).append("\t").append(sc.getPositionOfSNP(i, j)).append("\t")
                             .append(sc.getChromosome(i)).append("-").append(sc.getPositionOfSNP(i, j)).append("\t")
-                            .append(AlleleEncoder.alleleByteBaseMap.get(sc.getRefAlleleByteOfSNP(i, j))).append("\t");
+                            .append(AlleleEncoder.alleleByteToBaseMap.get(sc.getRefAlleleByteOfSNP(i, j))).append("\t");
                     if (altNum > this.maxAltNumber) altNum = this.maxAltNumber;
                     for (int k = 0; k < altNum; k++) {
-                        sb.append(AlleleEncoder.alleleByteBaseMap.get(altAD.getAllele(k))).append(",");
+                        sb.append(AlleleEncoder.alleleByteToBaseMap.get(altAD.getAllele(k))).append(",");
                     }
                     sb.deleteCharAt(sb.length()-1).append("\t.\t.\t");
                     sb.append("DP=").append(VCFUtils.getTotalDepth(sampleAD)).append(";AD=").append(VCFUtils.getAlleleTotalDepth(sampleAD, sc.getRefAlleleByteOfSNP(i, j))).append(",");
@@ -600,10 +600,10 @@ public class GBSVCFBuilder {
                     StringBuilder sb = new StringBuilder();
                     sb.append(sc.getChromosome(i)).append("\t").append(sc.getPositionOfSNP(i, j)).append("\t")
                             .append(sc.getChromosome(i)).append("-").append(sc.getPositionOfSNP(i, j)).append("\t")
-                            .append(AlleleEncoder.alleleByteBaseMap.get(sc.getRefAlleleByteOfSNP(i, j))).append("\t");
+                            .append(AlleleEncoder.alleleByteToBaseMap.get(sc.getRefAlleleByteOfSNP(i, j))).append("\t");
                     if (altNum > this.maxAltNumber) altNum = this.maxAltNumber;
                     for (int k = 0; k < altNum; k++) {
-                        sb.append(AlleleEncoder.alleleByteBaseMap.get(altAD.getAllele(k))).append(",");
+                        sb.append(AlleleEncoder.alleleByteToBaseMap.get(altAD.getAllele(k))).append(",");
                     }
                     sb.deleteCharAt(sb.length()-1).append("\t.\t.\t");
                     sb.append("DP=").append(VCFUtils.getTotalDepth(sampleAD)).append(";AD=").append(VCFUtils.getAlleleTotalDepth(sampleAD, sc.getRefAlleleByteOfSNP(i, j))).append(",");

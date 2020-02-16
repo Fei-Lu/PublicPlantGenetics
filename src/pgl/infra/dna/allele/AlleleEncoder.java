@@ -17,7 +17,7 @@ import com.koloboke.collect.map.hash.HashCharByteMaps;
 public class AlleleEncoder {
 
     /**
-     * Alleles in char, D is deletion, I is insertion
+     * Alleles in char, D is deletion, I is insertion, . is missing
      */
     public static final char[] alleleBases = {'A', 'C', 'G', 'T', 'D', 'I'};
     /**
@@ -28,35 +28,52 @@ public class AlleleEncoder {
      * Alleles in byte code
      */
     public static final byte[] alleleBytes = {0, 1, 2, 3, 4, 5};
+    
+    private static StringBuilder sbb = new StringBuilder();
+
+    /**
+     * The default value of allele missing
+     */
+    public static final byte alleleMissingByte = 15;
+
+    /**
+     * The default char of allele missing
+     */
+    public static final char alleleMissingBase = 'N';
+
+    /**
+     * The default value of genotype missing
+     */
+    public static final byte genotypeMissingByte = -1;
 
     /**
      * Converter from char to allele byte
      */
-    public static final HashCharByteMap alleleBaseByteMap =
-            HashCharByteMaps.getDefaultFactory().withDefaultValue((byte)-1).newImmutableMap(alleleBases, alleleBytes);
+    public static final HashCharByteMap alleleBaseToByteMap =
+            HashCharByteMaps.getDefaultFactory().withDefaultValue(alleleMissingByte).newImmutableMap(alleleBases, alleleBytes);
 
     /**
      * Converter from allele byte to char
      */
-    public static final HashByteCharMap alleleByteBaseMap =
-            HashByteCharMaps.getDefaultFactory().withDefaultValue('!').newImmutableMap(alleleBytes, alleleBases);
+    public static final HashByteCharMap alleleByteToBaseMap =
+            HashByteCharMaps.getDefaultFactory().withDefaultValue(alleleMissingBase).newImmutableMap(alleleBytes, alleleBases);
 
     /**
      * Return an allele byte from char
      * @param c
-     * @return
+     * @return -1 if not found
      */
     public static byte getAlleleByteFromBase(char c) {
-        return alleleBaseByteMap.get(c);
+        return alleleBaseToByteMap.get(c);
     }
 
     /**
      * Return an allele char from byte
      * @param b
-     * @return
+     * @return ! if not found
      */
     public static char getAlleleBaseFromByte(byte b) {
-        return alleleByteBaseMap.get(b);
+        return alleleByteToBaseMap.get(b);
     }
 
     /**
@@ -114,4 +131,17 @@ public class AlleleEncoder {
     public static char getAlleleBase2FromGenotypeByte(byte g) {
         return getAlleleBaseFromByte(getAlleleByte2FromGenotypeByte(g));
     }
+
+    /**
+     * Return a genotype string from its genotype byte, e.g. AA or TG
+     * @param g
+     * @return
+     */
+    public static String getGenotypeStringFromGenotypeByte (byte g) {
+        sbb.append(getAlleleBase1FromGenotypeByte(g));
+        sbb.append(getAlleleBase2FromGenotypeByte(g));
+        return sbb.toString();
+    }
+
+
 }

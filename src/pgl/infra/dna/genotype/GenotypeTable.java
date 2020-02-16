@@ -1,7 +1,5 @@
 package pgl.infra.dna.genotype;
 
-import pgl.infra.position.ChrPosInterface;
-
 public interface GenotypeTable {
 
     public int getTaxaNumber ();
@@ -20,9 +18,9 @@ public interface GenotypeTable {
     
     public int getTaxonIndex (String taxon);
     
-    public int getSiteIndex ();
+    public int getSiteIndex (short chromosome, int position);
     
-    public byte getGenotype (int siteIndex, int taxonIndex);
+    public byte getGenotypeByte(int siteIndex, int taxonIndex);
     
     public boolean isHeterozygous (int siteIndex, int taxonIndex);
     
@@ -34,6 +32,10 @@ public interface GenotypeTable {
     
     public int getMissingNumberByTaxon (int taxonIndex);
     
+    public int getNonMissingNumberBySite (int siteIndex);
+    
+    public int getNonMissingNumberByTaxon (int taxonIndex);
+    
     public int getHomozygoteNumberBySite (int siteIndex);
     
     public int getHomozygoteNumberByTaxon (int taxonIndex);
@@ -42,13 +44,17 @@ public interface GenotypeTable {
     
     public int getHeterozygoteNumberByTaxon (int taxonIndex);
     
-    public int getMinorAlleleFrequency (int siteIndex);
+    public double getTaxonHeterozygosity (int taxonIndex);
     
-    public int getMajorAlleleFrequency (int siteIndex);
+    public double getSiteHeterozygoteFraction (int siteIndex);
     
-    public int getReferenceAlleleFrequency (int siteIndex);
+    public double getMinorAlleleFrequency (int siteIndex);
     
-    public int getAlternativeAlleleFrequency (int siteIndex);
+    public double getMajorAlleleFrequency (int siteIndex);
+    
+    public double getReferenceAlleleFrequency (int siteIndex);
+    
+    public double getAlternativeAlleleFrequency (int siteIndex);
 
     public int getStartIndexOfChromosome (int chromosome);
 
@@ -57,5 +63,9 @@ public interface GenotypeTable {
     public int removeSite (int siteIndex);
 
     public int removeTaxon (int taxonIndex);
+    
+    public GenotypeTable getSubGenotypeTableBySite (int[] siteIndices);
+    
+    public GenotypeTable getSubGenotypeTableByTaxa (int[] taxaIndices);
     
 }

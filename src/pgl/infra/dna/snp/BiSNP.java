@@ -29,7 +29,15 @@ public class BiSNP extends ChrPos {
         this.alt = new Allele (altBase);
         alt.setAlleleType(AlleleType.Alternative);
     }
-    
+
+    public byte getRefAlleleByte () {
+        return ref.getAlleleByte();
+    }
+
+    public byte getAltAlleleByte () {
+        return alt.getAlleleByte();
+    }
+
     public void setSNPInfo (String info) {
         this.info = info;
     }

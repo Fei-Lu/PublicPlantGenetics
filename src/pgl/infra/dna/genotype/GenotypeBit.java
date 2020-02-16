@@ -7,18 +7,20 @@ import pgl.infra.utils.PStringUtils;
 import java.io.BufferedReader;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import pgl.infra.position.ChrPos;
 
 public class GenotypeBit extends GenotypeAbstract {
     List<SiteGenotypeBit> genoRows = null;
 
     public GenotypeBit () {
-
+        
     }
 
     public GenotypeBit (String infileS, GenoIOFormat format) {
@@ -47,7 +49,7 @@ public class GenotypeBit extends GenotypeAbstract {
 
     @Override
     public void sortBySite() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        Collections.sort(genoRows);
     }
 
     @Override
@@ -56,77 +58,112 @@ public class GenotypeBit extends GenotypeAbstract {
     }
 
     @Override
-    public byte getGenotype(int siteIndex, int taxonIndex) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public byte getGenotypeByte (int siteIndex, int taxonIndex) {
+        return this.genoRows.get(siteIndex).getGenotypeByte(taxonIndex);
     }
 
     @Override
     public boolean isHeterozygous(int siteIndex, int taxonIndex) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return this.genoRows.get(siteIndex).isHeterozygous(taxonIndex);
     }
 
     @Override
     public boolean isHomozygous(int siteIndex, int taxonIndex) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return this.genoRows.get(siteIndex).isHomozygous(taxonIndex);
     }
 
     @Override
     public boolean isMissing(int siteIndex, int taxonIndex) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return this.genoRows.get(siteIndex).isMissing(siteIndex);
     }
 
     @Override
-    public int getSiteIndex() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public int getSiteIndex(short chromosome, int position) {
+        ChrPos query = new ChrPos (chromosome, position);
+        int index = Collections.binarySearch(genoRows, query);
+        return index;
     }
 
     @Override
     public int getMissingNumberBySite(int siteIndex) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return this.genoRows.get(siteIndex).getMissingNumber();
     }
 
     @Override
     public int getMissingNumberByTaxon(int taxonIndex) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        int cnt = 0;
+        for (int i = 0; i < this.getSiteNumber(); i++) {
+            if (this.genoRows.get(i).isMissing(taxonIndex)) cnt++;
+        }
+        return cnt;
+    }
+    
+    @Override
+    public int getNonMissingNumberBySite(int siteIndex) {
+        return this.getSiteNumber()-this.getMissingNumberBySite(siteIndex);
     }
 
     @Override
+    public int getNonMissingNumberByTaxon(int taxonIndex) {
+        return this.getSiteNumber()-this.getMissingNumberByTaxon(taxonIndex);
+    }
+
+
+    @Override
     public int getHomozygoteNumberBySite(int siteIndex) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return this.genoRows.get(siteIndex).getHomozygoteNumber();
     }
 
     @Override
     public int getHomozygoteNumberByTaxon(int taxonIndex) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        int cnt = 0;
+        for (int i = 0; i < this.getSiteNumber(); i++) {
+            if (this.genoRows.get(i).isHomozygous(taxonIndex)) cnt++;
+        }
+        return cnt;
     }
 
     @Override
     public int getHeterozygoteNumberBySite(int siteIndex) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return this.genoRows.get(siteIndex).getHeterozygoteNumber();
     }
 
     @Override
     public int getHeterozygoteNumberByTaxon(int taxonIndex) {
+        int cnt = 0;
+        for (int i = 0; i < this.getSiteNumber(); i++) {
+            if (this.genoRows.get(i).isHeterozygous(taxonIndex)) cnt++;
+        }
+        return cnt;
+    }
+    
+    @Override
+    public double getTaxonHeterozygosity(int taxonIndex) {
+        return (double)this.getHomozygoteNumberByTaxon(taxonIndex)/this.getSiteNumber();
+    }
+
+    @Override
+    public double getSiteHeterozygoteFraction(int siteIndex) {
+        return (double)this.getHeterozygoteNumberBySite(siteIndex)/this.getNonMissingNumberBySite(siteIndex);
+    }
+
+    @Override
+    public double getMinorAlleleFrequency(int siteIndex) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public int getMinorAlleleFrequency(int siteIndex) {
+    public double getMajorAlleleFrequency(int siteIndex) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public int getMajorAlleleFrequency(int siteIndex) {
+    public double getReferenceAlleleFrequency(int siteIndex) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
-    public int getReferenceAlleleFrequency(int siteIndex) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public int getAlternativeAlleleFrequency(int siteIndex) {
+    public double getAlternativeAlleleFrequency(int siteIndex) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
@@ -149,6 +186,25 @@ public class GenotypeBit extends GenotypeAbstract {
     public int removeTaxon(int taxonIndex) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
+    
+    @Override
+    public GenotypeTable getSubGenotypeTableBySite(int[] siteIndices) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public GenotypeTable getSubGenotypeTableByTaxa(int[] taxaIndices) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    
+    
+    
+    
+    
+    
+    
+    
     
     private void buildFromHDF5 (String infileS) {
 
