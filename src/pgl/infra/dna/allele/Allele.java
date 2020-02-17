@@ -57,40 +57,29 @@ public class Allele {
     }
 
     /**
-     * Set allele type and return, see {@link AlleleType}
+     * Set allele type, see {@link AlleleType}
      * @param at
      * @return
      */
-    public Allele setAlleleType (AlleleType at) {
+    public void setAlleleType (AlleleType at) {
         this.feature = (byte)(feature | at.getFeature());
-        return this;
     }
 
     /**
-     * Remove allele type and return, see {@link AlleleType}
+     * Remove allele type, see {@link AlleleType}
      * @param at
      * @return
      */
-    public Allele removeAlleleType (AlleleType at) {
-        this.feature = (byte)(feature & (~at.getFeature()));
-        return this;
+    public void removeAlleleType (AlleleType at) {
+        this.feature = (byte) (feature & (~at.getFeature()));
     }
 
     /**
      * Reset all allele types to false, see {@link AlleleType}
      * @return
      */
-    public Allele resetAlleleTypeToDefault () {
+    public void resetAlleleTypeToDefault () {
         this.feature = 0;
-        return this;
-    }
-
-    /**
-     * Build an object using set-builder method
-     * @return
-     */
-    public Allele build () {
-        return this;
     }
 
     /**

@@ -1,6 +1,7 @@
 package pgl.infra.dna.genotype;
 
 import pgl.infra.dna.allele.AlleleEncoder;
+import pgl.infra.dna.allele.AlleleType;
 import pgl.infra.dna.snp.BiSNP;
 import pgl.infra.utils.PStringUtils;
 
@@ -12,7 +13,11 @@ public class SiteGenotypeBit extends BiSNP {
     BitSet phase1 = null;
     //Bit set of the 2nd homologous chromosome, 1 is alt, 0 is ref
     BitSet phase2 = null;
+    //Bit set of the missing genotype at a specific site, 1 is missing
     BitSet missing = null;
+    
+    float maf = Float.MIN_VALUE;
+    
     public SiteGenotypeBit () {
         
     }
@@ -30,8 +35,8 @@ public class SiteGenotypeBit extends BiSNP {
 
     public byte getGenotypeByte (int taxonIndex) {
         if (isMissing(taxonIndex)) return AlleleEncoder.genotypeMissingByte;
-        byte ref = this.getRefAlleleByte();
-        byte alt = this.getAltAlleleByte();
+        byte ref = this.getReferenceAlleleByte();
+        byte alt = this.getAlternativeAlleleByte();
         byte b1 = AlleleEncoder.alleleMissingByte;
         byte b2 = AlleleEncoder.alleleMissingByte;
         if (isPhase1Alternative(taxonIndex)) b1 = alt;
@@ -47,13 +52,13 @@ public class SiteGenotypeBit extends BiSNP {
     }
 
     public boolean isHeterozygous (int taxonIndex) {
-        if (missing.get(taxonIndex)) return false;
+        if (this.isMissing(taxonIndex)) return false;
         if (isPhase1Alternative(taxonIndex) == isPhase2Alternative(taxonIndex)) return false;
         return true;
     }
 
     public boolean isHomozygous (int taxonIndex) {
-        if (missing.get(taxonIndex)) return false;
+        if (this.isMissing(taxonIndex)) return false;
         if (isPhase1Alternative(taxonIndex) == isPhase2Alternative(taxonIndex)) return true;
         return false;
     }
@@ -62,11 +67,17 @@ public class SiteGenotypeBit extends BiSNP {
         return missing.cardinality();
     }
 
+    public int getNonMissingNumber () {
+        return this.getTaxaNumber()-this.getMissingNumber();
+    }
+
     public boolean isPhase1Alternative (int taxonIndex) {
+        if (this.isMissing(taxonIndex)) return false;
         return phase1.get(taxonIndex);
     }
 
     public boolean isPhase2Alternative (int taxonIndex) {
+        if (this.isMissing(taxonIndex)) return false;
         return phase2.get(taxonIndex);
     }
 
@@ -89,7 +100,76 @@ public class SiteGenotypeBit extends BiSNP {
     }
     
     public int getHomozygoteNumber () {
-        return phase1.length()-this.getHeterozygoteNumber()-missing.cardinality();
+        return this.getNonMissingNumber()-this.getHeterozygoteNumber();
+    }
+
+    public int getAlternativeAlleleNumber () {
+        return this.phase1.cardinality()+this.phase2.cardinality();
+    }
+
+    public float getAlternativeAlleleFrequency () {
+        if (this.isAlternativeAlleleTypeOf(AlleleType.Minor)) return this.maf;
+        if (this.isAlternativeAlleleTypeOf(AlleleType.Major)) return (float)(1-this.maf);
+        return (float)((double)this.getAlternativeAlleleNumber()/(this.getNonMissingNumber()*2));
+    }
+
+    public int getReferenceAlleleNumber () {
+        return this.getNonMissingNumber()*2-this.getAlternativeAlleleNumber();
+    }
+
+    public float getReferenceAlleleFrequency () {
+        if (this.isReferenceAlleleTypeOf(AlleleType.Minor)) return this.maf;
+        if (this.isReferenceAlleleTypeOf(AlleleType.Major)) return (float)(1-this.maf);
+        return (float)((double)this.getReferenceAlleleNumber()/(this.getNonMissingNumber()*2));
+    }
+
+    public byte getMinorAlleleByte () {
+        if (this.reference.isAlleleTypeOf(AlleleType.Minor)) return this.getReferenceAlleleByte();
+        if (this.alternative.isAlleleTypeOf(AlleleType.Minor)) return this.getAlternativeAlleleByte();
+        this.getMinorAlleleFrequency();
+        return this.getMinorAlleleByte();
+    }
+
+    public int getMinorAlleleNumber () {
+        if (this.reference.isAlleleTypeOf(AlleleType.Minor)) return this.getReferenceAlleleNumber();
+        if (this.alternative.isAlleleTypeOf(AlleleType.Minor)) return this.getAlternativeAlleleNumber();
+        this.getMinorAlleleFrequency();
+        return this.getMinorAlleleNumber();
+    }
+
+    public float getMinorAlleleFrequency () {
+        if (this.maf != Float.MIN_VALUE) return this.maf;
+        float altFre = this.getAlternativeAlleleFrequency();
+        if (altFre < 0.5) {
+            this.setAlternativeAlleleType(AlleleType.Minor);
+            this.setReferenceAlleleType(AlleleType.Major);
+        }
+        else {
+            this.setReferenceAlleleType(AlleleType.Minor);
+            this.setAlternativeAlleleType(AlleleType.Major);
+            altFre = (float)(1 - altFre);
+        }
+        this.maf = altFre;
+        return altFre;
+    }
+
+    public byte getMajorAlleleByte () {
+        if (this.reference.isAlleleTypeOf(AlleleType.Major)) return this.getReferenceAlleleByte();
+        if (this.alternative.isAlleleTypeOf(AlleleType.Major)) return this.getAlternativeAlleleByte();
+        this.getMinorAlleleFrequency();
+        return this.getMajorAlleleByte();
+    }
+
+    public int getMajorAlleleNumber () {
+        if (this.reference.isAlleleTypeOf(AlleleType.Major)) return this.getReferenceAlleleNumber();
+        if (this.alternative.isAlleleTypeOf(AlleleType.Major)) return this.getAlternativeAlleleNumber();
+        this.getMinorAlleleFrequency();
+        return this.getMajorAlleleNumber();
+    }
+
+    public float getMajorAlleleFrequency () {
+        if (this.maf != Float.MIN_VALUE) return (float)(1-this.maf);
+        return (float)(1-this.getMinorAlleleFrequency());
     }
     
     public static SiteGenotypeBit buildFromVCFLine (String line) {

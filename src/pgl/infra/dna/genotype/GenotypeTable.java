@@ -44,26 +44,40 @@ public interface GenotypeTable {
     
     public int getHeterozygoteNumberByTaxon (int taxonIndex);
     
-    public double getTaxonHeterozygosity (int taxonIndex);
+    public float getTaxonHeterozygosity (int taxonIndex);
     
-    public double getSiteHeterozygoteFraction (int siteIndex);
+    public float getSiteHeterozygoteFraction (int siteIndex);
     
-    public double getMinorAlleleFrequency (int siteIndex);
+    public byte getMinorAlleleByte(int siteIndex);
     
-    public double getMajorAlleleFrequency (int siteIndex);
+    public float getMinorAlleleFrequency (int siteIndex);
     
-    public double getReferenceAlleleFrequency (int siteIndex);
+    public byte getMajorAlleleByte(int siteIndex);
     
-    public double getAlternativeAlleleFrequency (int siteIndex);
+    public float getMajorAlleleFrequency (int siteIndex);
+    
+    public byte getReferenceAlleleByte(int siteIndex);
+    
+    public float getReferenceAlleleFrequency (int siteIndex);
+    
+    public byte getAlternativeAlleleByte(int siteIndex);
+    
+    public float getAlternativeAlleleFrequency (int siteIndex);
 
-    public int getStartIndexOfChromosome (int chromosome);
+    /**
+     * Return the start index of a chromosome, inclusive
+     * @param chromosome
+     * @return -1 if the chromosome does not exist
+     */
+    public int getStartIndexOfChromosome (short chromosome);
 
-    public int getEndIndexOfChromosome (int chromosome);
+    /**
+     * Return the end index of a chromosome, exclusive
+     * @param chromosome
+     * @return -1 if chromosome does not exist
+     */
+    public int getEndIndexOfChromosome (short chromosome);
 
-    public int removeSite (int siteIndex);
-
-    public int removeTaxon (int taxonIndex);
-    
     public GenotypeTable getSubGenotypeTableBySite (int[] siteIndices);
     
     public GenotypeTable getSubGenotypeTableByTaxa (int[] taxaIndices);

@@ -5,8 +5,8 @@ import pgl.infra.dna.allele.AlleleType;
 import pgl.infra.position.ChrPos;
 
 public class BiSNP extends ChrPos {
-    public Allele ref = null;
-    public Allele alt = null;
+    public Allele reference = null;
+    public Allele alternative = null;
     public String info = null;
 
     public BiSNP () {
@@ -15,27 +15,51 @@ public class BiSNP extends ChrPos {
     
     public BiSNP(short chr, int pos, char refBase, char altBase, String info) {
         super(chr, pos);
-        this.setRefAllele(refBase);
-        this.setAltAllele(altBase);
+        this.initializeRefAllele(refBase);
+        this.initializeAltAllele(altBase);
         this.setSNPInfo(info);
     }
 
-    public void setRefAllele (char refBase) {
-        this.ref = new Allele (refBase);
-        ref.setAlleleType(AlleleType.Reference);
+    private void initializeRefAllele(char refBase) {
+        this.reference = new Allele (refBase);
+        reference.setAlleleType(AlleleType.Reference);
     }
 
-    public void setAltAllele (char altBase) {
-        this.alt = new Allele (altBase);
-        alt.setAlleleType(AlleleType.Alternative);
+    private void initializeAltAllele(char altBase) {
+        this.alternative = new Allele (altBase);
+        alternative.setAlleleType(AlleleType.Alternative);
     }
 
-    public byte getRefAlleleByte () {
-        return ref.getAlleleByte();
+    public void setReferenceAlleleType (AlleleType at) {
+        reference.setAlleleType(at);
     }
 
-    public byte getAltAlleleByte () {
-        return alt.getAlleleByte();
+    public void setAlternativeAlleleType (AlleleType at) {
+        alternative.setAlleleType(at);
+    }
+
+    public void removeReferenceAlleleType (AlleleType at) {
+        reference.removeAlleleType(at);
+    }
+
+    public void removeAlternativeAlleleType (AlleleType at) {
+        alternative.removeAlleleType(at);
+    }
+
+    public boolean isReferenceAlleleTypeOf (AlleleType at) {
+        return reference.isAlleleTypeOf(at);
+    }
+
+    public boolean isAlternativeAlleleTypeOf (AlleleType at) {
+        return alternative.isAlleleTypeOf(at);
+    }
+
+    public byte getReferenceAlleleByte() {
+        return reference.getAlleleByte();
+    }
+
+    public byte getAlternativeAlleleByte() {
+        return alternative.getAlleleByte();
     }
 
     public void setSNPInfo (String info) {

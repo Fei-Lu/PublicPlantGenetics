@@ -134,8 +134,7 @@ public class SAMPEAlignment {
     }
 
     /**
-     * Return -1 if the hit doesn't exist
-     * Note: Need to be sorted by position first, otherwise program quits
+     * Return -1 if the hit doesn't exist, inclusive
      * @param hit
      * @return
      */
@@ -144,10 +143,10 @@ public class SAMPEAlignment {
             System.out.println("Alignment should be sorted by hit and pos first. Program quits");
             System.exit(0);
         }
-        int index = this.getAlignmentIndexByHitPos(hit, 0);
+        int index = this.getAlignmentIndexByHitPos(hit, Integer.MIN_VALUE);
         if (index < 0) {
             index = -index -1;
-            if (pars[index].getR1AlignmentRecord().getHit().equals(hit)) return index;
+            if (index < this.getAlignmentNumber() && pars[index].getR1AlignmentRecord().getHit().equals(hit)) return index;
             else return -1;
         }
         else {
@@ -161,7 +160,6 @@ public class SAMPEAlignment {
     /**
      * Return the index of the last alignment of a hit, exclusive.
      * Return -1 if the hit doesn't exist
-     * Note: Need to be sorted by hit first
      * @param hit
      * @return
      */

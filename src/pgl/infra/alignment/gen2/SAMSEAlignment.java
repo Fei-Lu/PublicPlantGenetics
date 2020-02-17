@@ -131,20 +131,19 @@ public class SAMSEAlignment {
     }
     
     /**
-     * Return -1 if the hit doesn't exist
-     * Note: Need to be sorted by position first, otherwise program quits
+     * Retuen the index of the first alignment of a hit, inclusive
      * @param hit
-     * @return 
+     * @return -1 if the hit doesn't exist
      */
     public int getAlignmentStartIndexByHit (String hit) {
         if (this.sortType != 0) {
             System.out.println("Alignment should be sorted by hit and pos first. Program quits");
             System.exit(0);
         }
-        int index = this.getAlignmentIndexByHitPos(hit, 0);
+        int index = this.getAlignmentIndexByHitPos(hit, Integer.MIN_VALUE);
         if (index < 0) {
             index = -index -1;
-            if (sars[index].hit.equals(hit)) return index;
+            if (index < this.getAlignmentNumber() && sars[index].hit.equals(hit)) return index;
             else return -1;
         }
         else {

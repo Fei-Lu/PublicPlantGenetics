@@ -16,8 +16,9 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import pgl.infra.position.ChrPos;
 
-public class GenotypeBit extends GenotypeAbstract {
-    List<SiteGenotypeBit> genoRows = null;
+public class GenotypeBit implements GenotypeTable {
+    List<String> taxaList = null;
+    List<SiteGenotypeBit> genoList = null;
 
     public GenotypeBit () {
         
@@ -31,25 +32,40 @@ public class GenotypeBit extends GenotypeAbstract {
             this.buildFromHDF5(infileS);
         }
     }
+    
+    @Override
+    public int getTaxaNumber() {
+        return taxaList.size();
+    }
 
     @Override
+    public String getTaxonName(int taxonIndex) {
+        return taxaList.get(taxonIndex);
+    }
+
+    @Override
+    public int getTaxonIndex(String taxon) {
+        return Collections.binarySearch(taxaList, taxon);
+    }
+    
+    @Override
     public int getSiteNumber () {
-        return this.genoRows.size();
+        return this.genoList.size();
     }
     
     @Override
     public short getChromosome(int siteIndex) {
-        return genoRows.get(siteIndex).getChromosome();
+        return genoList.get(siteIndex).getChromosome();
     }
 
     @Override
     public int getPosition(int siteIndex) {
-        return genoRows.get(siteIndex).getPosition();
+        return genoList.get(siteIndex).getPosition();
     }
 
     @Override
     public void sortBySite() {
-        Collections.sort(genoRows);
+        Collections.sort(genoList);
     }
 
     @Override
@@ -59,48 +75,48 @@ public class GenotypeBit extends GenotypeAbstract {
 
     @Override
     public byte getGenotypeByte (int siteIndex, int taxonIndex) {
-        return this.genoRows.get(siteIndex).getGenotypeByte(taxonIndex);
+        return this.genoList.get(siteIndex).getGenotypeByte(taxonIndex);
     }
 
     @Override
     public boolean isHeterozygous(int siteIndex, int taxonIndex) {
-        return this.genoRows.get(siteIndex).isHeterozygous(taxonIndex);
+        return this.genoList.get(siteIndex).isHeterozygous(taxonIndex);
     }
 
     @Override
     public boolean isHomozygous(int siteIndex, int taxonIndex) {
-        return this.genoRows.get(siteIndex).isHomozygous(taxonIndex);
+        return this.genoList.get(siteIndex).isHomozygous(taxonIndex);
     }
 
     @Override
     public boolean isMissing(int siteIndex, int taxonIndex) {
-        return this.genoRows.get(siteIndex).isMissing(siteIndex);
+        return this.genoList.get(siteIndex).isMissing(siteIndex);
     }
 
     @Override
     public int getSiteIndex(short chromosome, int position) {
         ChrPos query = new ChrPos (chromosome, position);
-        int index = Collections.binarySearch(genoRows, query);
+        int index = Collections.binarySearch(genoList, query);
         return index;
     }
 
     @Override
     public int getMissingNumberBySite(int siteIndex) {
-        return this.genoRows.get(siteIndex).getMissingNumber();
+        return this.genoList.get(siteIndex).getMissingNumber();
     }
 
     @Override
     public int getMissingNumberByTaxon(int taxonIndex) {
         int cnt = 0;
         for (int i = 0; i < this.getSiteNumber(); i++) {
-            if (this.genoRows.get(i).isMissing(taxonIndex)) cnt++;
+            if (this.genoList.get(i).isMissing(taxonIndex)) cnt++;
         }
         return cnt;
     }
     
     @Override
     public int getNonMissingNumberBySite(int siteIndex) {
-        return this.getSiteNumber()-this.getMissingNumberBySite(siteIndex);
+        return this.getTaxaNumber()-this.getMissingNumberBySite(siteIndex);
     }
 
     @Override
@@ -111,80 +127,112 @@ public class GenotypeBit extends GenotypeAbstract {
 
     @Override
     public int getHomozygoteNumberBySite(int siteIndex) {
-        return this.genoRows.get(siteIndex).getHomozygoteNumber();
+        return this.genoList.get(siteIndex).getHomozygoteNumber();
     }
 
     @Override
     public int getHomozygoteNumberByTaxon(int taxonIndex) {
         int cnt = 0;
         for (int i = 0; i < this.getSiteNumber(); i++) {
-            if (this.genoRows.get(i).isHomozygous(taxonIndex)) cnt++;
+            if (this.genoList.get(i).isHomozygous(taxonIndex)) cnt++;
         }
         return cnt;
     }
 
     @Override
     public int getHeterozygoteNumberBySite(int siteIndex) {
-        return this.genoRows.get(siteIndex).getHeterozygoteNumber();
+        return this.genoList.get(siteIndex).getHeterozygoteNumber();
     }
 
     @Override
     public int getHeterozygoteNumberByTaxon(int taxonIndex) {
         int cnt = 0;
         for (int i = 0; i < this.getSiteNumber(); i++) {
-            if (this.genoRows.get(i).isHeterozygous(taxonIndex)) cnt++;
+            if (this.genoList.get(i).isHeterozygous(taxonIndex)) cnt++;
         }
         return cnt;
     }
     
     @Override
-    public double getTaxonHeterozygosity(int taxonIndex) {
-        return (double)this.getHomozygoteNumberByTaxon(taxonIndex)/this.getSiteNumber();
+    public float getTaxonHeterozygosity(int taxonIndex) {
+        return (float)((double)this.getHeterozygoteNumberByTaxon(taxonIndex)/this.getNonMissingNumberByTaxon(taxonIndex));
     }
 
     @Override
-    public double getSiteHeterozygoteFraction(int siteIndex) {
-        return (double)this.getHeterozygoteNumberBySite(siteIndex)/this.getNonMissingNumberBySite(siteIndex);
+    public float getSiteHeterozygoteFraction(int siteIndex) {
+        return (float)((double)this.getHeterozygoteNumberBySite(siteIndex)/this.getNonMissingNumberBySite(siteIndex));
+    }
+    
+    @Override
+    public byte getMinorAlleleByte(int siteIndex) {
+        return genoList.get(siteIndex).getMinorAlleleByte();
     }
 
     @Override
-    public double getMinorAlleleFrequency(int siteIndex) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public float getMinorAlleleFrequency(int siteIndex) {
+        return genoList.get(siteIndex).getMinorAlleleFrequency();
+    }
+    
+    @Override
+    public byte getMajorAlleleByte(int siteIndex) {
+        return genoList.get(siteIndex).getMinorAlleleByte();
+    }
+    
+    @Override
+    public float getMajorAlleleFrequency(int siteIndex) {
+        return genoList.get(siteIndex).getMajorAlleleFrequency();
     }
 
     @Override
-    public double getMajorAlleleFrequency(int siteIndex) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public byte getReferenceAlleleByte(int siteIndex) {
+        return genoList.get(siteIndex).getReferenceAlleleByte();
     }
 
     @Override
-    public double getReferenceAlleleFrequency(int siteIndex) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public float getReferenceAlleleFrequency(int siteIndex) {
+        return genoList.get(siteIndex).getReferenceAlleleFrequency();
+    }
+    
+    @Override
+    public byte getAlternativeAlleleByte(int siteIndex) {
+        return genoList.get(siteIndex).getAlternativeAlleleByte();
     }
 
     @Override
-    public double getAlternativeAlleleFrequency(int siteIndex) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public float getAlternativeAlleleFrequency(int siteIndex) {
+        return genoList.get(siteIndex).getReferenceAlleleFrequency();
     }
 
     @Override
-    public int getStartIndexOfChromosome(int chromosome) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public int getStartIndexOfChromosome(short chromosome) {
+        int index = this.getSiteIndex(chromosome, Integer.MIN_VALUE);
+        if (index < 0) {
+            index = -index - 1;
+            if (index < this.getSiteNumber() && this.getChromosome(index) == chromosome) return index;
+            return -1;
+        }
+        else {
+            while (index > 0 && this.getChromosome(index-1) == chromosome) {
+                index--;
+            }
+            return index;
+        }
     }
 
     @Override
-    public int getEndIndexOfChromosome(int chromosome) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public int removeSite(int siteIndex) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public int removeTaxon(int taxonIndex) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public int getEndIndexOfChromosome(short chromosome) {
+        int index = this.getSiteIndex(chromosome, Integer.MAX_VALUE);
+        if (index < 0) {
+            index = -index - 2;
+            if (this.getChromosome(index) == chromosome) return index+1;
+            else return -1;
+        }
+        else {
+            while ((index+1) < this.getSiteNumber() && this.getChromosome(index+1) == chromosome) {
+                index++;
+            }
+            return index+1;
+        }
     }
     
     @Override
@@ -268,7 +316,7 @@ public class GenotypeBit extends GenotypeAbstract {
                     sgbArray[block.getStartIndex()+i] = block.getSiteGenotypes()[j];
                 }
             }
-            genoRows = Arrays.asList(sgbArray);           
+            genoList = Arrays.asList(sgbArray);           
             sb.setLength(0);
             sb.append("A total of ").append(this.getSiteNumber()).append(" SNPs are in ").append(infileS).append("\n");
             sb.append("Genotype table is successfully built");
@@ -279,6 +327,7 @@ public class GenotypeBit extends GenotypeAbstract {
         }
     }
 
+    
 }
 
 class SGBBlockVCF implements Callable<SGBBlockVCF> {
