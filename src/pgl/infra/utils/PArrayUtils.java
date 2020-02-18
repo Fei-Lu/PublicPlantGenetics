@@ -6,14 +6,10 @@
 
 package pgl.infra.utils;
 
-import gnu.trove.list.array.TDoubleArrayList;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashSet;
 import java.util.Random;
-import java.util.TreeSet;
+
 import org.apache.commons.lang.ArrayUtils;
 
 /**
@@ -22,43 +18,9 @@ import org.apache.commons.lang.ArrayUtils;
  */
 public class PArrayUtils {
     
+
     /**
-     * Return the indices of unique string from input string array,
-     * @param input
-     * @return 
-     */
-    public static int[] getUniqueStringIndices (String[] input) {
-        String[] unique = getUniqueStringArray(input);
-        int[] index = new int[unique.length];
-        boolean[] ifMatch = new boolean[index.length];
-        int cnt = 0;
-        for (int i = 0; i < input.length; i++) {
-            int hit = Arrays.binarySearch(unique, input[i]);
-            if (ifMatch[hit]) continue;
-            index[cnt] = i;
-            ifMatch[hit] = true;
-            cnt++;
-        }
-        return index;
-    }
-    
-    /**
-     * Return sorted unique array of string
-     * @param input
-     * @return 
-     */
-    public static String[] getUniqueStringArray (String[] input) {
-        HashSet<String> t = new HashSet();
-        for (int i = 0; i < input.length; i++) {
-            t.add(input[i]);
-        }
-        String[] result = t.toArray(new String[t.size()]);
-        Arrays.sort(result);
-        return result;
-    }
-    
-    /**
-     * Return the start and end index of fixed-number subsets of an array, bound[i][1] is exclusive  
+     * Return the index bounds of (given-number) subsets of an array, bound[i][0] is inclusive, bound[i][1] is exclusive
      * @param arraySize
      * @param subsetNumber
      * @return 
@@ -83,7 +45,7 @@ public class PArrayUtils {
     }
     
     /**
-     * Return the start and end index of fixed-size subsets of an array, bound[i][1] is exclusive
+     * Return the index bounds of (given-size) subsets of an array, bound[i][0] is inclusive, bound[i][1] is exclusive
      * @param arraySize
      * @param subsetSize
      * @return 
@@ -224,54 +186,14 @@ public class PArrayUtils {
             ar[i] = a;
         }
     }
-    
-    /**
-     * Remove NaN from a double array
-     * @param value
-     * @return 
-     */
-    public static double[] removeNaN (double[] value) {
-        TDoubleArrayList vList = new TDoubleArrayList();
-        for (int i = 0; i < value.length; i++) {
-            if (Double.isNaN(value[i])) continue;
-            vList.add(value[i]);
-        }
-        return vList.toArray();
-    }
-    
-    /**
-     * Remove NaN from a two dimension array
-     * @param value
-     * @return 
-     */
-    public static double[][] removeNaN (double[][] value) {
-        TDoubleArrayList[] vList = new TDoubleArrayList[value.length];
-        for (int i = 0; i < vList.length; i++) vList[i] = new TDoubleArrayList();
-        for (int i = 0; i < value[0].length; i++) {
-            boolean flag = false;
-            for (int j = 0; j < value.length; j++) {
-                if (Double.isNaN(value[j][i])) {
-                    flag = true;
-                    break;
-                }
-            }
-            if (flag) continue;
-            for (int j = 0; j < vList.length; j++) {
-                vList[j].add(value[j][i]);
-            }
-        }
-        double[][] v = new double[vList.length][];
-        for (int i = 0; i < v.length; i++) v[i] = vList[i].toArray();
-        return v;
-    }
-    
+
     /**
      * Return an index of an array by descending order of value
      * @param array
      * @return 
      */
-    public static int[] getIndexByDescendingValue (int[] array) {
-        int[] index = getIndexByAscendingValue(array);
+    public static int[] getIndicesByDescendingValue(int[] array) {
+        int[] index = getIndicesByAscendingValue(array);
         ArrayUtils.reverse(index);
         return index;
     }
@@ -281,7 +203,7 @@ public class PArrayUtils {
      * @param array
      * @return 
      */
-    public static int[] getIndexByAscendingValue (int[] array) {
+    public static int[] getIndicesByAscendingValue(int[] array) {
         int[] inputArray = new int[array.length];
         System.arraycopy(array, 0, inputArray, 0, array.length);
         Integer[] idx = new Integer[inputArray.length];
@@ -302,8 +224,8 @@ public class PArrayUtils {
      * @param array
      * @return 
      */
-    public static int[] getIndexByDescendingValue (double[] array) {
-        int[] index = getIndexByAscendingValue(array);
+    public static int[] getIndicesByDescendingValue(double[] array) {
+        int[] index = getIndicesByAscendingValue(array);
         ArrayUtils.reverse(index);
         return index;
     }
@@ -313,7 +235,7 @@ public class PArrayUtils {
      * @param array
      * @return 
      */
-    public static int[] getIndexByAscendingValue (double[] array) {
+    public static int[] getIndicesByAscendingValue(double[] array) {
         double[] inputArray = new double[array.length];
         System.arraycopy(array, 0, inputArray, 0, array.length);
         Integer[] idx = new Integer[inputArray.length];
@@ -325,24 +247,38 @@ public class PArrayUtils {
         });
         int[] index = new int[idx.length];
         for (int i = 0; i < index.length; i++) index[i] = idx[i];
-        
         return index;
     }
-    
+
     /**
-     * Return a sorted string array
-     * @param a
-     * @param b
-     * @return 
+     * Return an index of an array by descending order of value
+     * @param array
+     * @return
      */
-    public static String[] getIntersection (String[] a, String[] b) {
-        Arrays.sort(a);
-        Arrays.sort(b);
-        ArrayList<String> cList = new ArrayList();
-        for (int i = 0; i < a.length; i++) {
-            if (Arrays.binarySearch(b, a[i]) < 0) continue;
-            cList.add(a[i]);
-        }
-        return cList.toArray(new String[cList.size()]);
+    public static int[] getIndicesByDescendingValue(String[] array) {
+        int[] index = getIndicesByAscendingValue(array);
+        ArrayUtils.reverse(index);
+        return index;
     }
+
+    /**
+     * Return an index of an array by ascending order of value
+     * @param array
+     * @return
+     */
+    public static int[] getIndicesByAscendingValue(String[] array) {
+        String[] inputArray = new String[array.length];
+        System.arraycopy(array, 0, inputArray, 0, array.length);
+        Integer[] idx = new Integer[inputArray.length];
+        for( int i = 0 ; i < idx.length; i++ ) idx[i] = i;
+        Arrays.sort(idx, new Comparator<Integer>() {
+            public int compare(Integer i1, Integer i2) {
+                return inputArray[i1].compareTo(inputArray[i2]);
+            }
+        });
+        int[] index = new int[idx.length];
+        for (int i = 0; i < index.length; i++) index[i] = idx[i];
+        return index;
+    }
+
 }

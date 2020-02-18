@@ -17,10 +17,9 @@ import java.util.concurrent.TimeUnit;
 import pgl.infra.position.ChrPos;
 
 public class GenotypeBit implements GenotypeTable {
-//    List<String> taxaList = null;
-//    List<SiteGenotypeBit> genoList = null;
     String[] taxa = null;
     SiteGenotypeBit[] geno = null;
+
 
     public GenotypeBit () {
         
@@ -72,7 +71,11 @@ public class GenotypeBit implements GenotypeTable {
 
     @Override
     public void sortByTaxa() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        String[] oldTaxa = new String[taxa.length];
+        System.arraycopy(this.taxa, 0, oldTaxa,0,this.getTaxaNumber());
+
+
+
     }
 
     @Override
