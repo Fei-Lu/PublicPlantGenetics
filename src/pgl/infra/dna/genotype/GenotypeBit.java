@@ -17,8 +17,10 @@ import java.util.concurrent.TimeUnit;
 import pgl.infra.position.ChrPos;
 
 public class GenotypeBit implements GenotypeTable {
-    List<String> taxaList = null;
-    List<SiteGenotypeBit> genoList = null;
+//    List<String> taxaList = null;
+//    List<SiteGenotypeBit> genoList = null;
+    String[] taxa = null;
+    SiteGenotypeBit[] geno = null;
 
     public GenotypeBit () {
         
@@ -35,37 +37,37 @@ public class GenotypeBit implements GenotypeTable {
     
     @Override
     public int getTaxaNumber() {
-        return taxaList.size();
+        return taxa.length;
     }
 
     @Override
     public String getTaxonName(int taxonIndex) {
-        return taxaList.get(taxonIndex);
+        return taxa[taxonIndex];
     }
 
     @Override
     public int getTaxonIndex(String taxon) {
-        return Collections.binarySearch(taxaList, taxon);
+        return Arrays.binarySearch(taxa, taxon);
     }
     
     @Override
     public int getSiteNumber () {
-        return this.genoList.size();
+        return geno.length;
     }
     
     @Override
     public short getChromosome(int siteIndex) {
-        return genoList.get(siteIndex).getChromosome();
+        return geno[siteIndex].getChromosome();
     }
 
     @Override
     public int getPosition(int siteIndex) {
-        return genoList.get(siteIndex).getPosition();
+        return geno[siteIndex].getPosition();
     }
 
     @Override
     public void sortBySite() {
-        Collections.sort(genoList);
+        Arrays.sort(geno);
     }
 
     @Override
@@ -75,41 +77,41 @@ public class GenotypeBit implements GenotypeTable {
 
     @Override
     public byte getGenotypeByte (int siteIndex, int taxonIndex) {
-        return this.genoList.get(siteIndex).getGenotypeByte(taxonIndex);
+        return geno[siteIndex].getGenotypeByte(taxonIndex);
     }
 
     @Override
     public boolean isHeterozygous(int siteIndex, int taxonIndex) {
-        return this.genoList.get(siteIndex).isHeterozygous(taxonIndex);
+        return geno[siteIndex].isHeterozygous(taxonIndex);
     }
 
     @Override
     public boolean isHomozygous(int siteIndex, int taxonIndex) {
-        return this.genoList.get(siteIndex).isHomozygous(taxonIndex);
+        return geno[siteIndex].isHomozygous(taxonIndex);
     }
 
     @Override
     public boolean isMissing(int siteIndex, int taxonIndex) {
-        return this.genoList.get(siteIndex).isMissing(siteIndex);
+        return geno[siteIndex].isMissing(siteIndex);
     }
 
     @Override
     public int getSiteIndex(short chromosome, int position) {
         ChrPos query = new ChrPos (chromosome, position);
-        int index = Collections.binarySearch(genoList, query);
+        int index = Arrays.binarySearch(geno, query);
         return index;
     }
 
     @Override
     public int getMissingNumberBySite(int siteIndex) {
-        return this.genoList.get(siteIndex).getMissingNumber();
+        return geno[siteIndex].getMissingNumber();
     }
 
     @Override
     public int getMissingNumberByTaxon(int taxonIndex) {
         int cnt = 0;
         for (int i = 0; i < this.getSiteNumber(); i++) {
-            if (this.genoList.get(i).isMissing(taxonIndex)) cnt++;
+            if (geno[i].isMissing(taxonIndex)) cnt++;
         }
         return cnt;
     }
@@ -124,31 +126,30 @@ public class GenotypeBit implements GenotypeTable {
         return this.getSiteNumber()-this.getMissingNumberByTaxon(taxonIndex);
     }
 
-
     @Override
     public int getHomozygoteNumberBySite(int siteIndex) {
-        return this.genoList.get(siteIndex).getHomozygoteNumber();
+        return geno[siteIndex].getHomozygoteNumber();
     }
 
     @Override
     public int getHomozygoteNumberByTaxon(int taxonIndex) {
         int cnt = 0;
         for (int i = 0; i < this.getSiteNumber(); i++) {
-            if (this.genoList.get(i).isHomozygous(taxonIndex)) cnt++;
+            if (geno[i].isHomozygous(taxonIndex)) cnt++;
         }
         return cnt;
     }
 
     @Override
     public int getHeterozygoteNumberBySite(int siteIndex) {
-        return this.genoList.get(siteIndex).getHeterozygoteNumber();
+        return geno[siteIndex].getHeterozygoteNumber();
     }
 
     @Override
     public int getHeterozygoteNumberByTaxon(int taxonIndex) {
         int cnt = 0;
         for (int i = 0; i < this.getSiteNumber(); i++) {
-            if (this.genoList.get(i).isHeterozygous(taxonIndex)) cnt++;
+            if (geno[i].isHeterozygous(taxonIndex)) cnt++;
         }
         return cnt;
     }
@@ -165,42 +166,42 @@ public class GenotypeBit implements GenotypeTable {
     
     @Override
     public byte getMinorAlleleByte(int siteIndex) {
-        return genoList.get(siteIndex).getMinorAlleleByte();
+        return geno[siteIndex].getMinorAlleleByte();
     }
 
     @Override
     public float getMinorAlleleFrequency(int siteIndex) {
-        return genoList.get(siteIndex).getMinorAlleleFrequency();
+        return geno[siteIndex].getMinorAlleleFrequency();
     }
     
     @Override
     public byte getMajorAlleleByte(int siteIndex) {
-        return genoList.get(siteIndex).getMinorAlleleByte();
+        return geno[siteIndex].getMinorAlleleByte();
     }
     
     @Override
     public float getMajorAlleleFrequency(int siteIndex) {
-        return genoList.get(siteIndex).getMajorAlleleFrequency();
+        return geno[siteIndex].getMajorAlleleFrequency();
     }
 
     @Override
     public byte getReferenceAlleleByte(int siteIndex) {
-        return genoList.get(siteIndex).getReferenceAlleleByte();
+        return geno[siteIndex].getReferenceAlleleByte();
     }
 
     @Override
     public float getReferenceAlleleFrequency(int siteIndex) {
-        return genoList.get(siteIndex).getReferenceAlleleFrequency();
+        return geno[siteIndex].getReferenceAlleleFrequency();
     }
     
     @Override
     public byte getAlternativeAlleleByte(int siteIndex) {
-        return genoList.get(siteIndex).getAlternativeAlleleByte();
+        return geno[siteIndex].getAlternativeAlleleByte();
     }
 
     @Override
     public float getAlternativeAlleleFrequency(int siteIndex) {
-        return genoList.get(siteIndex).getReferenceAlleleFrequency();
+        return geno[siteIndex].getReferenceAlleleFrequency();
     }
 
     @Override
@@ -234,9 +235,10 @@ public class GenotypeBit implements GenotypeTable {
             return index+1;
         }
     }
-    
+
     @Override
     public GenotypeTable getSubGenotypeTableBySite(int[] siteIndices) {
+
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
@@ -273,11 +275,11 @@ public class GenotypeBit implements GenotypeTable {
             while ((temp = br.readLine()).startsWith("##")) {
                 vcfAnnotationList.add(temp);
             }
-            this.taxaList = new ArrayList<>();
             List<String> l = new ArrayList<>();
             l = PStringUtils.fastSplit(temp);
+            this.taxa = new String[l.size()-9];
             for (int i = 9; i < l.size(); i++) {
-                taxaList.add(l.get(i));
+                taxa[i-9] = l.get(i);
             }
             ExecutorService pool = Executors.newFixedThreadPool(PGLConstraints.parallelLevel);
             List<Future<SGBBlockVCF>> resultList = new ArrayList<>();
@@ -309,14 +311,13 @@ public class GenotypeBit implements GenotypeTable {
             }
             pool.shutdown();
             pool.awaitTermination(Long.MAX_VALUE, TimeUnit.MICROSECONDS);
-            SiteGenotypeBit[] sgbArray = new SiteGenotypeBit[siteCount];
+            this.geno = new SiteGenotypeBit[siteCount];
             for (int i = 0; i < resultList.size(); i++) {
                 SGBBlockVCF block = resultList.get(i).get();
                 for (int j = 0; j < block.actBlockSize; j++) {
-                    sgbArray[block.getStartIndex()+i] = block.getSiteGenotypes()[j];
+                    geno[block.getStartIndex()+j] = block.getSiteGenotypes()[j];
                 }
             }
-            genoList = Arrays.asList(sgbArray);           
             sb.setLength(0);
             sb.append("A total of ").append(this.getSiteNumber()).append(" SNPs are in ").append(infileS).append("\n");
             sb.append("Genotype table is successfully built");
@@ -326,8 +327,6 @@ public class GenotypeBit implements GenotypeTable {
             e.printStackTrace();
         }
     }
-
-    
 }
 
 class SGBBlockVCF implements Callable<SGBBlockVCF> {
