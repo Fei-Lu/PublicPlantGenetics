@@ -142,6 +142,4 @@ public class AlleleEncoder {
         sbb.append(getAlleleBase2FromGenotypeByte(g));
         return sbb.toString();
     }
-
-
 }

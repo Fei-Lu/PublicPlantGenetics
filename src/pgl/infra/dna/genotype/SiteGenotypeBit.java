@@ -8,6 +8,10 @@ import pgl.infra.utils.PStringUtils;
 import java.util.BitSet;
 import java.util.List;
 
+/**
+ * Class holding SNP and genotype information per site
+ * @author feilu
+ */
 public class SiteGenotypeBit extends BiSNP {
     //Bit set of the 1st homologous chromosome, 1 is alt, 0 is ref
     BitSet phase1 = null;
@@ -15,13 +19,28 @@ public class SiteGenotypeBit extends BiSNP {
     BitSet phase2 = null;
     //Bit set of the missing genotype at a specific site, 1 is missing
     BitSet missing = null;
-    
+    //Minor allele frequency
     float maf = Float.MIN_VALUE;
-    
+
+    /**
+     * Construct an object
+     */
     public SiteGenotypeBit () {
         
     }
-    
+
+    /**
+     * Construct an object by initializing all fields
+     * @param chr
+     * @param pos
+     * @param refBase
+     * @param altBase
+     * @param info
+     * @param phase1
+     * @param phase2
+     * @param missing
+     * @param taxaNumber
+     */
     public SiteGenotypeBit (short chr, int pos, char refBase, char altBase, String info, BitSet phase1, BitSet phase2, BitSet missing, int taxaNumber) {
         super(chr, pos, refBase, altBase, info);
         this.phase1 = phase1;
@@ -29,10 +48,56 @@ public class SiteGenotypeBit extends BiSNP {
         this.missing = missing;
     }
 
+    /**
+     * Sort by taxa based on a given order
+     * @param orderIndices
+     */
+    public void sortByTaxa (int[] orderIndices) {
+        BitSet p1 = new BitSet(this.getTaxaNumber());
+        BitSet p2 = new BitSet(this.getTaxaNumber());
+        BitSet m = new BitSet(this.getTaxaNumber());
+        for (int i = 0; i < this.getTaxaNumber(); i++) {
+            if (isPhase1Alternative(orderIndices[i])) p1.set(i);
+            if (isPhase2Alternative(orderIndices[i])) p2.set(i);
+            if (isMissing(orderIndices[i])) m.set(i);
+        }
+        this.phase1 = p1; p1 = null;
+        this.phase2 = p2; p2 = null;
+        this.missing = m; m = null;
+    }
+
+    /**
+     * Return a site genotype {@link SiteGenotypeBit} by selecting taxa
+     * @param taxaIndices
+     * @return
+     */
+    public SiteGenotypeBit getSubGenotypeByTaxa (int[] taxaIndices) {
+        BitSet p1 = new BitSet(taxaIndices.length);
+        BitSet p2 = new BitSet(taxaIndices.length);
+        BitSet m = new BitSet(taxaIndices.length);
+        for (int i = 0; i < taxaIndices.length; i++) {
+            if (isPhase1Alternative(taxaIndices[i])) p1.set(i);
+            if (isPhase2Alternative(taxaIndices[i])) p2.set(i);
+            if (isMissing(taxaIndices[i])) m.set(i);
+        }
+        SiteGenotypeBit sgb = new SiteGenotypeBit(this.getChromosome(),this.getPosition(),AlleleEncoder.getAlleleBaseFromByte(this.getReferenceAlleleByte()),
+                                AlleleEncoder.getAlleleBaseFromByte(this.getAlternativeAlleleByte()), null, p1, p2, m, taxaIndices.length);
+        return sgb;
+    }
+
+    /**
+     * Return the number of taxa
+     * @return
+     */
     public int getTaxaNumber () {
         return phase1.length();
     }
 
+    /**
+     * Return the byte value of a certain genotype
+     * @param taxonIndex
+     * @return
+     */
     public byte getGenotypeByte (int taxonIndex) {
         if (isMissing(taxonIndex)) return AlleleEncoder.genotypeMissingByte;
         byte ref = this.getReferenceAlleleByte();
@@ -46,83 +111,154 @@ public class SiteGenotypeBit extends BiSNP {
         return AlleleEncoder.getGenotypeByte(b1, b2);
     }
 
+    /**
+     * Return if a certain genotype is missing
+     * @param taxonIndex
+     * @return
+     */
     public boolean isMissing (int taxonIndex) {
         if (missing.get(taxonIndex)) return true;
         return false;
     }
 
+    /**
+     * Return if a certain genotype is heterozygous
+     * @param taxonIndex
+     * @return
+     */
     public boolean isHeterozygous (int taxonIndex) {
         if (this.isMissing(taxonIndex)) return false;
         if (isPhase1Alternative(taxonIndex) == isPhase2Alternative(taxonIndex)) return false;
         return true;
     }
 
+    /**
+     * Return if certain genotype is homozygous
+     * @param taxonIndex
+     * @return
+     */
     public boolean isHomozygous (int taxonIndex) {
         if (this.isMissing(taxonIndex)) return false;
         if (isPhase1Alternative(taxonIndex) == isPhase2Alternative(taxonIndex)) return true;
         return false;
     }
 
+    /**
+     * Return the number of missing genotype
+     * @return
+     */
     public int getMissingNumber () {
         return missing.cardinality();
     }
 
+    /**
+     * Return the number of non-missing genotype
+     * @return
+     */
     public int getNonMissingNumber () {
         return this.getTaxaNumber()-this.getMissingNumber();
     }
 
+    /**
+     * Return if the allele on phase 1 chromosome is alternative
+     * @param taxonIndex
+     * @return
+     */
     public boolean isPhase1Alternative (int taxonIndex) {
         if (this.isMissing(taxonIndex)) return false;
         return phase1.get(taxonIndex);
     }
 
+    /**
+     * Return if the allele on phase 2 chromosome is alternative
+     * @param taxonIndex
+     * @return
+     */
     public boolean isPhase2Alternative (int taxonIndex) {
         if (this.isMissing(taxonIndex)) return false;
         return phase2.get(taxonIndex);
     }
 
+    /**
+     * Return if the allele on phase 1 chromosome is reference
+     * @param taxonIndex
+     * @return
+     */
     public boolean isPhase1Reference (int taxonIndex) {
         if (this.isMissing(taxonIndex)) return false;
         if (this.isPhase1Alternative(taxonIndex)) return false;
         return true;
     }
 
+    /**
+     * Return if the allele on phase 1 chromosome is reference
+     * @param taxonIndex
+     * @return
+     */
     public boolean isPhase2Reference (int taxonIndex) {
         if (this.isMissing(taxonIndex)) return false;
         if (this.isPhase2Alternative(taxonIndex)) return false;
         return true;
     }
-    
+
+    /**
+     * Return the number of heterozygous genotype across all taxa
+     * @return
+     */
     public int getHeterozygoteNumber () {
         BitSet phase1C = phase1.get(0, phase1.length());
         phase1C.xor(phase2);
         return phase1C.cardinality();
     }
-    
+
+    /**
+     * Return the number of homozygous genotype across all taxa
+     * @return
+     */
     public int getHomozygoteNumber () {
         return this.getNonMissingNumber()-this.getHeterozygoteNumber();
     }
 
+    /**
+     * Return the number of alternative allele across all taxa
+     * @return
+     */
     public int getAlternativeAlleleNumber () {
         return this.phase1.cardinality()+this.phase2.cardinality();
     }
 
+    /**
+     * Return the alternative allele frequency
+     * @return
+     */
     public float getAlternativeAlleleFrequency () {
         if (this.isAlternativeAlleleTypeOf(AlleleType.Minor)) return this.maf;
         if (this.isAlternativeAlleleTypeOf(AlleleType.Major)) return (float)(1-this.maf);
         return (float)((double)this.getAlternativeAlleleNumber()/(this.getNonMissingNumber()*2));
     }
 
+    /**
+     * Return the number of reference allele across all taxa
+     * @return
+     */
     public int getReferenceAlleleNumber () {
         return this.getNonMissingNumber()*2-this.getAlternativeAlleleNumber();
     }
 
+    /**
+     * Return the reference allele frequency
+     * @return
+     */
     public float getReferenceAlleleFrequency () {
         if (this.isReferenceAlleleTypeOf(AlleleType.Minor)) return this.maf;
         if (this.isReferenceAlleleTypeOf(AlleleType.Major)) return (float)(1-this.maf);
         return (float)((double)this.getReferenceAlleleNumber()/(this.getNonMissingNumber()*2));
     }
 
+    /**
+     * Return the byte value of minor allele
+     * @return
+     */
     public byte getMinorAlleleByte () {
         if (this.reference.isAlleleTypeOf(AlleleType.Minor)) return this.getReferenceAlleleByte();
         if (this.alternative.isAlleleTypeOf(AlleleType.Minor)) return this.getAlternativeAlleleByte();
@@ -130,6 +266,10 @@ public class SiteGenotypeBit extends BiSNP {
         return this.getMinorAlleleByte();
     }
 
+    /**
+     * Return the number of minor allele across all taxa
+     * @return
+     */
     public int getMinorAlleleNumber () {
         if (this.reference.isAlleleTypeOf(AlleleType.Minor)) return this.getReferenceAlleleNumber();
         if (this.alternative.isAlleleTypeOf(AlleleType.Minor)) return this.getAlternativeAlleleNumber();
@@ -137,6 +277,10 @@ public class SiteGenotypeBit extends BiSNP {
         return this.getMinorAlleleNumber();
     }
 
+    /**
+     * Return the minor allele frequency
+     * @return
+     */
     public float getMinorAlleleFrequency () {
         if (this.maf != Float.MIN_VALUE) return this.maf;
         float altFre = this.getAlternativeAlleleFrequency();
@@ -153,6 +297,10 @@ public class SiteGenotypeBit extends BiSNP {
         return altFre;
     }
 
+    /**
+     * Return the byte value of major allele
+     * @return
+     */
     public byte getMajorAlleleByte () {
         if (this.reference.isAlleleTypeOf(AlleleType.Major)) return this.getReferenceAlleleByte();
         if (this.alternative.isAlleleTypeOf(AlleleType.Major)) return this.getAlternativeAlleleByte();
@@ -160,6 +308,10 @@ public class SiteGenotypeBit extends BiSNP {
         return this.getMajorAlleleByte();
     }
 
+    /**
+     * Return the number of major allele across all taxa
+     * @return
+     */
     public int getMajorAlleleNumber () {
         if (this.reference.isAlleleTypeOf(AlleleType.Major)) return this.getReferenceAlleleNumber();
         if (this.alternative.isAlleleTypeOf(AlleleType.Major)) return this.getAlternativeAlleleNumber();
@@ -167,11 +319,20 @@ public class SiteGenotypeBit extends BiSNP {
         return this.getMajorAlleleNumber();
     }
 
+    /**
+     * Return the major allele frequency
+     * @return
+     */
     public float getMajorAlleleFrequency () {
         if (this.maf != Float.MIN_VALUE) return (float)(1-this.maf);
         return (float)(1-this.getMinorAlleleFrequency());
     }
-    
+
+    /**
+     * Build and return an object of {@link SiteGenotypeBit} from line of VCF format
+     * @param line
+     * @return
+     */
     public static SiteGenotypeBit buildFromVCFLine (String line) {
         List<String> l = PStringUtils.fastSplit(line);
         List<String> ll = null;

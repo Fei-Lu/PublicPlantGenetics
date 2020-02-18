@@ -2,8 +2,8 @@ package pgl.infra.dna.genotype;
 
 import pgl.PGLConstraints;
 import pgl.infra.utils.IOUtils;
+import pgl.infra.utils.PArrayUtils;
 import pgl.infra.utils.PStringUtils;
-
 import java.io.BufferedReader;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -16,15 +16,33 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import pgl.infra.position.ChrPos;
 
+/**
+ * The bit version implementation of a genotype table
+ * see {@link GenotypeTable}
+ * @author feilu
+ */
 public class GenotypeBit implements GenotypeTable {
+    /**
+     * The taxa in the genotype table
+     */
     String[] taxa = null;
+    /**
+     * SNP, alleles and their presentation in individuals
+     */
     SiteGenotypeBit[] geno = null;
 
-
+    /**
+     * Construct an object
+     */
     public GenotypeBit () {
         
     }
 
+    /**
+     * Construct an object by reading a file
+     * @param infileS
+     * @param format
+     */
     public GenotypeBit (String infileS, GenoIOFormat format) {
         if (format == GenoIOFormat.VCF) {
             this.buildFromVCF(infileS);
@@ -32,6 +50,16 @@ public class GenotypeBit implements GenotypeTable {
         else if (format == GenoIOFormat.HDF5) {
             this.buildFromHDF5(infileS);
         }
+    }
+
+    /**
+     * Construct an object
+     * @param geno
+     * @param taxa
+     */
+    private GenotypeBit (SiteGenotypeBit[] geno, String[] taxa) {
+        this.taxa = taxa;
+        this.geno = geno;
     }
     
     @Override
@@ -71,11 +99,13 @@ public class GenotypeBit implements GenotypeTable {
 
     @Override
     public void sortByTaxa() {
-        String[] oldTaxa = new String[taxa.length];
-        System.arraycopy(this.taxa, 0, oldTaxa,0,this.getTaxaNumber());
-
-
-
+        int[] indices = PArrayUtils.getIndicesByAscendingValue(this.taxa);
+        Arrays.sort(this.taxa);
+        List<SiteGenotypeBit> genoList = Arrays.asList(this.geno);
+        genoList.parallelStream().forEach(g -> {
+            g.sortByTaxa(indices);
+        });
+        geno = genoList.toArray(new SiteGenotypeBit[genoList.size()]);
     }
 
     @Override
@@ -241,29 +271,43 @@ public class GenotypeBit implements GenotypeTable {
 
     @Override
     public GenotypeTable getSubGenotypeTableBySite(int[] siteIndices) {
-
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        SiteGenotypeBit[] ge = new SiteGenotypeBit[siteIndices.length];
+        for (int i = 0; i < siteIndices.length; i++) {
+            ge[i] = geno[siteIndices[i]];
+        }
+        GenotypeBit gb = new GenotypeBit(ge, taxa);
+        return gb;
     }
 
     @Override
     public GenotypeTable getSubGenotypeTableByTaxa(int[] taxaIndices) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        String[] nTaxa = new String[taxaIndices.length];
+        for (int i = 0; i < nTaxa.length; i++) {
+            nTaxa[i] = taxa[taxaIndices[i]];
+        }
+        SiteGenotypeBit[] nGeno = new SiteGenotypeBit[this.getSiteNumber()];
+        List<Integer> indexList = new ArrayList<>(this.getSiteNumber());
+        for (int i = 0; i < this.getSiteNumber(); i++) {
+            indexList.add(i);
+        }
+        indexList.parallelStream().forEach(index -> {
+            nGeno[index] = geno[index].getSubGenotypeByTaxa(taxaIndices);
+        });
+        return new GenotypeBit(nGeno, nTaxa);
     }
 
-    
-    
-    
-    
-    
-    
-    
-    
-    
+    /**
+     * Reader of an HDF5 file
+     * @param infileS
+     */
     private void buildFromHDF5 (String infileS) {
 
-
     }
 
+    /**
+     * Reader of an VCF file
+     * @param infileS
+     */
     private void buildFromVCF (String infileS) {
         try {
             List<String> vcfAnnotationList = new ArrayList<>();
@@ -332,6 +376,9 @@ public class GenotypeBit implements GenotypeTable {
     }
 }
 
+/**
+ * Class for parallel reading in VCF
+ */
 class SGBBlockVCF implements Callable<SGBBlockVCF> {
     public static int blockSize = 4096;
     List<String> lines = null;

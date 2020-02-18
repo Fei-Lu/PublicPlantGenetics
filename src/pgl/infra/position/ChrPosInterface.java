@@ -6,17 +6,33 @@
 package pgl.infra.position;
 
 /**
- *
+ * Interface for methods of a genomic site
  * @author feilu
  */
 public interface ChrPosInterface extends Comparable<ChrPosInterface> {
-    
+
+    /**
+     * Return the chromosome of a genomic site
+     * @return
+     */
     public short getChromosome ();
-    
+
+    /**
+     * Return the position of genomic site
+     * @return
+     */
     public int getPosition ();
 
+    /**
+     * Set the chromosome of genomic site
+     * @param chr
+     */
     public void setChromosome (short chr);
 
+    /**
+     * Set the position of a genomic site
+     * @param position
+     */
     public void setPosition (int position);
     
 }

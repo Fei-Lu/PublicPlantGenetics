@@ -6,22 +6,34 @@
 package pgl.infra.position;
 
 /**
- *
+ * Class of a genomic position, with position comparator can be extended
  * @author feilu
  */
 public class ChrPos implements ChrPosInterface {
     short chr;
     int pos;
-    
+
+    /**
+     * Construct an object
+     */
     public ChrPos () {
         
     }
-    
+
+    /**
+     * Construct an object with chromosome and position
+     * @param chr
+     * @param pos
+     */
     public ChrPos (short chr, int pos) {
         this.chr = chr;
         this.pos = pos;
     }
 
+    /**
+     * Return the current instance
+     * @return
+     */
     public ChrPos getChrPos () {
         return this;
     }
@@ -46,6 +58,11 @@ public class ChrPos implements ChrPosInterface {
         this.pos = position;
     }
 
+    /**
+     * The comparator based on the site position on chromosome
+     * @param o
+     * @return
+     */
     @Override
     public int compareTo(ChrPosInterface o) {
         if (this.getChromosome() == o.getChromosome()) {

@@ -1,5 +1,9 @@
 package pgl.infra.dna.allele;
 
+/**
+ * Hard coded standard of allele type
+ * @author feilu 
+ */
 public enum AlleleType {
     /**
      * Reference allele

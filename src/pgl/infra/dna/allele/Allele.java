@@ -59,7 +59,6 @@ public class Allele {
     /**
      * Set allele type, see {@link AlleleType}
      * @param at
-     * @return
      */
     public void setAlleleType (AlleleType at) {
         this.feature = (byte)(feature | at.getFeature());
@@ -68,7 +67,6 @@ public class Allele {
     /**
      * Remove allele type, see {@link AlleleType}
      * @param at
-     * @return
      */
     public void removeAlleleType (AlleleType at) {
         this.feature = (byte) (feature & (~at.getFeature()));
@@ -76,7 +74,6 @@ public class Allele {
 
     /**
      * Reset all allele types to false, see {@link AlleleType}
-     * @return
      */
     public void resetAlleleTypeToDefault () {
         this.feature = 0;
