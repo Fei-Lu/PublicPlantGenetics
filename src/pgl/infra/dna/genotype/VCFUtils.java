@@ -34,7 +34,7 @@ public class VCFUtils {
         SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss.SSS");
         Date dt = new Date();
         String S = sdf.format(dt);
-        sb.append("##fileDate=").append(S.split(" ")[0]).append("\n");
+        sb.append("##fileDate=").append(S.split("\\.")[0]).append("\n");
         sb.append("##INFO=<ID=DP,Number=1,Type=Integer,Description=\"").append("Combined depth across samples").append("\">\n");
         sb.append("##INFO=<ID=AD,Number=2+,Type=Integer,Description=\"").append("Allele depth across samples").append("\">\n");
         sb.append("##INFO=<ID=NS,Number=1,Type=Integer,Description=\"").append("Number of samples with data").append("\">\n");

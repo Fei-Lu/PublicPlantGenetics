@@ -19,8 +19,15 @@ public class SiteGenotypeBit extends BiSNP {
     BitSet phase2 = null;
     //Bit set of the missing genotype at a specific site, 1 is missing
     BitSet missing = null;
+    //Taxa number coding, max taxa capacity is 65536
+    short taxaNumber = Short.MIN_VALUE;
     //Minor allele frequency
     float maf = Float.MIN_VALUE;
+
+    /**
+     * Is used to build VCF record, not thread safe
+     */
+    static StringBuilder vsb = new StringBuilder();
 
     /**
      * Construct an object
@@ -46,6 +53,7 @@ public class SiteGenotypeBit extends BiSNP {
         this.phase1 = phase1;
         this.phase2 = phase2;
         this.missing = missing;
+        this.taxaNumber = (short)(taxaNumber+Short.MIN_VALUE);
     }
 
     /**
@@ -90,11 +98,11 @@ public class SiteGenotypeBit extends BiSNP {
      * @return
      */
     public int getTaxaNumber () {
-        return phase1.length();
+        return this.taxaNumber-Short.MIN_VALUE;
     }
 
     /**
-     * Return the byte value of a certain genotype
+     * Return the byte value of a specific genotype
      * @param taxonIndex
      * @return
      */
@@ -112,7 +120,7 @@ public class SiteGenotypeBit extends BiSNP {
     }
 
     /**
-     * Return if a certain genotype is missing
+     * Return if a specific genotype is missing
      * @param taxonIndex
      * @return
      */
@@ -122,7 +130,7 @@ public class SiteGenotypeBit extends BiSNP {
     }
 
     /**
-     * Return if a certain genotype is heterozygous
+     * Return if a specific genotype is heterozygous
      * @param taxonIndex
      * @return
      */
@@ -133,7 +141,7 @@ public class SiteGenotypeBit extends BiSNP {
     }
 
     /**
-     * Return if certain genotype is homozygous
+     * Return if specific genotype is homozygous
      * @param taxonIndex
      * @return
      */
@@ -326,6 +334,31 @@ public class SiteGenotypeBit extends BiSNP {
     public float getMajorAlleleFrequency () {
         if (this.maf != Float.MIN_VALUE) return (float)(1-this.maf);
         return (float)(1-this.getMinorAlleleFrequency());
+    }
+
+    public String getUnphasedVCFRecord() {
+        return this.getVCFRecord('/');
+    }
+
+    private String getVCFRecord (char delimiter) {
+        vsb.setLength(0);
+        vsb.append(this.getChromosome()).append("\t").append(this.getPosition()).append("\t").append(this.getChromosome()).append("-").append(this.getPosition()).append("\t");
+        vsb.append(this.getReferenceAlleleBase()).append("\t").append(this.getAlternativeAlleleBase()).append("\t.\t.\t");
+        if (info == null) vsb.append(".");
+        else vsb.append(info);
+        vsb.append("\t").append("GT");
+        for (int i = 0; i < this.getTaxaNumber(); i++) {
+            if (isMissing(i)) vsb.append("\t").append(".").append(delimiter).append(".");
+            else {
+                vsb.append("\t");
+                if (isPhase1Alternative(i)) vsb.append("1");
+                else vsb.append("0");
+                vsb.append(delimiter);
+                if (isPhase2Alternative(i)) vsb.append("1");
+                else vsb.append("0");
+            }
+        }
+        return vsb.toString();
     }
 
     /**

@@ -1,6 +1,7 @@
 package pgl.infra.dna.snp;
 
 import pgl.infra.dna.allele.Allele;
+import pgl.infra.dna.allele.AlleleEncoder;
 import pgl.infra.dna.allele.AlleleType;
 import pgl.infra.position.ChrPos;
 
@@ -126,11 +127,26 @@ public class BiSNP extends ChrPos {
     }
 
     /**
+     * Return the base of the reference allele
+     * @return
+     */
+    public char getReferenceAlleleBase() {
+        return AlleleEncoder.getAlleleBaseFromByte(this.getReferenceAlleleByte());
+    }
+    /**
      * Return the byte value of the alternative allele
      * @return
      */
     public byte getAlternativeAlleleByte() {
         return alternative.getAlleleByte();
+    }
+
+    /**
+     * Return the base of the alternative allele
+     * @return
+     */
+    public char getAlternativeAlleleBase () {
+        return AlleleEncoder.getAlleleBaseFromByte(this.getAlternativeAlleleByte());
     }
 
     /**

@@ -47,6 +47,9 @@ public class GenotypeBit implements GenotypeTable {
         if (format == GenoIOFormat.VCF) {
             this.buildFromVCF(infileS);
         }
+        else if (format == GenoIOFormat.VCF_GZ) {
+            this.buildFromVCF(infileS);
+        }
         else if (format == GenoIOFormat.HDF5) {
             this.buildFromHDF5(infileS);
         }
@@ -70,6 +73,13 @@ public class GenotypeBit implements GenotypeTable {
     @Override
     public String getTaxonName(int taxonIndex) {
         return taxa[taxonIndex];
+    }
+
+    @Override
+    public String[] getTaxaNames () {
+        String nTaxa[]  = new String[this.getTaxaNumber()];
+        System.arraycopy(taxa, 0, nTaxa, 0, nTaxa.length);
+        return nTaxa;
     }
 
     @Override
@@ -235,6 +245,11 @@ public class GenotypeBit implements GenotypeTable {
     @Override
     public float getAlternativeAlleleFrequency(int siteIndex) {
         return geno[siteIndex].getReferenceAlleleFrequency();
+    }
+
+    @Override
+    public String getUnphasedVCFRecord(int siteIndex) {
+        return geno[siteIndex].getUnphasedVCFRecord();
     }
 
     @Override

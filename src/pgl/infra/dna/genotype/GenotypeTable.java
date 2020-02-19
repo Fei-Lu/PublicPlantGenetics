@@ -26,14 +26,20 @@ public interface GenotypeTable {
     public String getTaxonName (int taxonIndex);
 
     /**
-     * Return the chromosome of a certain site
+     * Return the taxa names
+     * @return
+     */
+    public String[] getTaxaNames ();
+
+    /**
+     * Return the chromosome of a specific site
      * @param siteIndex
      * @return
      */
     public short getChromosome (int siteIndex);
 
     /**
-     * Return the position of a certain site
+     * Return the position of a specific site
      * @param siteIndex
      * @return
      */
@@ -50,14 +56,14 @@ public interface GenotypeTable {
     public void sortByTaxa ();
 
     /**
-     * Return the index of a certain taxon
+     * Return the index of a specific taxon
      * @param taxon
      * @return negative value if the taxon does not exist
      */
     public int getTaxonIndex (String taxon);
 
     /**
-     * Return the index of a certain site
+     * Return the index of a specific site
      * @param chromosome
      * @param position
      * @return negative value if the site does not exist
@@ -65,7 +71,7 @@ public interface GenotypeTable {
     public int getSiteIndex (short chromosome, int position);
 
     /**
-     * Return the byte value of a certain genotype
+     * Return the byte value of a specific genotype
      * @param siteIndex
      * @param taxonIndex
      * @return
@@ -73,7 +79,7 @@ public interface GenotypeTable {
     public byte getGenotypeByte(int siteIndex, int taxonIndex);
 
     /**
-     * Return if a certain genotype is heterozygous
+     * Return if a specific genotype is heterozygous
      * @param siteIndex
      * @param taxonIndex
      * @return
@@ -81,7 +87,7 @@ public interface GenotypeTable {
     public boolean isHeterozygous (int siteIndex, int taxonIndex);
 
     /**
-     * Return if a certain genotype is homozygous
+     * Return if a specific genotype is homozygous
      * @param siteIndex
      * @param taxonIndex
      * @return
@@ -89,7 +95,7 @@ public interface GenotypeTable {
     public boolean isHomozygous (int siteIndex, int taxonIndex);
 
     /**
-     * Return if a certain genotype is missing
+     * Return if a specific genotype is missing
      * @param siteIndex
      * @param taxonIndex
      * @return
@@ -97,70 +103,70 @@ public interface GenotypeTable {
     public boolean isMissing (int siteIndex, int taxonIndex);
 
     /**
-     * Return the total number of missing genotype at a certain site
+     * Return the total number of missing genotype at a specific site
      * @param siteIndex
      * @return
      */
     public int getMissingNumberBySite (int siteIndex);
 
     /**
-     * Return the total number of missing genotype in a certain taxon
+     * Return the total number of missing genotype in a specific taxon
      * @param taxonIndex
      * @return
      */
     public int getMissingNumberByTaxon (int taxonIndex);
 
     /**
-     * Return the total number of non-missing genotype at a certain site
+     * Return the total number of non-missing genotype at a specific site
      * @param siteIndex
      * @return
      */
     public int getNonMissingNumberBySite (int siteIndex);
 
     /**
-     * Return the total number of non-missing in a certain taxon
+     * Return the total number of non-missing in a specific taxon
      * @param taxonIndex
      * @return
      */
     public int getNonMissingNumberByTaxon (int taxonIndex);
 
     /**
-     * Return the total number of homozygous genotype at a certain site
+     * Return the total number of homozygous genotype at a specific site
      * @param siteIndex
      * @return
      */
     public int getHomozygoteNumberBySite (int siteIndex);
 
     /**
-     * Return the total number of homozygous genotype in a certain taxon
+     * Return the total number of homozygous genotype in a specific taxon
      * @param taxonIndex
      * @return
      */
     public int getHomozygoteNumberByTaxon (int taxonIndex);
 
     /**
-     * Return the total number of heterozygous genotype at a certain site
+     * Return the total number of heterozygous genotype at a specific site
      * @param siteIndex
      * @return
      */
     public int getHeterozygoteNumberBySite (int siteIndex);
 
     /**
-     * Return the total number of heterzygous genotype in a certain taxon
+     * Return the total number of heterzygous genotype in a specific taxon
      * @param taxonIndex
      * @return
      */
     public int getHeterozygoteNumberByTaxon (int taxonIndex);
 
     /**
-     * Return the heterozygosity of a certain taxon
+     * Return the heterozygosity of a specific taxon
      * @param taxonIndex
      * @return
      */
     public float getTaxonHeterozygosity (int taxonIndex);
 
     /**
-     * Return the fraction of heterozygous genotype at a certain site
+     * Return the fraction of heterozygous genotype at a specific site
      * @param siteIndex
      * @return
      */
@@ -249,5 +255,12 @@ public interface GenotypeTable {
      * @return
      */
     public GenotypeTable getSubGenotypeTableByTaxa (int[] taxaIndices);
+
+    /**
+     * Return a VCF genotype record at a specific site
+     * @param siteIndex
+     * @return
+     */
+    public String getUnphasedVCFRecord(int siteIndex);
     
 }

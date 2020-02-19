@@ -28,8 +28,6 @@ public class AlleleEncoder {
      * Alleles in byte code
      */
     public static final byte[] alleleBytes = {0, 1, 2, 3, 4, 5};
-    
-    private static StringBuilder sbb = new StringBuilder();
 
     /**
      * The default value of allele missing
@@ -138,8 +136,9 @@ public class AlleleEncoder {
      * @return
      */
     public static String getGenotypeStringFromGenotypeByte (byte g) {
-        sbb.append(getAlleleBase1FromGenotypeByte(g));
-        sbb.append(getAlleleBase2FromGenotypeByte(g));
-        return sbb.toString();
+        StringBuilder sb = new StringBuilder();
+        sb.append(getAlleleBase1FromGenotypeByte(g));
+        sb.append(getAlleleBase2FromGenotypeByte(g));
+        return sb.toString();
     }
 }
