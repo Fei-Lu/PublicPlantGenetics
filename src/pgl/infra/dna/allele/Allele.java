@@ -65,6 +65,14 @@ public class Allele {
     }
 
     /**
+     * Set the allele feature at once, see {@link AlleleType}
+     * @param feature
+     */
+    public void setAlleleFeature (byte feature) {
+        this.feature = feature;
+    }
+
+    /**
      * Remove allele type, see {@link AlleleType}
      * @param at
      */

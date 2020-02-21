@@ -72,12 +72,28 @@ public class BiSNP extends ChrPos {
     }
 
     /**
+     * Set the allele feature of the reference allele
+     * @param feature
+     */
+    public void setReferenceAlleleFeature (byte feature) {
+        reference.setAlleleFeature(feature);
+    }
+
+    /**
      * Set the allele type of the alternative allele
      * see {@link AlleleType}
      * @param at
      */
     public void setAlternativeAlleleType (AlleleType at) {
         alternative.setAlleleType(at);
+    }
+
+    /**
+     * Set the allele feature of the alternative allele
+     * @param feature
+     */
+    public void setAlternativeAlleleFeature (byte feature) {
+        this.alternative.setAlleleFeature(feature);
     }
 
     /**
@@ -147,6 +163,22 @@ public class BiSNP extends ChrPos {
      */
     public char getAlternativeAlleleBase () {
         return AlleleEncoder.getAlleleBaseFromByte(this.getAlternativeAlleleByte());
+    }
+
+    /**
+     * Return the feature of the reference allele, see {@link AlleleType}
+     * @return
+     */
+    public byte getReferenceAlleleFeature () {
+        return this.reference.getAlleleFeature();
+    }
+
+    /**
+     * Return the feature of the alternative allele, see {@link AlleleType}
+     * @return
+     */
+    public byte getAlternativeAlleleFeature () {
+        return this.alternative.getAlleleFeature();
     }
 
     /**

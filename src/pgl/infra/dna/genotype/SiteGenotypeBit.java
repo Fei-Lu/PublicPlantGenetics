@@ -5,6 +5,7 @@ import pgl.infra.dna.allele.AlleleType;
 import pgl.infra.dna.snp.BiSNP;
 import pgl.infra.utils.PStringUtils;
 
+import java.nio.ByteBuffer;
 import java.util.BitSet;
 import java.util.List;
 
@@ -336,11 +337,15 @@ public class SiteGenotypeBit extends BiSNP {
         return (float)(1-this.getMinorAlleleFrequency());
     }
 
-    public String getUnphasedVCFRecord() {
-        return this.getVCFRecord('/');
+    /**
+     * Return unphased genotype record of the current site in VCF format
+     * @return
+     */
+    public String getUnphasedVCFOutput() {
+        return this.getVCFOutput('/');
     }
 
-    private String getVCFRecord (char delimiter) {
+    private String getVCFOutput(char delimiter) {
         vsb.setLength(0);
         vsb.append(this.getChromosome()).append("\t").append(this.getPosition()).append("\t").append(this.getChromosome()).append("-").append(this.getPosition()).append("\t");
         vsb.append(this.getReferenceAlleleBase()).append("\t").append(this.getAlternativeAlleleBase()).append("\t.\t.\t");
@@ -359,6 +364,66 @@ public class SiteGenotypeBit extends BiSNP {
             }
         }
         return vsb.toString();
+    }
+
+    /**
+     * Return the binary data block of genotype from the current site
+     * @param bb
+     * @return
+     */
+    public ByteBuffer getBinaryOutput (ByteBuffer bb) {
+        bb.putShort(this.getChromosome());
+        bb.putInt(this.getPosition());
+        bb.put(AlleleEncoder.getGenotypeByte(this.getReferenceAlleleByte(), this.getMinorAlleleByte()));
+        bb.put(this.getReferenceAlleleFeature());
+        bb.put(this.getAlternativeAlleleFeature());
+        int size = (bb.capacity()-GenotypeExport.getByteSizeOfSNPInBinary())/3;
+        byte[] b = new byte[size];
+        byte[] ob = phase1.toByteArray();
+        System.arraycopy(ob,0,b,0,ob.length);
+        bb.put(b);
+        b = new byte[size];
+        ob = phase2.toByteArray();
+        System.arraycopy(ob,0,b,0,ob.length);
+        bb.put(b);
+        b = new byte[size];
+        ob = missing.toByteArray();
+        System.arraycopy(ob,0,b,0,ob.length);
+        bb.put(b);
+        return bb;
+    }
+
+    /**
+     * Static method build an object from a binary data block of genotype of the current site
+     * @param bb
+     * @param taxaNumber
+     * @return
+     */
+    public static SiteGenotypeBit buildFromBinaryLine (ByteBuffer bb, int taxaNumber) {
+        //short chr, int pos, char refBase, char altBase, String info, BitSet phase1, BitSet phase2, BitSet missing, int taxaNumber
+        bb.flip();
+        short chr = bb.getShort();
+        int pos = bb.getInt();
+        byte geno = bb.get();
+        char refBase = AlleleEncoder.getAlleleBase1FromGenotypeByte(geno);
+        char altBase = AlleleEncoder.getAlleleBase2FromGenotypeByte(geno);
+        byte refFeature = bb.get();
+        byte altFeature = bb.get();
+        int size = (bb.capacity()-GenotypeExport.getByteSizeOfSNPInBinary())/3;
+        byte[] ba = new byte[size];
+        bb.get(ba);
+        BitSet p1 = BitSet.valueOf(ba);
+        ba = new byte[size];
+        bb.get(ba);
+        BitSet p2 = BitSet.valueOf(ba);
+        ba = new byte[size];
+        bb.get(ba);
+        BitSet m = BitSet.valueOf(ba);
+        SiteGenotypeBit sgb = new SiteGenotypeBit(chr, pos, refBase, altBase, null, p1, p2, m, taxaNumber);
+        sgb.setReferenceAlleleFeature(refFeature);
+        sgb.setAlternativeAlleleFeature(altFeature);
+        bb.clear();
+        return sgb;
     }
 
     /**

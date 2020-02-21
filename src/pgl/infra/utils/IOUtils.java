@@ -109,6 +109,18 @@ public class IOUtils {
         return br;
     }
 
+    public static DataOutputStream getBinaryGzipWriter (String outfileS) {
+        DataOutputStream dos = null;
+        try {
+            dos = new DataOutputStream(new BufferedOutputStream(new GZIPOutputStream(new FileOutputStream(outfileS), 65536), 65536));
+
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
+        return dos;
+    }
+
     public static DataOutputStream getBinaryWriter (String outfileS) {
         DataOutputStream dos = null;
         try {
@@ -130,7 +142,19 @@ public class IOUtils {
         }
         return dos;
     }
-    
+
+    public static DataInputStream getBinaryGzipReader (String infileS) {
+        DataInputStream dis = null;
+        try {
+            dis = new DataInputStream(new BufferedInputStream(new GZIPInputStream(new FileInputStream(infileS), 65536), 65536));
+
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
+        return dis;
+    }
+
     public static DataInputStream getBinaryReader (String infileS) {
         DataInputStream dis = null;
         try {

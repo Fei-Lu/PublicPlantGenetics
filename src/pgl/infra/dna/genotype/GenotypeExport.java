@@ -1,9 +1,12 @@
 package pgl.infra.dna.genotype;
 
+import htsjdk.samtools.util.IOUtil;
 import pgl.infra.utils.IOUtils;
-import sun.nio.ch.IOUtil;
 
 import java.io.BufferedWriter;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.nio.ByteBuffer;
 
 public class GenotypeExport {
 
@@ -14,9 +17,64 @@ public class GenotypeExport {
         else if (format == GenoIOFormat.VCF_GZ) {
             toVCF(gt, outfileS,true);
         }
+        else if (format == GenoIOFormat.Binary) {
+            toBinary(gt, outfileS, false);
+        }
+        else if (format == GenoIOFormat.Binary_GZ) {
+            toBinary(gt, outfileS, true);
+        }
         else if (format == GenoIOFormat.HDF5) {
 
         }
+        System.out.println("Genotype table exported to "+ outfileS);
+    }
+
+    private static void toBinary (GenotypeTable gt, String outfileS, boolean ifGZ) {
+        try {
+            DataOutputStream dos = null;
+            if (ifGZ) {
+                dos = IOUtils.getBinaryGzipWriter(outfileS);
+            }
+            else  {
+                dos = IOUtils.getBinaryWriter(outfileS);
+            }
+            int siteNumber = gt.getSiteNumber();
+            int taxaNumber = gt.getTaxaNumber();
+            dos.writeInt(siteNumber);
+            dos.writeInt(taxaNumber);
+            for (int i = 0; i < taxaNumber; i++) {
+                dos.writeUTF(gt.getTaxonName(i));
+            }
+            int byteSize = getByteSizeOfSiteInBinary(gt.getTaxaNumber());
+            ByteBuffer bb = ByteBuffer.allocate(byteSize);
+            for (int i = 0; i < siteNumber; i++) {
+                bb = gt.getBinaryOutput(i, bb);
+                bb.flip();
+                dos.write(bb.array());
+                bb.clear();
+            }
+            dos.close();
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+    
+    public static int getByteSizeOfSNPInBinary () {
+        //short chr, int pos, genotype (ref+alt), byte feature *2
+        return 9;
+    }
+    
+    public static int getByteSizeOfSiteInBinary (int taxaNumber) {
+        //short chr, int pos, genotype (ref+alt), byte feature *2, BitSet phase1, BitSet phase2, BitSet missing
+        int n = getByteSizeOfSNPInBinary();
+        if (taxaNumber%64 == 0) {
+            n += (taxaNumber/64)*8*3;
+        }
+        else  {
+            n += (taxaNumber/64+1)*8*3;
+        }
+        return n;
     }
 
     private static void toVCF (GenotypeTable gt, String outfileS, boolean ifGZ) {

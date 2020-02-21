@@ -13,6 +13,14 @@ public enum GenoIOFormat {
      */
     VCF_GZ,
     /**
+     * Binary format
+     */
+    Binary,
+    /**
+     * Binary format compressed in gz
+     */
+    Binary_GZ,
+    /**
      * HDF5 format
      */
     HDF5;

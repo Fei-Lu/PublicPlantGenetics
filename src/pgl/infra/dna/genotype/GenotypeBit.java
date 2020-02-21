@@ -5,9 +5,10 @@ import pgl.infra.utils.IOUtils;
 import pgl.infra.utils.PArrayUtils;
 import pgl.infra.utils.PStringUtils;
 import java.io.BufferedReader;
+import java.io.DataInputStream;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
@@ -49,6 +50,12 @@ public class GenotypeBit implements GenotypeTable {
         }
         else if (format == GenoIOFormat.VCF_GZ) {
             this.buildFromVCF(infileS);
+        }
+        else if (format == GenoIOFormat.Binary) {
+            this.buildFromBinary(infileS);
+        }
+        else if (format == GenoIOFormat.Binary_GZ) {
+            this.buildFromBinary(infileS);
         }
         else if (format == GenoIOFormat.HDF5) {
             this.buildFromHDF5(infileS);
@@ -249,7 +256,12 @@ public class GenotypeBit implements GenotypeTable {
 
     @Override
     public String getUnphasedVCFRecord(int siteIndex) {
-        return geno[siteIndex].getUnphasedVCFRecord();
+        return geno[siteIndex].getUnphasedVCFOutput();
+    }
+
+    @Override
+    public ByteBuffer getBinaryOutput (int siteIndex, ByteBuffer bb) {
+        return geno[siteIndex].getBinaryOutput(bb);
     }
 
     @Override
@@ -317,6 +329,114 @@ public class GenotypeBit implements GenotypeTable {
      */
     private void buildFromHDF5 (String infileS) {
 
+    }
+
+    /**
+     * Reader of a binary genotype file
+     * @param infileS
+     */
+    private void buildFromBinary (String infileS) {
+        try{
+            DataInputStream dis = null;
+            if (infileS.endsWith(".gz")) {
+                dis = IOUtils.getBinaryGzipReader(infileS);
+            }
+            else {
+                dis = IOUtils.getBinaryReader(infileS);
+            }
+            int siteNumber = dis.readInt();
+            short taxaNumber = (short)dis.readInt();
+            this.taxa = new String[taxaNumber];
+            for (int i = 0; i < taxaNumber; i++) {
+                this.taxa[i] = dis.readUTF();
+            }
+            ExecutorService pool = Executors.newFixedThreadPool(PGLConstraints.parallelLevel);
+            List<Future<SGBBlockBinary>> resultList = new ArrayList<>();
+            byte[][] input = new byte[SGBBlockBinary.blockSize][GenotypeExport.getByteSizeOfSiteInBinary(taxaNumber)];
+            int siteCount = 0;
+            int startIndex = 0;
+            int actBlockSize = 0;
+            StringBuilder sb = new StringBuilder();
+            for (int i = 0; i < siteNumber; i++) {
+                dis.read(input[actBlockSize]);
+                siteCount++;
+                actBlockSize++;
+                if (siteCount%SGBBlockBinary.blockSize == 0) {
+                    SGBBlockBinary sgb = new SGBBlockBinary(input, startIndex, actBlockSize, taxaNumber);
+                    Future<SGBBlockBinary> result = pool.submit(sgb);
+                    resultList.add(result);
+                    startIndex+=actBlockSize;
+                    actBlockSize = 0;
+                    input = new byte[SGBBlockBinary.blockSize][GenotypeExport.getByteSizeOfSiteInBinary(taxaNumber)];
+                }
+                if (siteCount%1000000 == 0) {
+                    sb.setLength(0);
+                    sb.append("Read in ").append(siteCount).append(" SNPs from ").append(infileS);
+                    System.out.println(sb.toString());
+                }
+            }
+            dis.close();
+            if (actBlockSize != 0) {
+                SGBBlockBinary sgb = new SGBBlockBinary(input, startIndex, actBlockSize, taxaNumber);
+                Future<SGBBlockBinary> result = pool.submit(sgb);
+                resultList.add(result);
+            }
+            pool.shutdown();
+            pool.awaitTermination(Long.MAX_VALUE, TimeUnit.MICROSECONDS);
+            this.geno = new SiteGenotypeBit[siteCount];
+            for (int i = 0; i < resultList.size(); i++) {
+                SGBBlockBinary block = resultList.get(i).get();
+                for (int j = 0; j < block.actBlockSize; j++) {
+                    geno[block.getStartIndex()+j] = block.getSiteGenotypes()[j];
+                }
+            }
+            sb.setLength(0);
+            sb.append("A total of ").append(this.getSiteNumber()).append(" SNPs are in ").append(infileS).append("\n");
+            sb.append("Genotype table is successfully built");
+            System.out.println(sb.toString());
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Class for parallel reading in binary
+     */
+    class SGBBlockBinary implements Callable<SGBBlockBinary> {
+        public static final int blockSize = 4096;
+        byte[][] lines = null;
+        int startIndex = Integer.MIN_VALUE;
+        int actBlockSize = Integer.MIN_VALUE;
+        short taxaNumber = Short.MIN_VALUE;
+        SiteGenotypeBit[] sgbArray = null;
+
+        public SGBBlockBinary (byte[][] lines, int startIndex, int actBlockSize, short taxaNumber) {
+            this.lines = lines;
+            this.startIndex = startIndex;
+            this.actBlockSize = actBlockSize;
+            this.taxaNumber = taxaNumber;
+        }
+
+        public int getStartIndex () {
+            return this.startIndex;
+        }
+
+        public SiteGenotypeBit[] getSiteGenotypes () {
+            return this.sgbArray;
+        }
+
+        @Override
+        public SGBBlockBinary call() throws Exception {
+            this.sgbArray = new SiteGenotypeBit[this.actBlockSize];
+            ByteBuffer bb = ByteBuffer.allocate(lines[0].length);
+            for (int i = 0; i < this.actBlockSize; i++) {
+                bb.put(lines[i]);
+                sgbArray[i] = SiteGenotypeBit.buildFromBinaryLine(bb, taxaNumber);
+            }
+            lines = null;
+            return this;
+        }
     }
 
     /**

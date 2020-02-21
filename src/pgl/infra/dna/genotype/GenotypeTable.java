@@ -1,5 +1,7 @@
 package pgl.infra.dna.genotype;
 
+import java.nio.ByteBuffer;
+
 /**
  * Interface for methods of a genotype table
  * @author feilu
@@ -262,5 +264,11 @@ public interface GenotypeTable {
      * @return
      */
     public String getUnphasedVCFRecord(int siteIndex);
-    
+
+    /**
+     * Return a binary genotype output at a specific site, see {@link ByteBuffer}
+     * @param index
+     * @return
+     */
+    ByteBuffer getBinaryOutput(int index, ByteBuffer bb);
 }
