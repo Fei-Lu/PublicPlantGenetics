@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package pgl.analysis.pipeline.grt;
+package pgl.app.grt;
 
 import pgl.infra.alignment.gen2.SAMUtils;
 import pgl.infra.dna.allele.AlleleEncoder;

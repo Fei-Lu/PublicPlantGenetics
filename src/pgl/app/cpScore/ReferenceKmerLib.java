@@ -1,4 +1,4 @@
-package pgl.analysis.pipeline.cpScore;
+package pgl.app.cpScore;
 
 import com.koloboke.collect.map.hash.HashByteByteMap;
 import com.koloboke.collect.set.hash.HashIntSet;

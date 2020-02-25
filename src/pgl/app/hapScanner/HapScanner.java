@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package pgl.analysis.pipeline.hapScanner;
+package pgl.app.hapScanner;
 import static cern.jet.math.Arithmetic.factorial;
 import com.koloboke.collect.map.IntDoubleMap;
 import com.koloboke.collect.map.hash.HashIntDoubleMaps;

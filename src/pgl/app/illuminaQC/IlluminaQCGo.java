@@ -1,4 +1,4 @@
-package pgl.analysis.pipeline.illuminaQC;
+package pgl.app.illuminaQC;
 
 import pgl.infra.alignment.gen2.ShortreadPEAlignment;
 import pgl.infra.dna.FastaByte;

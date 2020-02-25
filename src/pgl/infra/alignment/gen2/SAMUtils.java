@@ -3,8 +3,8 @@
  */
 package pgl.infra.alignment.gen2;
 
-import pgl.analysis.pipeline.grt.AlleleInfo;
-import pgl.analysis.pipeline.grt.SNPCounts;
+import pgl.app.grt.AlleleInfo;
+import pgl.app.grt.SNPCounts;
 import pgl.infra.dna.allele.AlleleEncoder;
 import pgl.infra.dna.snp.SNPOld;
 import gnu.trove.list.array.TByteArrayList;

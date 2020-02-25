@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package pgl.analysis.pipeline.grt;
+package pgl.app.grt;
 
 import java.io.File;
 import java.util.Arrays;
